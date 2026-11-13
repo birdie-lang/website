@@ -1,0 +1,50 @@
+---
+import Brand from './brand.astro';
+
+const isPlayground = Astro.url.pathname.startsWith('/play');
+const isHandbook = Astro.url.pathname.startsWith('/docs');
+---
+
+<header class="site-header wrap" transition:persist="site-header">
+  <Brand />
+  <nav aria-label="Main navigation" class="main-nav">
+    <a href="/docs/" aria-current={isHandbook ? 'true' : undefined}><span class="nav-label">Handbook</span></a>
+    <a href="/play/" aria-current={isPlayground ? 'page' : undefined}><span class="nav-label">Playground</span><span class="soon-label">Soon</span></a>
+    <a class="github-link" href="https://github.com/birdie-lang/birdie">GitHub <span aria-hidden="true">↗</span></a>
+  </nav>
+  <button class="theme-toggle" type="button" aria-label="Switch color theme" data-theme-toggle>
+    <span class="show-in-light">Dark</span><span class="show-in-dark">Light</span>
+  </button>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = theme;
+      try {
+        localStorage.setItem('birdie-theme', theme);
+      } catch {
+        // Theme switching still works when storage is unavailable.
+      }
+    });
+  }
+
+  // Apply the current theme to the incoming document before its first paint.
+  document.addEventListener('astro:before-swap', (event) => {
+    event.newDocument.documentElement.dataset.theme = document.documentElement.dataset.theme;
+    event.newDocument.documentElement.dataset.themeReady = '';
+  });
+
+  // The header is persisted, so its active links must follow the new route.
+  document.addEventListener('astro:after-swap', () => {
+    document.querySelectorAll<HTMLAnchorElement>('.main-nav a[href^="/"]').forEach((link) => {
+      if (location.pathname.startsWith(link.pathname)) {
+        link.setAttribute('aria-current', location.pathname === link.pathname ? 'page' : 'true');
+      } else {
+        link.removeAttribute('aria-current');
+      }
+    });
+  });
+</script>

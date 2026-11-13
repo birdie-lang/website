@@ -1,0 +1,12 @@
+fn twoSum(nums: [int], target: int) [int]:
+    seen = map()
+
+    for i, num in nums:
+        diff = target - num
+
+        if diff in seen:
+            return [seen[diff], i]
+
+        seen[num] = i
+
+    return []

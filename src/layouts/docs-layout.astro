@@ -1,0 +1,77 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import type { MarkdownHeading } from 'astro';
+import SiteLayout from './site-layout.astro';
+import ChapterNav from '../components/docs/chapter-nav.astro';
+import TableOfContents from '../components/docs/table-of-contents.astro';
+import CopyCode from '../components/docs/copy-code.astro';
+import { docHref } from '../lib/docs';
+import '../styles/docs.css';
+
+interface Props {
+  entry: CollectionEntry<'docs'>;
+  pages: CollectionEntry<'docs'>[];
+  headings: MarkdownHeading[];
+  previous?: CollectionEntry<'docs'>;
+  next?: CollectionEntry<'docs'>;
+}
+
+const { entry, pages, headings, previous, next } = Astro.props;
+const hasSections = headings.some(({ depth }) => depth === 2 || depth === 3);
+---
+
+<SiteLayout title={`${entry.data.title} · Birdie`} description={entry.data.description}>
+  <div class="docs-page wrap">
+    <aside class="docs-sidebar">
+      <div class="docs-sticky">
+        <p class="docs-nav-label">Handbook</p>
+        <ChapterNav pages={pages} activeId={entry.id} />
+      </div>
+    </aside>
+
+    <div class="docs-content">
+      <details class="docs-mobile-nav">
+        <summary>Chapters <span>{entry.data.navTitle}</span></summary>
+        <ChapterNav pages={pages} activeId={entry.id} />
+      </details>
+
+      <article>
+        <header class="docs-page-heading">
+          <p class="docs-section-label">The Birdie handbook</p>
+          <h1>{entry.data.title}</h1>
+        </header>
+        {hasSections && (
+          <details class="docs-mobile-toc">
+            <summary>On this page</summary>
+            <TableOfContents headings={headings} />
+          </details>
+        )}
+        <div class="docs-prose"><slot /></div>
+      </article>
+
+      <nav class="docs-pagination" aria-label="Handbook pagination">
+        {previous ? (
+          <a href={docHref(previous.id)} rel="prev"><span>Previous</span><strong><span aria-hidden="true">←</span> {previous.data.navTitle}</strong></a>
+        ) : <span />}
+        {next && (
+          <a href={docHref(next.id)} rel="next"><span>Next</span><strong>{next.data.navTitle} <span aria-hidden="true">→</span></strong></a>
+        )}
+      </nav>
+    </div>
+
+    {hasSections && (
+      <aside class="docs-page-toc">
+        <div class="docs-sticky">
+          <p class="docs-nav-label">On this page</p>
+          <TableOfContents headings={headings} />
+        </div>
+      </aside>
+    )}
+  </div>
+  <CopyCode />
+  <noscript>
+    <style is:inline>
+      .code-comparison [role='tabpanel'][hidden] { display: block !important; margin-top: 1.5rem; }
+    </style>
+  </noscript>
+</SiteLayout>

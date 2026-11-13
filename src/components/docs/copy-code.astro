@@ -1,0 +1,59 @@
+<script>
+  function enhanceCodeBlock(pre: HTMLElement) {
+    const code = pre.querySelector('code');
+    if (!code) return;
+
+    let wrapper = pre.closest<HTMLElement>('.docs-code');
+    if (wrapper?.querySelector('[data-copy-code]')) return;
+    if (!wrapper) {
+      wrapper = document.createElement('div');
+      wrapper.className = 'docs-code';
+      pre.before(wrapper);
+      wrapper.append(pre);
+      pre.tabIndex = 0;
+    }
+
+    let toolbar = wrapper.querySelector<HTMLElement>('.docs-code-toolbar');
+    if (!toolbar) {
+      toolbar = document.createElement('div');
+      toolbar.className = 'docs-code-toolbar';
+      const label = document.createElement('span');
+      label.textContent = 'Code';
+      toolbar.append(label);
+      wrapper.prepend(toolbar);
+    }
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = 'Copy code';
+    button.dataset.copyCode = '';
+    toolbar.append(button);
+
+    const status = document.createElement('span');
+    status.setAttribute('role', 'status');
+    status.className = 'sr-only';
+    wrapper.append(status);
+
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      button.textContent = 'Copying…';
+      status.className = 'sr-only';
+      status.textContent = '';
+      try {
+        await navigator.clipboard.writeText(code.textContent ?? '');
+        button.textContent = 'Copied!';
+        status.textContent = 'Code copied to clipboard.';
+      } catch {
+        button.textContent = 'Copy code';
+        status.className = 'docs-copy-error';
+        status.textContent = 'Could not copy. Select the code and copy it manually.';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLElement>('.docs-prose pre.astro-code').forEach(enhanceCodeBlock);
+  });
+</script>

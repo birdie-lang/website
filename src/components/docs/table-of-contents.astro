@@ -1,0 +1,18 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+const sections = headings.filter(({ depth }) => depth === 2 || depth === 3);
+---
+
+<nav class="docs-toc" aria-label="On this page">
+  <ul>
+    {sections.map(({ slug, text, depth }) => (
+      <li class:list={{ 'toc-nested': depth === 3 }}><a href={`#${slug}`}>{text}</a></li>
+    ))}
+  </ul>
+</nav>

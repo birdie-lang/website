@@ -1,0 +1,14 @@
+---
+import SiteLayout from '../layouts/site-layout.astro';
+import Bird from '../assets/bird.svg';
+---
+
+<SiteLayout title="Page not found · Birdie">
+  <section class="not-found wrap">
+    <Bird width={100} height={106} aria-hidden="true" />
+    <p class="status-label">404</p>
+    <h1>A wrong turn.</h1>
+    <p>This page doesn’t exist. The handbook is a good place to start.</p>
+    <a class="button button-primary" href="/docs/">Open the handbook <span aria-hidden="true">↗</span></a>
+  </section>
+</SiteLayout>

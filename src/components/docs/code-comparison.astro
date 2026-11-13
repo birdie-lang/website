@@ -1,0 +1,81 @@
+---
+import type { examples } from '../../data/examples';
+import CodeBlock from './code-block.astro';
+
+interface Props {
+  example: (typeof examples)[number];
+  python: string;
+}
+
+const { example, python } = Astro.props;
+const languages = [
+  { id: 'birdie', label: 'Birdie', source: example.source, filename: example.filename },
+  { id: 'python', label: 'Python', source: python, filename: example.filename.replace(/\.bd$/, '.py') },
+] as const;
+---
+
+<birdie-code-tabs class="code-comparison">
+  <div class="code-language-tabs" role="tablist" aria-label={`Code language for ${example.title}`} hidden>
+    {languages.map((language, index) => (
+      <button
+        type="button"
+        role="tab"
+        id={`${example.id}-${language.id}-tab`}
+        aria-controls={`${example.id}-${language.id}-panel`}
+        aria-selected={index === 0 ? 'true' : 'false'}
+        tabindex={index === 0 ? 0 : -1}
+      >{language.label}</button>
+    ))}
+  </div>
+  {languages.map((language, index) => (
+    <section
+      role="tabpanel"
+      id={`${example.id}-${language.id}-panel`}
+      aria-labelledby={`${example.id}-${language.id}-tab`}
+      tabindex="0"
+      hidden={index !== 0}
+    >
+      <CodeBlock code={language.source} lang={language.id} filename={language.filename} />
+    </section>
+  ))}
+</birdie-code-tabs>
+
+<script>
+  class BirdieCodeTabs extends HTMLElement {
+    connectedCallback() {
+      const tabs = Array.from(this.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+      const panels = Array.from(this.querySelectorAll<HTMLElement>('[role="tabpanel"]'));
+      const tablist = this.querySelector<HTMLElement>('[role="tablist"]');
+      if (!tablist) return;
+      tablist.hidden = false;
+
+      const select = (selected: HTMLButtonElement) => {
+        tabs.forEach((tab) => {
+          const active = tab === selected;
+          tab.setAttribute('aria-selected', String(active));
+          tab.tabIndex = active ? 0 : -1;
+        });
+        panels.forEach((panel) => {
+          panel.hidden = panel.id !== selected.getAttribute('aria-controls');
+        });
+      };
+
+      tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => select(tab));
+        tab.addEventListener('keydown', (event) => {
+          let next: HTMLButtonElement | undefined;
+          if (event.key === 'ArrowRight') next = tabs[(index + 1) % tabs.length];
+          if (event.key === 'ArrowLeft') next = tabs[(index - 1 + tabs.length) % tabs.length];
+          if (event.key === 'Home') next = tabs[0];
+          if (event.key === 'End') next = tabs[tabs.length - 1];
+          if (!next) return;
+          event.preventDefault();
+          select(next);
+          next.focus();
+        });
+      });
+    }
+  }
+
+  if (!customElements.get('birdie-code-tabs')) customElements.define('birdie-code-tabs', BirdieCodeTabs);
+</script>

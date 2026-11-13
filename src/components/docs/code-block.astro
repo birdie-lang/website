@@ -1,0 +1,24 @@
+---
+import { Code } from 'astro:components';
+import { birdieGrammar } from '../../lib/birdie-grammar';
+
+interface Props {
+  code: string;
+  lang: 'birdie' | 'python';
+  filename: string;
+}
+
+const { code, lang, filename } = Astro.props;
+---
+
+<div class="docs-code">
+  <div class="docs-code-toolbar"><span>{filename}</span></div>
+  <Code
+    code={code.trimEnd()}
+    lang={lang === 'birdie' ? birdieGrammar : 'python'}
+    themes={{ light: 'github-light', dark: 'github-dark' }}
+    defaultColor={false}
+    tabindex="0"
+    aria-label={filename}
+  />
+</div>

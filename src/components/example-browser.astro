@@ -1,0 +1,115 @@
+---
+import { Code } from 'astro:components';
+import { examples } from '../data/examples';
+import { birdieGrammar } from '../lib/birdie-grammar';
+---
+
+<birdie-examples>
+  <div class="examples-topline">
+    <h2 id="examples-heading">A little Birdie code.</h2>
+    <div class="example-tabs" role="tablist" aria-label="Algorithm examples">
+      {examples.map((example, index) => (
+        <button
+          type="button"
+          role="tab"
+          id={`tab-${example.id}`}
+          aria-controls={`panel-${example.id}`}
+          aria-selected={index === 0 ? 'true' : 'false'}
+          tabindex={index === 0 ? 0 : -1}
+        >{example.title}</button>
+      ))}
+    </div>
+  </div>
+  {examples.map((example, index) => (
+    <section
+      class="example-panel"
+      id={`panel-${example.id}`}
+      role="tabpanel"
+      aria-labelledby={`tab-${example.id}`}
+      tabindex="0"
+      hidden={index !== 0}
+    >
+      <div class="example-explainer">
+        <h3>{example.concept}</h3>
+        <p>{example.description}</p>
+        <p class="example-note">{example.note}</p>
+        <a class="text-link" href="/docs/examples/">Walk through the examples <span aria-hidden="true">↗</span></a>
+      </div>
+      <div class="code-sheet">
+        <div class="code-sheet-header">
+          <span class="filename">{example.filename}</span>
+          <span class="proposed-label">Proposed syntax</span>
+        </div>
+        <div class="code-scroll"><Code code={example.source} lang={birdieGrammar} themes={{ light: 'github-light', dark: 'github-dark' }} defaultColor={false} /></div>
+        <div class="code-sheet-footer">
+          <span>Birdie is in early development.</span>
+          <button type="button" data-copy hidden>Copy code</button>
+          <span class="sr-only" role="status" data-copy-status></span>
+        </div>
+      </div>
+    </section>
+  ))}
+  <noscript><p>Enable JavaScript to switch examples. All three are available in the <a href="/docs/examples/">handbook</a>.</p></noscript>
+</birdie-examples>
+
+<script>
+  class BirdieExamples extends HTMLElement {
+    connectedCallback() {
+      const tabs = Array.from(this.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+      const panels = Array.from(this.querySelectorAll<HTMLElement>('[role="tabpanel"]'));
+
+      const activate = (selected: HTMLButtonElement) => {
+        tabs.forEach((tab) => {
+          const active = tab === selected;
+          tab.setAttribute('aria-selected', String(active));
+          tab.tabIndex = active ? 0 : -1;
+        });
+        panels.forEach((panel) => {
+          panel.hidden = panel.id !== selected.getAttribute('aria-controls');
+        });
+      };
+
+      tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => activate(tab));
+        tab.addEventListener('keydown', (event) => {
+          let next: HTMLButtonElement | undefined;
+          if (event.key === 'ArrowRight') next = tabs[(index + 1) % tabs.length];
+          if (event.key === 'ArrowLeft') next = tabs[(index - 1 + tabs.length) % tabs.length];
+          if (event.key === 'Home') next = tabs[0];
+          if (event.key === 'End') next = tabs[tabs.length - 1];
+          if (!next) return;
+          event.preventDefault();
+          activate(next);
+          next.focus();
+        });
+      });
+
+      panels.forEach((panel) => {
+        const button = panel.querySelector<HTMLButtonElement>('[data-copy]');
+        const status = panel.querySelector<HTMLElement>('[data-copy-status]');
+        const code = panel.querySelector('code');
+        if (!button || !status || !code) return;
+        button.hidden = false;
+        button.addEventListener('click', async () => {
+          button.disabled = true;
+          button.textContent = 'Copying…';
+          status.classList.add('sr-only');
+          status.textContent = '';
+          try {
+            await navigator.clipboard.writeText(code.textContent ?? '');
+            status.textContent = 'Code copied to clipboard.';
+            button.textContent = 'Copied!';
+          } catch {
+            button.textContent = 'Copy code';
+            status.classList.remove('sr-only');
+            status.textContent = 'Could not copy. Select the code and copy it manually.';
+          } finally {
+            button.disabled = false;
+          }
+        });
+      });
+    }
+  }
+
+  if (!customElements.get('birdie-examples')) customElements.define('birdie-examples', BirdieExamples);
+</script>

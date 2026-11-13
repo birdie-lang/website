@@ -1,0 +1,14 @@
+---
+import Bird from '../assets/bird.svg';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<a href="/" class:list={['brand', className]} aria-label="Birdie home">
+  <Bird class="brand-bird" width={34} height={36} aria-hidden="true" />
+  <span>Birdie</span>
+</a>

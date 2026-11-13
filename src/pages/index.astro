@@ -1,0 +1,59 @@
+---
+import SiteLayout from '../layouts/site-layout.astro';
+import Bird from '../assets/bird.svg';
+import ExampleBrowser from '../components/example-browser.astro';
+---
+
+<SiteLayout>
+  <section class="hero wrap" aria-labelledby="hero-heading">
+    <div class="hero-copy">
+      <p class="hero-kicker">An experimental language for algorithmic problem solving.</p>
+      <h1 id="hero-heading">Algorithms,<br />clearly expressed<span class="red-period">.</span></h1>
+      <p class="hero-description">Python-inspired syntax. Static types. Data structures that belong in the language. More room to think through the problem.</p>
+      <div class="hero-actions">
+        <a class="button button-primary" href="/docs/">Meet Birdie <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="#examples">Read some code <span aria-hidden="true">↓</span></a>
+      </div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <Bird class="hero-bird" width={268} height={284} />
+    </div>
+  </section>
+
+  <section id="examples" class="examples-section wrap" aria-labelledby="examples-heading">
+    <ExampleBrowser />
+  </section>
+
+  <section class="language-direction wrap" aria-labelledby="direction-heading">
+    <div class="direction-intro">
+      <h2 id="direction-heading">Small language.<br />Deliberate choices.</h2>
+      <p>Birdie is being designed around familiar algorithm problems. Each feature should make the solution easier to read and reason about.</p>
+    </div>
+    <dl class="direction-list">
+      <div>
+        <dt>Familiar, with a few good habits.</dt>
+        <dd>Indentation-based blocks, explicit function parameters, and predictable type inference. Readable code with useful static checks.</dd>
+      </div>
+      <div>
+        <dt>The right collection, right there.</dt>
+        <dd>First-class stacks, maps, and more are part of the design. Express the data structure directly, without import boilerplate.</dd>
+      </div>
+      <div>
+        <dt>Understand the work.</dt>
+        <dd>A future cost model will count language-level operations, helping you investigate an algorithm beyond wall-clock timing.</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="next-section wrap" aria-labelledby="next-heading">
+    <div class="next-note">
+      <span class="status-label">Still finding its feet</span>
+      <h2 id="next-heading">A work in progress.<br />An open one.</h2>
+      <p>Birdie is early in development. The examples show proposed syntax; the first interpreter is planned in Go. A browser playground comes later.</p>
+      <a class="text-link" href="/docs/roadmap/">See the development direction <span aria-hidden="true">↗</span></a>
+    </div>
+    <a class="contribute-link" href="https://github.com/birdie-lang/birdie">
+      <span>Follow along on GitHub</span><span aria-hidden="true">↗</span>
+    </a>
+  </section>
+</SiteLayout>

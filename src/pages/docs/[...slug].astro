@@ -1,0 +1,21 @@
+---
+import { getCollection, render } from 'astro:content';
+import type { InferGetStaticPropsType } from 'astro';
+import DocsLayout from '../../layouts/docs-layout.astro';
+
+export async function getStaticPaths() {
+  const pages = (await getCollection('docs')).sort((a, b) => a.data.order - b.data.order);
+  return pages.map((entry, index) => ({
+    params: { slug: entry.id === 'index' ? undefined : entry.id },
+    props: { entry, pages, previous: pages[index - 1], next: pages[index + 1] },
+  }));
+}
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+const { entry, pages, previous, next } = Astro.props;
+const { Content, headings } = await render(entry);
+---
+
+<DocsLayout entry={entry} pages={pages} headings={headings} previous={previous} next={next}>
+  <Content />
+</DocsLayout>

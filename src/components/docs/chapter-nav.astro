@@ -1,0 +1,19 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { docHref } from '../../lib/docs';
+
+interface Props {
+  pages: CollectionEntry<'docs'>[];
+  activeId: string;
+}
+
+const { pages, activeId } = Astro.props;
+---
+
+<nav class="chapter-nav" aria-label="Handbook chapters">
+  <ul>
+    {pages.map((page) => (
+      <li><a href={docHref(page.id)} aria-current={page.id === activeId ? 'page' : undefined}>{page.data.navTitle}</a></li>
+    ))}
+  </ul>
+</nav>
