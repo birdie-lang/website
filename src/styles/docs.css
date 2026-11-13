@@ -10,6 +10,8 @@
 .docs-sticky { position: sticky; top: 32px; }
 .docs-nav-label { margin: 4px 0 20px; color: var(--muted); font-size: 0.75rem; font-weight: 500; }
 .chapter-nav ul, .docs-toc ul { list-style: none; margin: 0; padding: 0; }
+.chapter-group + .chapter-group { margin-top: 28px; }
+.chapter-group .docs-nav-label { margin-bottom: 10px; }
 .chapter-nav li + li { margin-top: 5px; }
 .chapter-nav a { display: block; padding: 9px 12px; margin-left: -12px; border-radius: 4px; color: var(--muted); text-decoration: none; font-size: 0.8125rem; line-height: 1.45; }
 .chapter-nav a:hover { color: var(--ink); background: var(--soft); }
@@ -22,6 +24,7 @@
 .docs-section-label { margin-bottom: 14px; color: var(--muted); font-size: 0.75rem; }
 .docs-page-heading { margin-bottom: 36px; }
 .docs-page-heading h1 { margin-bottom: 0; font-size: clamp(2rem, 3.2vw, 2.75rem); font-weight: 620; letter-spacing: -0.055em; line-height: 1.12; }
+.docs-draft-note { margin: 14px 0 0; color: var(--muted); font-size: 0.8125rem; line-height: 1.6; }
 .docs-mobile-nav, .docs-mobile-toc { display: none; }
 
 .docs-prose { font-size: 0.9375rem; line-height: 1.8; overflow-wrap: break-word; }

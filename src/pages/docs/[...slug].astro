@@ -5,10 +5,14 @@ import DocsLayout from '../../layouts/docs-layout.astro';
 
 export async function getStaticPaths() {
   const pages = (await getCollection('docs')).sort((a, b) => a.data.order - b.data.order);
-  return pages.map((entry, index) => ({
-    params: { slug: entry.id === 'index' ? undefined : entry.id },
-    props: { entry, pages, previous: pages[index - 1], next: pages[index + 1] },
-  }));
+  return pages.map((entry) => {
+    const sectionPages = pages.filter((page) => page.data.section === entry.data.section);
+    const index = sectionPages.findIndex((page) => page.id === entry.id);
+    return {
+      params: { slug: entry.id === 'index' ? undefined : entry.id },
+      props: { entry, pages, previous: sectionPages[index - 1], next: sectionPages[index + 1] },
+    };
+  });
 }
 
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;

@@ -1,7 +1,8 @@
 ---
 title: Introduction
-description: Birdie’s syntax, types, and implementation plans.
-navTitle: Start here
+description: Learn Birdie and find the draft language specification.
+navTitle: Introduction
+section: guide
 order: 0
 ---
 
@@ -11,36 +12,24 @@ The syntax borrows from Python, with built-in collections such as maps and stack
 
 > **Language status**
 >
-> Birdie is in the design stage. This handbook describes the current language specification; the interpreter and browser playground are not available yet.
+> Birdie is in the design stage. The docs describe proposed syntax and behavior. The interpreter and browser playground are not available yet.
 
-## Two Sum in Birdie
+## Guide
 
-A Two Sum solution looks like this:
+Start with [your first program](/docs/guide/first-program/), then learn the [language basics](/docs/guide/basics/): variables, collections, conditions, and loops.
 
-```birdie title="two-sum.bd"
-fn twoSum(nums: list[int], target: int) list[int]:
-    seen = map()
+The [algorithm examples](/docs/examples/) show complete solutions alongside Python versions.
 
-    for i, num in nums:
-        diff = target - num
+## Draft specification
 
-        if diff in seen:
-            return [seen[diff], i]
+The specification records the current design. Unresolved behavior is listed as an open question.
 
-        seen[num] = i
+- [Syntax & execution](/docs/specification/): indentation, functions, branches, loops, and ranges.
+- [Types & variables](/docs/specification/types/): inference, assignment, integers, strings, and tuples.
+- [Collections](/docs/specification/collections/): list, map, and stack APIs, including defaults and copy behavior.
 
-    return []
-```
+These pages are the authoritative language specification. The guide explains the same design through examples.
 
-Function parameters have explicit types. The types of local variables and the map are inferred from their use. Indentation defines the blocks.
+## Implementation
 
-## In this handbook
-
-- [Syntax & types](/docs/syntax/): functions, variables, loops, and type rules.
-- [Collections](/docs/collections/): lists, map defaults and factories, and dedicated stacks.
-- [Examples](/docs/examples/): four algorithms, compared with Python.
-- [Implementation plan](/docs/roadmap/): the interpreter and future playground.
-
-## Source
-
-The [Birdie repository](https://github.com/birdie-lang/birdie) contains the language design and examples. The implementation will begin with an AST interpreter in Go.
+The [Birdie repository](https://github.com/birdie-lang/birdie) holds the example programs and will contain the Go implementation. See the [implementation plan](/docs/roadmap/) for its milestones.

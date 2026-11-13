@@ -2,13 +2,13 @@
 import Brand from './brand.astro';
 
 const isPlayground = Astro.url.pathname.startsWith('/play');
-const isHandbook = Astro.url.pathname.startsWith('/docs');
+const isDocs = Astro.url.pathname.startsWith('/docs');
 ---
 
 <header class="site-header wrap" transition:persist="site-header">
   <Brand />
   <nav aria-label="Main navigation" class="main-nav">
-    <a href="/docs/" aria-current={isHandbook ? 'true' : undefined}><span class="nav-label">Handbook</span></a>
+    <a href="/docs/" aria-current={isDocs ? 'true' : undefined}><span class="nav-label">Docs</span></a>
     <a href="/play/" aria-current={isPlayground ? 'page' : undefined}><span class="nav-label">Playground</span><span class="soon-label">Soon</span></a>
     <a class="github-link" href="https://github.com/birdie-lang/birdie">GitHub <span aria-hidden="true">↗</span></a>
   </nav>

@@ -2,10 +2,13 @@
 title: Collections
 description: Birdie’s collection types, operations, map defaults, and copy behavior.
 navTitle: Collections
+section: specification
 order: 2
 ---
 
 Lists, maps, and stacks are built in and require no imports.
+
+For lists, stacks, maps, and strings, `.size` is a read-only `int`: element count for lists and stacks, entry count for maps, and Unicode scalar count for strings.
 
 ## Lists
 

@@ -24,7 +24,7 @@ export const birdieGrammar = {
         2: { name: 'entity.name.function.birdie' },
       },
     },
-    { name: 'keyword.control.birdie', match: '\\b(return|for|in|if|else|while|not|or)\\b' },
+    { name: 'keyword.control.birdie', match: '\\b(return|for|in|if|else|while|not|or|until|through|step|reverse)\\b' },
     { name: 'storage.type.birdie', match: '\\b(int|bool|str|char)\\b' },
     { name: 'storage.type.birdie', match: '\\b(list|map|stack)(?=\\s*\\[)' },
     { name: 'constant.language.birdie', match: '\\b(true|false)\\b' },

@@ -9,6 +9,7 @@ export const collections = {
       title: z.string(),
       description: z.string(),
       navTitle: z.string(),
+      section: z.enum(['guide', 'specification', 'project']),
       order: z.number().int().nonnegative(),
     }),
   }),

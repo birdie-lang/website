@@ -8,6 +8,10 @@ export default defineConfig({
   output: 'static',
   trailingSlash: 'always',
   devToolbar: { enabled: false },
+  redirects: {
+    '/docs/syntax/': '/docs/specification/',
+    '/docs/collections/': '/docs/specification/collections/',
+  },
   integrations: [mdx()],
   markdown: {
     shikiConfig: {

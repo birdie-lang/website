@@ -1,6 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { docHref } from '../../lib/docs';
+import { docHref, docSections } from '../../lib/docs';
 
 interface Props {
   pages: CollectionEntry<'docs'>[];
@@ -8,12 +8,21 @@ interface Props {
 }
 
 const { pages, activeId } = Astro.props;
+const sections = Object.entries(docSections).map(([id, title]) => ({
+  title,
+  pages: pages.filter((page) => page.data.section === id),
+})).filter((section) => section.pages.length > 0);
 ---
 
-<nav class="chapter-nav" aria-label="Handbook chapters">
-  <ul>
-    {pages.map((page) => (
-      <li><a href={docHref(page.id)} aria-current={page.id === activeId ? 'page' : undefined}>{page.data.navTitle}</a></li>
-    ))}
-  </ul>
+<nav class="chapter-nav" aria-label="Documentation">
+  {sections.map((section) => (
+    <div class="chapter-group">
+      <p class="docs-nav-label">{section.title}</p>
+      <ul>
+        {section.pages.map((page) => (
+          <li><a href={docHref(page.id)} aria-current={page.id === activeId ? 'page' : undefined}>{page.data.navTitle}</a></li>
+        ))}
+      </ul>
+    </div>
+  ))}
 </nav>

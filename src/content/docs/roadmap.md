@@ -2,10 +2,11 @@
 title: Implementation plan
 description: Plans for Birdie’s interpreter, WebAssembly playground, and operation counts.
 navTitle: Implementation plan
-order: 4
+section: project
+order: 1
 ---
 
-The repository currently contains a language specification and example programs. Those examples are being used to settle syntax and collection behavior.
+The [draft specification](/docs/specification/) lives on this website. The language repository currently contains example programs, which are being used to settle syntax and collection behavior. The interpreter has not been implemented yet.
 
 ## Interpreter
 
@@ -35,4 +36,4 @@ These counts will not automatically prove complexity or predict hardware perform
 
 A bytecode compiler and VM are planned after the semantics stabilize. A language server and editor integration can share the parser and type checker. Native compilation is an optional investigation.
 
-These milestones have no release dates. See the [language repository](https://github.com/birdie-lang/birdie) for the design notes.
+These milestones have no release dates. Development will happen in the [language repository](https://github.com/birdie-lang/birdie).
