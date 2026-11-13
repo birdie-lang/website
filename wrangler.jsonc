@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "birdie-website",
+  "compatibility_date": "2026-11-13",
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "birdie.jakmaz.com", "custom_domain": true }
+  ],
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "force-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

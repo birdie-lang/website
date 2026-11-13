@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { birdieGrammar } from './src/lib/birdie-grammar';
 
 export default defineConfig({
+  site: 'https://birdie.jakmaz.com',
   output: 'static',
   trailingSlash: 'always',
   devToolbar: { enabled: false },
