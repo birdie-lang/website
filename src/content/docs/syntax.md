@@ -15,11 +15,11 @@ fn search(nums: list[int], target: int) int:
     right = nums.size - 1
 ```
 
-There is no arrow before the return type. Birdie aims to infer return types when they are unambiguous.
+There is no arrow before the return type. Return types can be inferred when they are unambiguous.
 
 ## Static types, local inference
 
-Birdie is designed to be statically typed. It infers local variable types, collection types, and generic arguments where practical. Ambiguous types should produce a diagnostic rather than silently become dynamic values.
+Birdie has static types. Local variable types and collection type arguments are inferred from usage. If a type is ambiguous, an annotation is required.
 
 The initial design includes:
 

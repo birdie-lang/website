@@ -1,19 +1,19 @@
 ---
-title: Meet Birdie
-description: A small language for expressing algorithms clearly.
+title: Introduction
+description: Birdie’s syntax, types, and implementation plans.
 navTitle: Start here
 order: 0
 ---
 
-Birdie is a programming language for algorithmic problem solving: coding challenges, interviews, and working through an idea.
+Birdie is a statically typed programming language for coding challenges and interview problems.
 
-It takes inspiration from Python’s readable syntax, with static typing and first-class algorithmic data structures. The goal is to make a solution easier to read and reason about.
+The syntax borrows from Python, with built-in collections such as maps and stacks.
 
 > **Language status**
 >
 > Birdie is in the design stage. This handbook describes the current language specification; the interpreter and browser playground are not available yet.
 
-## Start with a problem
+## Two Sum in Birdie
 
 A Two Sum solution looks like this:
 
@@ -34,13 +34,13 @@ fn twoSum(nums: list[int], target: int) list[int]:
 
 Function parameters have explicit types. The types of local variables and the map are inferred from their use. Indentation defines the blocks.
 
-## Find your way around
+## In this handbook
 
-- [Syntax & types](/docs/syntax/): functions, variables, loops, and the first type rules.
+- [Syntax & types](/docs/syntax/): functions, variables, loops, and type rules.
 - [Collections](/docs/collections/): lists, map defaults and factories, and dedicated stacks.
-- [Examples](/docs/examples/): four familiar algorithms, compared with Python.
-- [What comes next](/docs/roadmap/): the implementation direction and future playground.
+- [Examples](/docs/examples/): four algorithms, compared with Python.
+- [Implementation plan](/docs/roadmap/): the interpreter and future playground.
 
-## Follow the language
+## Source
 
 The [Birdie repository](https://github.com/birdie-lang/birdie) contains the language design and examples. The implementation will begin with an AST interpreter in Go.

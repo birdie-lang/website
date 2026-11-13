@@ -5,7 +5,7 @@ navTitle: Collections
 order: 2
 ---
 
-Birdie’s design makes commonly used algorithmic data structures directly available, without imports.
+Lists, maps, and stacks are built in and require no imports.
 
 ## Lists
 
@@ -114,7 +114,7 @@ For `s: stack[T]`, `value` must have type `T`.
 
 `pop()` and `peek()` cause a runtime error on an empty stack. Use truthiness for emptiness checks: `while s` or `if not s`.
 
-A stack has no indexing, arbitrary insertion, or sorting. Its restricted interface makes the intended algorithm explicit.
+A stack has no indexing, arbitrary insertion, or sorting.
 
 ## Further candidates
 

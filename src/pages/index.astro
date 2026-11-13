@@ -7,12 +7,12 @@ import ExampleBrowser from '../components/example-browser.astro';
 <SiteLayout>
   <section class="hero wrap" aria-labelledby="hero-heading">
     <div class="hero-copy">
-      <p class="hero-kicker">A language for algorithmic problem solving.</p>
-      <h1 id="hero-heading">Algorithms,<br />clearly expressed<span class="red-period">.</span></h1>
-      <p class="hero-description">Python-inspired syntax. Static types. Data structures that belong in the language. More room to think through the problem.</p>
+      <p class="hero-kicker">The Birdie programming language</p>
+      <h1 id="hero-heading">A language<br />for algorithms<span class="red-period">.</span></h1>
+      <p class="hero-description">Birdie is a statically typed language for coding challenges and interview problems. It uses indentation for blocks and has built-in stacks and maps.</p>
       <div class="hero-actions">
-        <a class="button button-primary" href="/docs/">Meet Birdie <span aria-hidden="true">↗</span></a>
-        <a class="text-link" href="#examples">Read some code <span aria-hidden="true">↓</span></a>
+        <a class="button button-primary" href="/docs/">Read the handbook <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href="#examples">See the code <span aria-hidden="true">↓</span></a>
       </div>
     </div>
     <div class="hero-art" aria-hidden="true">
@@ -26,33 +26,33 @@ import ExampleBrowser from '../components/example-browser.astro';
 
   <section class="language-direction wrap" aria-labelledby="direction-heading">
     <div class="direction-intro">
-      <h2 id="direction-heading">Small language.<br />Deliberate choices.</h2>
-      <p>Birdie is being designed around familiar algorithm problems. Each feature should make the solution easier to read and reason about.</p>
+      <h2 id="direction-heading">Syntax and<br />built-ins.</h2>
+      <p>The examples drive the language design. They cover map lookups, stack operations, binary search, and grouping.</p>
     </div>
     <dl class="direction-list">
       <div>
-        <dt>Familiar, with a few good habits.</dt>
-        <dd>Indentation-based blocks, explicit function parameters, and predictable type inference. Readable code with useful static checks.</dd>
+        <dt>Types and inference</dt>
+        <dd>Function parameters have explicit types. Local variables, return types, and collection types can be inferred from use.</dd>
       </div>
       <div>
-        <dt>The right collection, right there.</dt>
-        <dd>First-class stacks, maps, and more are part of the design. Express the data structure directly, without import boilerplate.</dd>
+        <dt>Built-in collections</dt>
+        <dd>Lists, maps, and stacks require no imports. Maps can supply a default value or call a factory for missing keys.</dd>
       </div>
       <div>
-        <dt>Understand the work.</dt>
-        <dd>A future cost model will count language-level operations, helping you investigate an algorithm beyond wall-clock timing.</dd>
+        <dt>Operation counts</dt>
+        <dd>The planned scoring mode would count comparisons, collection operations, and allocations, including work done by built-ins.</dd>
       </div>
     </dl>
   </section>
 
   <section class="next-section wrap" aria-labelledby="next-heading">
     <div class="next-note">
-      <h2 id="next-heading">A work in progress.<br />An open one.</h2>
-      <p>The language design grows from real algorithm problems. Next up: an interpreter in Go, then a browser playground.</p>
-      <a class="text-link" href="/docs/roadmap/">See the development direction <span aria-hidden="true">↗</span></a>
+      <h2 id="next-heading">Implementation<br />status.</h2>
+      <p>Birdie is at the language-design stage. The next step is an AST interpreter in Go; the browser playground comes after that.</p>
+      <a class="text-link" href="/docs/roadmap/">Implementation plan <span aria-hidden="true">↗</span></a>
     </div>
     <a class="contribute-link" href="https://github.com/birdie-lang/birdie">
-      <span>Follow along on GitHub</span><span aria-hidden="true">↗</span>
+      <span>Language repository</span><span aria-hidden="true">↗</span>
     </a>
   </section>
 </SiteLayout>
