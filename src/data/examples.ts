@@ -1,6 +1,7 @@
 import twoSum from './examples/two-sum.bd?raw';
 import validParentheses from './examples/valid-parentheses.bd?raw';
 import binarySearch from './examples/binary-search.bd?raw';
+import groupAnagrams from './examples/group-anagrams.bd?raw';
 
 export const examples = [
   {
@@ -29,5 +30,14 @@ export const examples = [
     description: 'Start with a sorted list. Compare the middle value, then keep searching the half that can contain the target.',
     note: 'Indentation defines blocks. Integer floor division makes the midpoint calculation explicit.',
     source: binarySearch.trimEnd(),
+  },
+  {
+    id: 'group-anagrams',
+    title: 'Group Anagrams',
+    filename: 'group-anagrams.bd',
+    concept: 'Group words by their letters.',
+    description: 'Sort each word into a key, then collect matching words in a map.',
+    note: 'map(list) creates a new list for each missing key. sorted() returns a new string.',
+    source: groupAnagrams.trimEnd(),
   },
 ];

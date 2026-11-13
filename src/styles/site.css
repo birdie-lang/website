@@ -50,8 +50,8 @@ birdie-examples { display: block; }
 .code-scroll { min-width: 0; overflow-x: auto; }
 .code-sheet pre { background: transparent !important; margin: 0; padding: 24px; font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.85; tab-size: 4; }
 .code-sheet pre code { font-family: inherit; }
-.code-sheet-footer { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 12px 22px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.6875rem; }
-.code-sheet-footer button { border: 0; background: transparent; padding: 3px 0; color: var(--ink); font-size: inherit; }
+.code-sheet-footer { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 12px; min-height: 44px; padding: 12px 22px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.6875rem; }
+.code-sheet-footer button { margin-left: auto; border: 0; background: transparent; padding: 3px 0; color: var(--ink); font-size: inherit; }
 .code-sheet-footer button:hover { color: var(--accent); }
 [data-theme='light'] .astro-code, [data-theme='light'] .astro-code span { color: var(--shiki-light); }
 [data-theme='dark'] .astro-code, [data-theme='dark'] .astro-code span { color: var(--shiki-dark); }
@@ -63,7 +63,6 @@ birdie-examples { display: block; }
 .direction-list dd { margin: 0; color: var(--muted); font-size: 0.8125rem; line-height: 1.75; max-width: 420px; }
 .next-section { display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; padding: 52px 56px; background: var(--accent-soft); border-radius: 4px; margin-bottom: 80px; }
 .status-label { color: var(--accent); font-size: 0.75rem; font-weight: 550; }
-.next-note .status-label { display: block; margin-bottom: 20px; }
 .next-section h2 { margin-bottom: 20px; font-size: 2.125rem; }
 .next-note > p { color: var(--muted); max-width: 445px; font-size: 0.875rem; line-height: 1.75; margin-bottom: 24px; }
 .contribute-link { display: flex; justify-content: space-between; gap: 36px; flex-shrink: 0; color: var(--accent); font-size: 0.8125rem; text-decoration: none; padding-bottom: 8px; border-bottom: 1px solid currentColor; }

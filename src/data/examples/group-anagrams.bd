@@ -1,0 +1,8 @@
+fn groupAnagrams(words: list[str]) list[list[str]]:
+    groups = map(list)
+
+    for word in words:
+        key = word.sorted()
+        groups[key].push(word)
+
+    return groups.values()

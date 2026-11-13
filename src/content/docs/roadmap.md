@@ -5,7 +5,7 @@ navTitle: What comes next
 order: 4
 ---
 
-Birdie is in the language-design stage. The repository currently contains proposed examples and initial decisions. There is no release or installation guide yet.
+The current focus is the language design: define collection behavior and use algorithm examples to settle the syntax.
 
 ## First, a working language
 

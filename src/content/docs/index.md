@@ -1,24 +1,24 @@
 ---
 title: Meet Birdie
-description: A small, experimental language for expressing algorithms clearly.
+description: A small language for expressing algorithms clearly.
 navTitle: Start here
 order: 0
 ---
 
-Birdie is an experimental programming language for algorithmic problem solving: coding challenges, interviews, and working through an idea.
+Birdie is a programming language for algorithmic problem solving: coding challenges, interviews, and working through an idea.
 
 It takes inspiration from Python’s readable syntax, with static typing and first-class algorithmic data structures. The goal is to make a solution easier to read and reason about.
 
-> **Early development**
+> **Language status**
 >
-> The syntax in this handbook is proposed and is not yet implemented. Birdie is not ready for general use, and there is no runnable browser playground yet.
+> Birdie is in the design stage. This handbook describes the current language specification; the interpreter and browser playground are not available yet.
 
 ## Start with a problem
 
-Here is the proposed solution to Two Sum:
+A Two Sum solution looks like this:
 
 ```birdie title="two-sum.bd"
-fn twoSum(nums: [int], target: int) [int]:
+fn twoSum(nums: list[int], target: int) list[int]:
     seen = map()
 
     for i, num in nums:
@@ -37,10 +37,10 @@ Function parameters have explicit types. The types of local variables and the ma
 ## Find your way around
 
 - [Syntax & types](/docs/syntax/): functions, variables, loops, and the first type rules.
-- [Collections](/docs/collections/): lists, maps, and dedicated stacks.
-- [Examples](/docs/examples/): three familiar algorithms, with explanations.
+- [Collections](/docs/collections/): lists, map defaults and factories, and dedicated stacks.
+- [Examples](/docs/examples/): four familiar algorithms, compared with Python.
 - [What comes next](/docs/roadmap/): the implementation direction and future playground.
 
 ## Follow the language
 
-The [Birdie repository](https://github.com/birdie-lang/birdie) contains the evolving design and proposed examples. The implementation is planned in Go, beginning with an AST interpreter.
+The [Birdie repository](https://github.com/birdie-lang/birdie) contains the language design and examples. The implementation will begin with an AST interpreter in Go.

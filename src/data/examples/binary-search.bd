@@ -1,4 +1,4 @@
-fn search(nums: [int], target: int) int:
+fn search(nums: list[int], target: int) int:
     left = 0
     right = nums.size - 1
 
