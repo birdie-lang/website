@@ -1,6 +1,6 @@
 ---
 import { Code } from 'astro:components';
-import { examples } from '../data/examples';
+import { featuredExamples as examples } from '../data/examples';
 import { birdieGrammar } from '../lib/birdie-grammar';
 ---
 
@@ -33,7 +33,7 @@ import { birdieGrammar } from '../lib/birdie-grammar';
         <h3>{example.concept}</h3>
         <p>{example.description}</p>
         <p class="example-note">{example.note}</p>
-        <a class="text-link" href="/docs/examples/">Notes and Python versions <span aria-hidden="true">↗</span></a>
+        <a class="text-link" href={example.href}>Notes and Python version <span aria-hidden="true">↗</span></a>
       </div>
       <div class="code-sheet">
         <div class="code-sheet-header">
@@ -48,6 +48,7 @@ import { birdieGrammar } from '../lib/birdie-grammar';
       </div>
     </section>
   ))}
+  {examples.length === 0 && <p>Explore the <a href="/docs/examples/">algorithm examples</a>.</p>}
   <noscript><p>Enable JavaScript to switch examples. All examples are available in the <a href="/docs/examples/">docs</a>.</p></noscript>
 </birdie-examples>
 

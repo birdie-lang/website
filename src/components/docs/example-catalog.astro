@@ -1,0 +1,119 @@
+---
+import { catalog, problems } from '../../data/examples';
+import CatalogIcon from './catalog-icon.astro';
+
+const categories = [...new Set(problems.map((problem) => problem.neetcode150?.category ?? 'Other problems'))]
+  .map((name) => {
+    const entries = problems.filter((problem) => (problem.neetcode150?.category ?? 'Other problems') === name);
+    return { name, entries };
+  });
+---
+
+<p>
+  Problems from the <a href={catalog.neetcode150.url}>NeetCode 150</a>.
+  Linked titles open Birdie translations; unlinked titles are awaiting translation.
+</p>
+
+{problems.length === 0 && <p>No problems have been added yet.</p>}
+
+<div class="problem-catalog">
+  {categories.map((category) => (
+    <details class="catalog-category" open>
+      <summary class="catalog-summary">
+        <h2 class="catalog-category-title">
+          <span class="catalog-category-name"><span class="catalog-chevron"><CatalogIcon name="chevron" /></span>{category.name}</span>
+          <span class="catalog-count">{category.entries.length} problems</span>
+        </h2>
+      </summary>
+      <div class="catalog-table-scroll" tabindex="0" role="region" aria-label={`${category.name} problems`}>
+        <table class="catalog-table">
+          <caption class="sr-only">{category.name}: Birdie translations and Blind 75 membership</caption>
+          <colgroup>
+            <col class="catalog-column-number" />
+            <col />
+            <col class="catalog-column-difficulty" />
+            <col class="catalog-column-blind" />
+            <col class="catalog-column-source" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col"><span aria-hidden="true">#</span><span class="sr-only">NeetCode position</span></th>
+              <th scope="col">Problem</th>
+              <th scope="col">Difficulty</th>
+              <th scope="col">Blind 75</th>
+              <th scope="col" class="catalog-center">LeetCode</th>
+            </tr>
+          </thead>
+          <tbody>
+            {category.entries.map((problem) => (
+              <tr id={problem.slug}>
+                <td class="catalog-number">{problem.neetcode150?.position ?? '—'}</td>
+                <td>
+                  {'birdie' in problem ? (
+                    <a class="catalog-problem-link" href={problem.href}>
+                      {problem.title}
+                    </a>
+                  ) : (
+                    <span class="catalog-pending" title="Birdie translation pending">
+                      {problem.title}<span class="sr-only"> (translation pending)</span>
+                    </span>
+                  )}
+                </td>
+                <td class="catalog-metadata">{problem.difficulty}</td>
+                <td class="catalog-metadata">
+                  {problem.blind75 ? 'Included' : <><span aria-hidden="true">—</span><span class="sr-only">Not in Blind 75</span></>}
+                </td>
+                <td class="catalog-center">
+                  <a class="catalog-source-link" href={problem.leetcode.url} aria-label={`Open ${problem.title} on LeetCode`} title={`LeetCode ${problem.leetcode.id}`}>
+                    <CatalogIcon name="external-link" />
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  ))}
+</div>
+
+<style>
+  .problem-catalog { display: grid; gap: 32px; }
+  .catalog-category { min-width: 0; }
+  .catalog-summary { padding: 12px 0 16px; cursor: pointer; list-style: none; }
+  .catalog-summary::-webkit-details-marker { display: none; }
+  .catalog-summary:hover { color: var(--accent); }
+  .catalog-category-title { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0; font-size: 1.125rem; font-weight: 550; line-height: 1.5; letter-spacing: -0.03em; }
+  .catalog-category-name { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .catalog-chevron { display: flex; flex: 0 0 auto; color: var(--muted); }
+  .catalog-category[open] .catalog-chevron { transform: rotate(90deg); }
+  .catalog-count { flex-shrink: 0; color: var(--muted); font-size: 0.6875rem; font-weight: 400; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+  .catalog-table-scroll { max-width: 100%; overflow-x: auto; border-top: 1px solid var(--line); }
+
+  .catalog-table { display: table; width: 100%; min-width: 32rem; max-width: none; margin: 0; overflow: visible; table-layout: fixed; border-collapse: collapse; font-size: 0.8125rem; }
+  .catalog-column-number { width: 3rem; }
+  .catalog-column-difficulty { width: 5.5rem; }
+  .catalog-column-blind { width: 5.5rem; }
+  .catalog-column-source { width: 5rem; }
+  .catalog-table th,
+  .catalog-table td { padding: 10px 8px; vertical-align: middle; }
+  .catalog-table th { padding-block: 12px; font-size: 0.6875rem; font-weight: 500; }
+  .catalog-table th:first-child,
+  .catalog-table td:first-child { min-width: 0; padding-left: 0; }
+  .catalog-table th:last-child,
+  .catalog-table td:last-child { padding-right: 0; }
+  .catalog-table tbody tr:last-child td { border-bottom: 0; }
+  .catalog-table .catalog-center { text-align: center; }
+  .catalog-number { color: var(--muted); font-family: var(--font-mono); font-size: 0.6875rem; font-variant-numeric: tabular-nums; }
+  .catalog-pending { color: var(--muted); }
+  .catalog-problem-link { color: var(--accent); text-decoration: underline; }
+  .catalog-problem-link:hover { color: var(--ink); }
+  .catalog-source-link { display: inline-flex; width: 28px; height: 28px; align-items: center; justify-content: center; vertical-align: middle; color: var(--muted); }
+  .catalog-source-link:hover { color: var(--accent); }
+  .catalog-source-link :global(svg) { width: 15px; height: 15px; }
+  .catalog-metadata { color: var(--muted); font-size: 0.75rem; }
+
+  @media (max-width: 767px) {
+    .catalog-category-title { gap: 12px; font-size: 1rem; }
+  }
+</style>

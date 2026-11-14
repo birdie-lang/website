@@ -1,16 +1,15 @@
 ---
-import type { examples } from '../../data/examples';
+import type { Example } from '../../data/examples';
 import CodeBlock from './code-block.astro';
 
 interface Props {
-  example: (typeof examples)[number];
-  python: string;
+  example: Example;
 }
 
-const { example, python } = Astro.props;
+const { example } = Astro.props;
 const languages = [
   { id: 'birdie', label: 'Birdie', source: example.source, filename: example.filename },
-  { id: 'python', label: 'Python', source: python, filename: example.filename.replace(/\.bd$/, '.py') },
+  { id: 'python', label: 'Python', source: example.python, filename: `${example.slug}.py` },
 ] as const;
 ---
 

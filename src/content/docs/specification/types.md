@@ -1,6 +1,6 @@
 ---
 title: Types & variables
-description: Static inference, assignment, integers, truthiness, strings, and tuples.
+description: Static inference, records, optional values, assignment, swapping, and built-in types.
 navTitle: Types & variables
 section: specification
 order: 1
@@ -16,10 +16,72 @@ order: 1
 | `char` | One Unicode scalar value, written with single quotes |
 | `list[T]` | Growable list of elements of type `T` |
 | `map[K, V]` | Map from keys of type `K` to values of type `V` |
+| `counter[T]` | Keys of type `T` with signed integer counts; zero counts are omitted |
+| `set[T]` | Mutable collection of distinct values of type `T` |
 | `stack[T]` | LIFO stack of elements of type `T` |
 | `(A, B)` | Fixed pair with a type for each position |
+| `T?` | A value of type `T` or `none` |
 
-Collection type arguments use brackets and can nest: `list[int]`, `map[str, int]`, `stack[char]`, and `list[list[str]]`.
+Collection type arguments use brackets and can nest: `list[int]`, `map[str, int]`, `counter[char]`, `set[int]`, `stack[char]`, and `list[list[str]]`.
+
+## Record types
+
+Declare a record with `type` and explicitly typed fields. Recursive fields can refer to the record being declared:
+
+```birdie
+type TreeNode:
+    val: int
+    left: TreeNode? = none
+    right: TreeNode? = none
+```
+
+- Records need no imports, decorators, or handwritten constructors.
+- The generated constructor accepts field values in declaration order. Trailing fields with defaults can be omitted.
+- A field without a default is required, including an optional field without a default.
+- A default expression is evaluated for each construction when that field is omitted. Mutable defaults are not shared between constructions.
+- Fields are writable. Assignments must match the declared field type; unknown fields and missing required constructor arguments are type errors.
+- Records have reference semantics: assignment, argument passing, and returns share the same record rather than copying its fields.
+- Changing a field is visible through every reference to that record. Reassigning a local variable does not rebind the caller's variable.
+
+```birdie
+root = TreeNode(4)
+root.left = TreeNode(2)
+alias = root
+alias.right = TreeNode(7)
+```
+
+Here, `root` and `alias` refer to the same node. Both observe its updated right child.
+
+## Optional values
+
+- `T?` permits a value of type `T` or the lowercase literal `none`.
+- A `T` value can be used where `T?` is expected. `none` cannot be assigned to a nonoptional type.
+- Optionality does not supply a default: write `= none` explicitly when a field should default to absence.
+- Check absence with `value is none` and presence with `value is not none`. Both forms accept an optional value and return a `bool`, without invoking record equality.
+- `is` currently supports only these absence and presence checks. General reference-identity comparisons remain undecided.
+- Field access requires a nonoptional record. Accessing a field through `TreeNode?` without proving it is present is a type error.
+- A presence check narrows a local variable to `T` on paths where it cannot be `none`. An early return preserves that knowledge for the remaining body.
+- Reassignment updates the proof of presence; assigning a possibly absent value removes the narrowing.
+- Narrowing a local record reference does not narrow its optional fields or assume those fields stay unchanged across calls.
+- A narrowed binding captured for writing must be checked again after a call that can reassign it through `outer`.
+- Optional values and records have no implicit truthiness. Use `root is none` or `root is not none`, rather than `if not root` or `if root`.
+
+```birdie
+fn nodeValue(root: TreeNode?) int:
+    if root is none:
+        return 0
+
+    return root.val
+```
+
+After the early return, `root` is known to be a `TreeNode`. Its `left` and `right` fields still have type `TreeNode?`.
+
+The presence form narrows inside the guarded branch:
+
+```birdie
+if root is not none:
+    value = root.val
+```
 
 ## Inference
 
@@ -30,7 +92,7 @@ Collection type arguments use brackets and can nest: `list[int]`, `map[str, int]
 - Function parameter types are explicit. Return annotations are optional when the body determines the type unambiguously.
 - Require an annotation when inference is ambiguous. Do not fall back to a dynamic type.
 - Conflicting constraints are type errors. An annotation does not resolve incompatible uses.
-- The four current [algorithm examples](/docs/examples/) must require no local type annotations.
+- The current [algorithm examples](/docs/examples/) must require no local type annotations.
 
 An initially empty collection can get its type from a later operation:
 
@@ -43,12 +105,54 @@ This constrains `seen` to `map[str, int]`. A function that only returns `map()` 
 
 ## Variables
 
-- `=` introduces a variable when the name is not already defined; otherwise it reassigns it.
+- Within a function, `=` introduces or updates that function's local binding, unless the name is declared `outer`. It never implicitly rebinds an enclosing function's variable.
+- At the top level, `=` introduces a variable when the name is not already defined; otherwise it reassigns it.
 - Optional explicit annotation: `name: Type = value`.
 - Reassignments must be compatible with the variable's inferred type.
 - Local variables require an initial value. There is no declaration-only form.
 - Every read requires an assignment on every execution path reaching it.
-- Assignment inside a block updates an existing enclosing local variable.
+- Assignment inside a branch or loop updates an existing enclosing local in the same function. Crossing a function boundary requires `outer`.
+
+### Outer variables
+
+`outer name` lets a nested function rebind a variable from the nearest enclosing function scope that defines it. It is a scope declaration, with no runtime result value.
+
+```birdie
+outer diameter
+```
+
+- Write one name per declaration, at the start of the nested function body before using or assigning that name. The declaration applies throughout that function body.
+- The name must resolve to a variable binding in an enclosing function scope. A missing binding, a top-level-only binding, or `outer` outside a nested function is a compile-time error. Early function registration does not initialize that binding; reads still require definite initialization.
+- The name cannot also be a parameter or a separately declared local in that function.
+- Reads and writes use the same enclosing binding. Its inferred or declared type stays unchanged, and every read still requires definite initialization.
+- Bare-name writes using assignment, compound assignment, tuple unpacking, increment/decrement, `swap!`, `min!`, and `max!` all follow this rule.
+- Without `outer`, an assignment introduces or updates a local binding even when an enclosing function has a variable with the same name. Reading the new local before initialization is an error; `diameter = max(diameter, candidate)` cannot implicitly read the outer `diameter`.
+- Mutating a field or collection through a captured reference does not rebind the captured name and needs no `outer` declaration.
+
+This keeps recursive helper locals separate while allowing an explicitly shared accumulator. See [Diameter of Binary Tree](/docs/examples/diameter-of-binary-tree/).
+
+### Compound assignment
+
+`target += value`, `target -= value`, `target *= value`, and `target //= value` apply an arithmetic operation and store its result back in the target. They are standalone statements with no result value.
+
+```birdie
+total += num
+remaining -= 1
+prod *= num
+res[i] *= prod
+quotient //= divisor
+```
+
+- The target must be an initialized writable location, such as a local variable, record field, list element, map entry, or counter entry. Compound assignment does not initialize a new variable.
+- Resolve the target location once, including its receiver and index expressions, and read its existing value. Then evaluate the right-hand side once, apply the operation, and store the result at that same location.
+- Follow the corresponding binary operator and ordinary assignment type rules. In the current draft, these forms require an integer target and integer right-hand side. They do not introduce collection repetition, string concatenation, or implicit character conversions.
+- Read locations using their normal rules. Invalid list indices fail; a missing ordinary map entry fails; a map with a default can insert that default; a missing counter entry reads as zero without insertion.
+- Apply normal write behavior, including removing a counter key when its resulting count is zero.
+- `//=` uses floor division, including for negative operands. A zero divisor causes a runtime error and does not write a quotient.
+- Errors do not undo side effects from target evaluation, reading a map default, or evaluating the right-hand side.
+- An uninitialized variable, a nonwritable target, incompatible types, and use inside an expression are errors. Rebinding an enclosing function's variable still requires `outer`.
+
+See [Product of Array Except Self](/docs/examples/product-of-array-except-self/) for multiplication assignments in two indexed passes.
 
 ### Increment and decrement
 
@@ -56,6 +160,56 @@ This constrains `seen` to `map[str, int]`. A function that only returns `map()` 
 - The target must be a writable integer location, such as a variable or map entry.
 - Add or subtract one.
 - Prefix forms and use inside expressions are not supported.
+
+### In-place operations
+
+`swap!`, `min!`, and `max!` are built-in in-place operations. They use parentheses to group their arguments and are standalone statements with no result value.
+
+- The `!` is part of each built-in spelling and immediately follows its name. Parentheses are required.
+- Writable arguments identify initialized locations, such as variables, record fields, list elements, map entries, or counter entries. Temporary values are not writable arguments.
+- These forms receive the specified writable arguments as locations. Ordinary function calls retain their existing argument-passing behavior.
+- The complete spellings are reserved built-in forms, independent of name lookup for `min` or `max`. They cannot be stored or passed as function values, and cannot appear inside expressions.
+- User-defined function names with `!` and general writable parameters remain outside this draft. The suffix does not mark every side effect; existing methods such as `push`, `pop`, and `add` keep their names.
+
+### Swap
+
+`swap!(a, b)` exchanges the values at two writable locations.
+
+```birdie
+swap!(left, right)
+swap!(root.left, root.right)
+swap!(nums[i], nums[j])
+```
+
+- Exactly two targets are required. Variables must already be initialized; fields and collection entries must be writable.
+- Resolve the target locations once, from left to right, and capture both values before writing either replacement. Calls and index expressions in targets are not repeated.
+- Each incoming value must fit the other target's type. Incompatible types and nonwritable targets are type errors.
+- Exchange the values using their usual assignment semantics. Swapping record references does not copy or allocate nodes.
+- Swapping a location with itself leaves its value unchanged.
+- Reading an invalid index or a missing map entry follows the normal collection rules. A map with a configured default can insert that default when the entry is read.
+
+Tuple assignment remains available; `swap!` provides a concise form for an exchange. See [tuple unpacking](#tuples) for the more general assignment form.
+
+### Minimum and maximum updates
+
+`max!(target, candidate)` keeps the larger integer in the target. `min!(target, candidate)` keeps the smaller integer.
+
+```birdie
+max!(longestSeq, currSeq)
+max!(diameter, left + right)
+min!(distances[node], candidate)
+```
+
+- Exactly two operands are required. The first must be an initialized writable integer location; the second must produce an `int`.
+- Resolve the target location once and read its current value, then evaluate the candidate once. Use the same location-evaluation and scope rules as compound assignment.
+- Write the candidate only when it is strictly larger for `max` or strictly smaller for `min`. Equal values leave the target unchanged, with no final write.
+- Reads use normal location rules, including map-default insertion and nonmutating zero reads from counters. Writes use normal assignment behavior, including counter zero removal.
+- A read or candidate evaluation can have its ordinary side effects even when the candidate does not improve the target. Errors do not roll those effects back.
+- A new or uninitialized variable, a nonwritable target, incompatible operand types, and use inside an expression are errors. Rebinding an enclosing function's variable requires `outer`.
+
+`max(a, b)` and `min(a, b)` remain ordinary value-returning function calls. Only the first argument of `max!` or `min!` is a writable argument; the candidate is evaluated as an ordinary value.
+
+See [Longest Consecutive Sequence](/docs/examples/longest-consecutive-sequence/) for a running maximum update.
 
 ## Integers and division
 
@@ -67,13 +221,47 @@ This constrains `seen` to `map[str, int]`. A function that only returns `map()` 
 - `/` is reserved for fractional division.
 - Division by zero causes a runtime error.
 
+### Decimal conversions
+
+`str(value)` formats an `int` as decimal text. `int(text)` parses a decimal `str` into an `int`. Both are built in and evaluate their argument once.
+
+```birdie
+label = str(42)       # "42"
+negative = str(-7)    # "-7"
+count = int("0042")   # 42
+signed = int("-7")    # -7
+```
+
+- Formatting uses ASCII digits, a leading `-` for negative values, and no leading zeros except for `"0"` itself. It adds no whitespace or locale-specific separators.
+- Parsing accepts an optional ASCII `+` or `-` followed by one or more ASCII digits: `[+-]?[0-9]+`. Leading zeros are allowed; `int("-0")` is zero.
+- The entire input must match. Empty text, a sign alone, whitespace, digit separators, base prefixes, and non-ASCII digits cause a runtime error. Parsing does not trim text or return a fallback value.
+- These conversions preserve arbitrary-precision integer values, subject to available resources. Conversion work depends on the number of digits and the integer's size.
+- `str(value)` requires one `int`; `int(text)` requires one `str`. Incompatible argument types and unsupported argument counts are type errors. The existing zero-argument `int()` form still returns zero.
+
+See [Encode and Decode Strings](/docs/examples/encode-and-decode-strings/) for decimal length headers.
+
+### Minimum and maximum
+
+`max(a, b)` returns the larger of two `int` values; `min(a, b)` returns the smaller. Both are built-in functions that need no imports.
+
+- Both arguments must be integers. Other argument types and argument counts are type errors.
+- Evaluate each argument once, from left to right, before comparing the values.
+- The result has type `int`; equal arguments produce that same integer value.
+- Calls return a value and do not rebind either argument. A discarded `max(a, b)` or `min(a, b)` result does not update `a` or `b`.
+- Use [`max!(target, candidate)` or `min!(target, candidate)`](#minimum-and-maximum-updates) to update an initialized writable location instead.
+- Variadic and collection forms remain undecided.
+
+See [Maximum Depth of Binary Tree](/docs/examples/maximum-depth-of-binary-tree/) for a recursive use of `max`.
+
 ## Booleans and truthiness
 
 - `bool` values are `true` and `false`.
-- Conditions and `not` accept booleans, lists, maps, and stacks.
+- Conditions and `not` accept booleans, lists, maps, counters, sets, and stacks.
 - Empty collections are false; nonempty collections are true.
+- A counter is empty when it has no nonzero counts. Negative counts make it nonempty too; summing to zero across different keys does not make it false.
 - `not` returns a boolean. `not opened` tests whether a stack is empty.
 - Numbers require explicit comparisons, such as `count != 0`.
+- Optional values require an explicit `is none` or `is not none` check; records cannot be used as conditions.
 - `or` evaluates left to right and short-circuits when its left operand is true.
 
 ## Strings and characters
@@ -88,6 +276,55 @@ This constrains `seen` to `map[str, int]`. A function that only returns `map()` 
 - String size and indices count Unicode scalar values, not bytes.
 - `s.sorted()` returns a new `str` with characters sorted by Unicode scalar value, without locale-dependent ordering or mutation of the original string.
 
+### String slicing
+
+`text[start:end]` returns a `str` containing the Unicode scalar values from `start` up to, but excluding, `end`.
+
+```birdie
+text = "bird"
+middle = text[1:3]  # "ir"
+empty = text[2:2]   # ""
+```
+
+- Both bounds must be integers satisfying `0 <= start <= end <= text.size`. Noninteger bounds are type errors; negative, reversed, or out-of-bounds ranges cause a runtime error. Bounds are not clamped.
+- Evaluate the source, start, and end expressions once, in that order.
+- Equal bounds produce an empty string, including when both equal `text.size`. Indexing a single position still returns a `char`; slicing returns a `str`.
+- Slicing preserves the exact scalar sequence without normalization or mutation. It uses the same exclusive-end convention as [list prefix slicing](/docs/specification/collections/#prefix-slicing).
+- The intended cost model permits one linear preprocessing pass per string for scalar indexing. After that preparation, size and indexed access should take constant time and copying a slice of length k should take O(k) work. The representation remains undecided; repeatedly scanning a UTF-8 prefix for each access would violate this cost target.
+
+Additional omitted-bound forms, steps, and slice assignment remain open. See [Encode and Decode Strings](/docs/examples/encode-and-decode-strings/) for header and payload slices.
+
+### Character codes
+
+For a `char` value, `.code` is a read-only `int` containing its Unicode scalar value:
+
+```birdie
+a = 'a'.code
+index = char.code - a
+```
+
+- `'a'.code` is `97`; `'z'.code` is `122`. Lowercase English letters therefore map to indices `0` through `25` when the code for `'a'` is subtracted.
+- This is a Unicode scalar value, not a UTF-8 byte, encoding length, or locale-dependent alphabet position.
+- Access it as a property, without parentheses. Assignment to `.code` and using the property on a `str` are type errors.
+- No normalization or case conversion occurs. A fixed 26-slot table requires an explicit lowercase English input assumption.
+
+### Character subtraction
+
+Subtracting two `char` values returns an `int` equal to the difference of their Unicode scalar values. `left - right` has the same result as `left.code - right.code`:
+
+```birdie
+'d' - 'a'  # 3
+'a' - 'd'  # -3
+'a' - 'a'  # 0
+```
+
+- Both operands must be `char` values. Mixing a `char` and an `int` in subtraction is a type error; characters are not implicitly converted to integers.
+- The result is an integer offset, not a character. Negative differences are valid.
+- No normalization or locale-dependent alphabet ordering is applied. Code-point distance does not generally describe alphabet positions.
+- Other character arithmetic remains open. Use `.code` when the raw scalar value is needed.
+
+See [Valid Anagram](/docs/examples/valid-anagram/) for indexing a lowercase English frequency table with `c1 - 'a'`.
+
 ### Escapes
 
 Supported escapes: `\n`, `\t`, `\r`, `\\`, `\'`, `\"`.
@@ -99,6 +336,15 @@ Escapes count as their resulting characters; `'\n'` is one `char`. Unknown escap
 - `(A, B)` is a fixed pair with a type for each position.
 - `list[(int, int)]` is a list of integer pairs.
 - Tuple unpacking requires parentheses: `(x, y) = point`.
+- Targets can be variables, writable fields, or collection entries. Each incoming value must fit its destination type.
+- Evaluate the entire right-hand side before assigning any target, so an exchange preserves both original values:
+
+```birdie
+(root.left, root.right) = (root.right, root.left)
+```
+
+- Assign unpacked values to targets from left to right, evaluating each target location once when it is assigned. Repeated targets receive the last assigned value.
+- Unpacking requires the tuple and target shapes to match; mismatches are type errors.
 - [Loop bindings](/docs/specification/#loops) use the same parenthesized unpacking form.
 
 ## Open questions
@@ -107,3 +353,5 @@ Escapes count as their resulting characters; `'\n'` is one `char`. Unknown escap
 - Floating-point arithmetic.
 - Remainder semantics and explicit truncating division.
 - Conversion and concatenation between `char` and `str`.
+- Conversion from an integer code to a `char`.
+- Record-to-record equality and hashing, methods, and named constructor arguments.

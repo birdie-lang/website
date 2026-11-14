@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "sync:examples": "bun scripts/sync-examples.ts",
+    "check:examples": "bun run sync:examples --check",
+    "test": "bun test scripts",
     "typecheck": "astro check",
     "build": "astro build",
     "deploy": "bun run typecheck && bun run build && wrangler deploy",

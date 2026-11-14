@@ -1,54 +1,15 @@
 ---
 title: Algorithm examples
-description: Birdie and Python solutions to Two Sum, Valid Parentheses, Binary Search, and Group Anagrams.
+description: The NeetCode 150 catalog, with Birdie translations, Python comparisons, and Blind 75 membership.
 navTitle: Examples
 section: project
 order: 0
 ---
 
-import CodeComparison from '../../components/docs/code-comparison.astro';
-import { examples } from '../../data/examples';
-import twoSumPython from '../../data/examples/two-sum.py?raw';
-import validParenthesesPython from '../../data/examples/valid-parentheses.py?raw';
-import binarySearchPython from '../../data/examples/binary-search.py?raw';
-import groupAnagramsPython from '../../data/examples/group-anagrams.py?raw';
+import ExampleCatalog from '../../components/docs/example-catalog.astro';
 
-Birdie snippets use proposed syntax. Each example has a Python tab showing the same algorithm.
+Birdie snippets use proposed syntax.
 
 For an introduction, start with the [guide](/docs/). Exact language rules are in the [draft specification](/docs/specification/).
 
-## Two Sum
-
-For each value, calculate the partner needed to reach the target. A map records previously seen values and their indices. Check the map before inserting the current value so the same element is not used twice.
-
-<CodeComparison example={examples[0]} python={twoSumPython} />
-
-The function returns the two indices when it finds a pair, or an empty list when no pair exists.
-
-## Valid Parentheses
-
-Keep opening brackets on a stack. Each closing bracket must match the most recent opening bracket. Reject a closing bracket if the stack is empty or the brackets disagree.
-
-<CodeComparison example={examples[1]} python={validParenthesesPython} />
-
-The input is assumed to contain only `()[]{}` characters. At the end, an empty stack means all brackets were matched. Birdie uses a dedicated stack type; Python uses a list with `append` and `pop`.
-
-## Binary Search
-
-The input list must already be sorted in ascending order. Compare the middle value with the target, then narrow the search interval. Return the matching index, or `-1` when the interval becomes empty.
-
-<CodeComparison example={examples[2]} python={binarySearchPython} />
-
-Both versions use `//` for integer floor division and zero-based indexing. Birdie uses `.size` for the list length; Python uses `len(nums)`.
-
-## Group Anagrams
-
-Words with the same characters have the same sorted key. Use that key to collect them into groups, then return the groups as a list.
-
-<CodeComparison example={examples[3]} python={groupAnagramsPython} />
-
-`map(list)` creates a fresh list when a key is first looked up. `groups[key].push(word)` adds to that stored list; later lookups reuse it. Python expresses the same approach with `defaultdict(list)`.
-
-`word.sorted()` returns a new string ordered by Unicode scalar value, leaving `word` unchanged. String equality and hashing use the scalar sequence as stored.
-
-`groups.values()` returns a new outer list whose nested lists remain shared with the map. The order of the groups is unspecified while map iteration order is still undecided.
+<ExampleCatalog />

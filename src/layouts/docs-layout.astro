@@ -14,14 +14,16 @@ interface Props {
   headings: MarkdownHeading[];
   previous?: CollectionEntry<'docs'>;
   next?: CollectionEntry<'docs'>;
+  title?: string;
+  description?: string;
 }
 
-const { entry, pages, headings, previous, next } = Astro.props;
+const { entry, pages, headings, previous, next, title = entry.data.title, description = entry.data.description } = Astro.props;
 const hasSections = headings.some(({ depth }) => depth === 2 || depth === 3);
 ---
 
-<SiteLayout title={`${entry.data.title} · Birdie`} description={entry.data.description}>
-  <div class="docs-page wrap">
+<SiteLayout title={`${title} · Birdie`} description={description}>
+  <div class:list={['docs-page', 'wrap', { 'docs-page-without-toc': !hasSections }]}>
     <aside class="docs-sidebar">
       <div class="docs-sticky">
         <ChapterNav pages={pages} activeId={entry.id} />
@@ -36,8 +38,11 @@ const hasSections = headings.some(({ depth }) => depth === 2 || depth === 3);
 
       <article>
         <header class="docs-page-heading">
-          <p class="docs-section-label">{docSections[entry.data.section]}</p>
-          <h1>{entry.data.title}</h1>
+          <slot name="breadcrumb">
+            <p class="docs-section-label">{docSections[entry.data.section]}</p>
+          </slot>
+          <h1>{title}</h1>
+          <slot name="metadata" />
           {entry.data.section === 'specification' && (
             <p class="docs-draft-note">Draft specification. These rules are not implemented yet.</p>
           )}

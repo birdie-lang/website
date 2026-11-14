@@ -1,0 +1,78 @@
+---
+import { getCollection } from 'astro:content';
+import type { InferGetStaticPropsType, MarkdownHeading } from 'astro';
+import DocsLayout from '../../../layouts/docs-layout.astro';
+import CodeComparison from '../../../components/docs/code-comparison.astro';
+import CodeBlock from '../../../components/docs/code-block.astro';
+import { examples } from '../../../data/examples';
+
+export function getStaticPaths() {
+  return examples.map((example) => ({ params: { slug: example.slug }, props: { example } }));
+}
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+const { example } = Astro.props;
+const pages = (await getCollection('docs')).sort((a, b) => a.data.order - b.data.order);
+const entry = pages.find((page) => page.id === 'examples');
+if (!entry) throw new Error('The examples catalog documentation entry is missing.');
+const hasNotes = Boolean(example.note || example.notes?.length);
+const metadata = [
+  example.neetcode150?.category,
+  example.difficulty,
+  ...(example.blind75 ? ['Blind 75'] : []),
+].filter((value) => value !== undefined);
+
+const headings: MarkdownHeading[] = [
+  { depth: 2, slug: 'solution', text: 'Solution' },
+  ...(example.providedTypes ? [{ depth: 2, slug: 'provided-types', text: 'Provided types' }] : []),
+  ...(hasNotes ? [{ depth: 2, slug: 'notes', text: 'Notes' }] : []),
+];
+---
+
+<DocsLayout entry={entry} pages={pages} headings={headings} title={example.title} description={example.description ?? `Birdie and Python solutions to ${example.title}.`}>
+  <nav slot="breadcrumb" class="example-breadcrumb" aria-label="Breadcrumb">
+    <a href="/docs/examples/"><span aria-hidden="true">←</span> All examples</a>
+  </nav>
+  <div slot="metadata" class="example-metadata">
+    <ul class="example-facts" aria-label="Problem details">
+      {metadata.map((value, index) => (
+        <li>{index > 0 && <span aria-hidden="true">·</span>}{value}</li>
+      ))}
+    </ul>
+    <a class="example-source" href={example.leetcode.url} aria-label={`View ${example.title} on LeetCode`} title={`LeetCode ${example.leetcode.id}`}>
+      LeetCode <span aria-hidden="true">↗</span>
+    </a>
+  </div>
+  {example.description && <p>{example.description}</p>}
+
+  <h2 id="solution">Solution</h2>
+  <p>Proposed Birdie syntax. The interpreter is not implemented yet.</p>
+  <CodeComparison example={example} />
+
+  {example.providedTypes && (
+    <>
+      <h2 id="provided-types">Provided types</h2>
+      <p>The problem supplies these types. A standalone Birdie program would declare them explicitly.</p>
+      <CodeBlock code={example.providedTypes} lang="birdie" filename="provided-types.bd" />
+    </>
+  )}
+
+  {hasNotes && (
+    <>
+      <h2 id="notes">Notes</h2>
+      {example.note && <p>{example.note}</p>}
+      {(example.notes ?? []).map((note) => <p>{note}</p>)}
+    </>
+  )}
+</DocsLayout>
+
+<style>
+  .example-breadcrumb { margin-bottom: 18px; color: var(--muted); font-size: 0.75rem; line-height: 1.5; }
+  .example-breadcrumb a { color: inherit; text-decoration: none; }
+  .example-metadata { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px 24px; margin-top: 18px; color: var(--muted); font-size: 0.75rem; line-height: 1.6; }
+  .example-facts { display: flex; flex-wrap: wrap; gap: 4px 9px; margin: 0; padding: 0; list-style: none; }
+  .example-facts li { display: inline-flex; align-items: baseline; gap: 9px; }
+  .example-source { display: inline-flex; gap: 4px; color: inherit; text-decoration: none; white-space: nowrap; }
+  .example-breadcrumb a:hover,
+  .example-source:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 4px; }
+</style>

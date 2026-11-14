@@ -19,6 +19,8 @@ count = count + 1
 
 Birdie infers `count` as `int`. Reassignments must match that type. You can write an annotation when it helps: `count: int = 0`.
 
+Names use `camelCase`, such as `currentLength`. User-defined types use `PascalCase`, such as `TreeNode`. See [naming conventions](/docs/specification/#naming-conventions) for the full convention.
+
 Strings use double quotes, and individual characters use single quotes:
 
 ```birdie

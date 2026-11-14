@@ -1,5 +1,7 @@
+import type { ShikiConfig } from '@astrojs/markdown-remark';
+
 // Display highlighting for the proposed syntax, not a parser or language specification.
-export const birdieGrammar = {
+export const birdieGrammar: NonNullable<ShikiConfig['langs']>[number] = {
   name: 'birdie',
   scopeName: 'source.birdie',
   repository: {},
@@ -24,12 +26,23 @@ export const birdieGrammar = {
         2: { name: 'entity.name.function.birdie' },
       },
     },
-    { name: 'keyword.control.birdie', match: '\\b(return|for|in|if|else|while|not|or|until|through|step|reverse)\\b' },
+    {
+      match: '\\b(type)\\s+([a-zA-Z_][a-zA-Z0-9_]*)',
+      captures: {
+        1: { name: 'keyword.declaration.type.birdie' },
+        2: { name: 'entity.name.type.birdie' },
+      },
+    },
+    { name: 'support.function.birdie', match: '\\b(swap|min|max)!(?=\\s*\\()' },
+    { name: 'keyword.other.birdie', match: '\\bouter\\b' },
+    { name: 'keyword.control.birdie', match: '\\b(return|for|in|if|else|while|continue|is|not|or|until|through|step|reverse)\\b' },
     { name: 'storage.type.birdie', match: '\\b(int|bool|str|char)\\b' },
-    { name: 'storage.type.birdie', match: '\\b(list|map|stack)(?=\\s*\\[)' },
-    { name: 'constant.language.birdie', match: '\\b(true|false)\\b' },
-    { name: 'support.function.birdie', match: '\\b(list|map|stack)\\b' },
+    { name: 'storage.type.birdie', match: '\\b(list|map|counter|set|stack)(?=\\s*\\[)' },
+    { name: 'storage.type.birdie', match: '\\b[A-Z][a-zA-Z0-9_]*\\b' },
+    { name: 'constant.language.birdie', match: '\\b(true|false|none)\\b' },
+    { name: 'support.function.birdie', match: '\\b(list|map|counter|set|stack|min|max|zip|all)\\b' },
+    { name: 'variable.other.property.birdie', match: '(?<=\\.)code\\b' },
     { name: 'constant.numeric.birdie', match: '\\b[0-9]+\\b' },
-    { name: 'keyword.operator.birdie', match: '//|==|!=|<=|>=|[+*/=<>-]' },
+    { name: 'keyword.operator.birdie', match: '//=|[+*-]=|//|==|!=|<=|>=|[?+*/=<>-]' },
   ],
 };
