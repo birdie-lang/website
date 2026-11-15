@@ -86,7 +86,9 @@ else:
     opened.pop()
 ```
 
-Numbers need an explicit comparison such as `count != 0`. `not` produces a boolean, and `or` skips its right operand when the left is already true.
+Numbers need an explicit comparison such as `count != 0`. Optional values need explicit absence or presence checks such as `root == none` or `root != none`.
+
+`not` produces a boolean. `and` skips its right operand when the left is false; `or` skips it when the left is true. Both return a boolean.
 
 ## Loops
 

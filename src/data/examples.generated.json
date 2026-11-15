@@ -61,7 +61,20 @@
         "category": "Trees"
       },
       "blind75": false,
-      "slug": "balanced-binary-tree"
+      "description": "Compute subtree heights from the leaves upward. Return none from the helper when any subtree is unbalanced, then check whether the root has a valid height.",
+      "note": "An empty subtree has height zero. An absent height means an unbalanced subtree, so the empty-node guard must return 0 rather than propagate none.",
+      "notes": [
+        "The height helper captures no variables, so it is a separate function below isBalanced. Top-level function visibility allows the main algorithm to appear first. The Python version uses the same helper placement and traversal order.",
+        "height returns int?: an integer height or none. The ordinary integer returned by a balanced subtree is accepted as an optional result without an explicit wrapper.",
+        "height(node.left)? evaluates the recursive call once. A present height becomes an int; an absent height immediately returns none from the current height call. The right subtree is not visited when the left subtree already reported an imbalance. Python spells out the two early-return checks.",
+        "abs(right - left) computes the absolute integer difference. A difference of one is allowed; a larger difference returns none. The final height is one plus the larger child height.",
+        "isBalanced returns bool, so it checks height(root) != none instead of propagating an optional result. An empty tree and a single-node tree are balanced.",
+        "LeetCode supplies TreeNode. The record declaration shows its standalone Birdie form. The traversal does not modify the input tree and takes O(n) time and O(h) recursion space in the usual unit-cost model, with early exits for unbalanced subtrees."
+      ],
+      "slug": "balanced-binary-tree",
+      "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
+      "birdie": "fn isBalanced(root: TreeNode?) bool:\n    return height(root) != none\n\nfn height(node: TreeNode?) int?:\n    if node == none:\n        return 0\n\n    left = height(node.left)?\n    right = height(node.right)?\n\n    if abs(right - left) > 1:\n        return none\n\n    return 1 + max(left, right)",
+      "python": "class Solution:\n    def isBalanced(self, root: TreeNode | None) -> bool:\n        return height(root) is not None\n\n\ndef height(node: TreeNode | None) -> int | None:\n    if node is None:\n        return 0\n\n    left = height(node.left)\n    if left is None:\n        return None\n\n    right = height(node.right)\n    if right is None:\n        return None\n\n    if abs(right - left) > 1:\n        return None\n\n    return 1 + max(left, right)"
     },
     {
       "title": "Best Time to Buy And Sell Stock",
@@ -497,7 +510,7 @@
       ],
       "slug": "diameter-of-binary-tree",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
-      "birdie": "fn diameterOfBinaryTree(root: TreeNode?) int:\n    diameter = 0\n\n    fn dfs(node: TreeNode?) int:\n        outer diameter\n\n        if node is none:\n            return 0\n\n        left = dfs(node.left)\n        right = dfs(node.right)\n\n        max!(diameter, left + right)\n\n        return 1 + max(left, right)\n\n    dfs(root)\n    return diameter",
+      "birdie": "fn diameterOfBinaryTree(root: TreeNode?) int:\n    diameter = 0\n\n    fn dfs(node: TreeNode?) int:\n        outer diameter\n\n        if node == none:\n            return 0\n\n        left = dfs(node.left)\n        right = dfs(node.right)\n\n        max!(diameter, left + right)\n\n        return 1 + max(left, right)\n\n    dfs(root)\n    return diameter",
       "python": "class Solution:\n    def diameterOfBinaryTree(self, root: TreeNode | None) -> int:\n        diameter = 0\n\n        def dfs(node: TreeNode | None) -> int:\n            nonlocal diameter\n\n            if node is None:\n                return 0\n\n            left = dfs(node.left)\n            right = dfs(node.right)\n\n            diameter = max(diameter, left + right)\n\n            return 1 + max(left, right)\n\n        dfs(root)\n        return diameter"
     },
     {
@@ -793,13 +806,13 @@
       "note": "TreeNode? permits a node or none. The explicit absence check makes field access safe; swap! exchanges the child references.",
       "notes": [
         "LeetCode supplies TreeNode. The record declaration shows how the same type would be defined in a standalone Birdie program.",
-        "Returning early after root is none narrows root to TreeNode in the remaining body. Its children remain optional, so recursive calls accept TreeNode?.",
+        "Returning early after root == none narrows root to TreeNode in the remaining body. Its children remain optional, so recursive calls accept TreeNode?.",
         "Records are shared references. swap!(root.left, root.right) exchanges the writable child fields, mutates the original tree, and allocates no replacement nodes. Tuple assignment can also express the exchange: (root.left, root.right) = (root.right, root.left).",
         "An empty tree returns none. A leaf is unchanged. The traversal takes O(n) time and O(h) recursion space, where h is the tree height."
       ],
       "slug": "invert-binary-tree",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
-      "birdie": "fn invertTree(root: TreeNode?) TreeNode?:\n    if root is none:\n        return none\n\n    swap!(root.left, root.right)\n    invertTree(root.left)\n    invertTree(root.right)\n\n    return root",
+      "birdie": "fn invertTree(root: TreeNode?) TreeNode?:\n    if root == none:\n        return none\n\n    swap!(root.left, root.right)\n    invertTree(root.left)\n    invertTree(root.right)\n\n    return root",
       "python": "class Solution:\n    def invertTree(self, root: TreeNode | None) -> TreeNode | None:\n        if root is None:\n            return None\n\n        root.left, root.right = root.right, root.left\n        self.invertTree(root.left)\n        self.invertTree(root.right)\n\n        return root"
     },
     {
@@ -1122,14 +1135,14 @@
       "description": "Return the number of nodes on the longest path from the root to a leaf.",
       "note": "An empty tree has depth zero. A leaf has depth one.",
       "notes": [
-        "The early return after root is none narrows root to TreeNode in the remaining body. Its optional children can be passed directly to maxDepth.",
+        "The early return after root == none narrows root to TreeNode in the remaining body. Its optional children can be passed directly to maxDepth.",
         "Compute the depth of each subtree, take the larger result with max, and add one for the current node. The proposed max built-in needs no imports.",
         "LeetCode supplies TreeNode. The record declaration shows how the same type would be defined in a standalone Birdie program.",
         "The traversal takes O(n) time and O(h) recursion space, where h is the tree height. It does not modify the tree."
       ],
       "slug": "maximum-depth-of-binary-tree",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
-      "birdie": "fn maxDepth(root: TreeNode?) int:\n    if root is none:\n        return 0\n\n    return 1 + max(\n        maxDepth(root.left),\n        maxDepth(root.right),\n    )",
+      "birdie": "fn maxDepth(root: TreeNode?) int:\n    if root == none:\n        return 0\n\n    return 1 + max(\n        maxDepth(root.left),\n        maxDepth(root.right),\n    )",
       "python": "class Solution:\n    def maxDepth(self, root: TreeNode | None) -> int:\n        if root is None:\n            return 0\n\n        return 1 + max(\n            self.maxDepth(root.left),\n            self.maxDepth(root.right),\n        )"
     },
     {
@@ -1758,7 +1771,20 @@
         "category": "Trees"
       },
       "blind75": true,
-      "slug": "same-tree"
+      "description": "Match empty subtrees, reject missing nodes or different values, then recursively compare the corresponding left and right children.",
+      "note": "Two empty subtrees match. A missing node on only one side means the trees have different shapes, even when their remaining values are equal.",
+      "notes": [
+        "The guard order and recursive calls follow the Python solution. Python uses truthiness for the supplied TreeNode references; Birdie explicitly checks optional absence with == none.",
+        "Comparisons with none check presence without invoking record equality. General record equality remains undecided; this algorithm explicitly compares each value and the shape of both trees.",
+        "or evaluates from left to right and skips later operands once one is true. p.val != q.val is reached only after both absence checks are false, so p and q are known to be TreeNode values. After the guard is passed, the remaining body retains those presence facts.",
+        "and also short-circuits. A left-subtree mismatch returns false without visiting the right subtrees. The result is a bool rather than an operand value.",
+        "LeetCode supplies TreeNode. The record declaration shows its standalone Birdie form. The algorithm does not modify either tree, and an empty tree matches another empty tree.",
+        "For two matching trees with n nodes and height h, the traversal takes O(n) time and O(h) recursion space in the usual unit-cost model. A mismatch can stop the traversal earlier."
+      ],
+      "slug": "same-tree",
+      "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
+      "birdie": "fn isSameTree(p: TreeNode?, q: TreeNode?) bool:\n    if p == none and q == none:\n        return true\n\n    if p == none or q == none or p.val != q.val:\n        return false\n\n    return isSameTree(p.left, q.left) and isSameTree(p.right, q.right)",
+      "python": "class Solution:\n    def isSameTree(self, p: TreeNode | None, q: TreeNode | None) -> bool:\n        if not p and not q:\n            return True\n\n        if not p or not q or p.val != q.val:\n            return False\n\n        return self.isSameTree(p.left, q.left) and self.isSameTree(p.right, q.right)"
     },
     {
       "title": "Search a 2D Matrix",
@@ -1898,7 +1924,20 @@
         "category": "Trees"
       },
       "blind75": true,
-      "slug": "subtree-of-another-tree"
+      "description": "At each node, compare the entire subtree with the candidate. If it does not match, search the left and right subtrees.",
+      "note": "A match requires identical values and shape, including every descendant. LeetCode supplies nonempty input trees; the recursive search can still reach an empty root.",
+      "notes": [
+        "The root == none guard ends the search at an empty subtree. It narrows root to TreeNode in the remaining body, so root.left and root.right are safe to read.",
+        "or tries the current position, then the left subtree, then the right subtree, stopping at the first successful match. A failed comparison at one position does not prevent finding a match deeper in that subtree.",
+        "sameTree captures no state, so it is a separate helper below isSubtree in both versions. Each problem is standalone: the helper is included here rather than depending on the separate Same Tree example.",
+        "The comparison helper uses the same guard order as Same Tree. It matches two absent nodes, rejects one absent node or different values, then checks corresponding children with short-circuit and.",
+        "An empty subRoot is outside LeetCode's input contract. The supplied algorithm returns false in that case; this translation preserves that behavior rather than treating an empty candidate as a match.",
+        "For m nodes in root and n nodes in subRoot, the worst-case time is O(m * n) under the usual unit-cost assumptions. The nested search and comparison follow paths inside root, using O(h) recursion space for root height h. Neither input tree is modified."
+      ],
+      "slug": "subtree-of-another-tree",
+      "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
+      "birdie": "fn isSubtree(root: TreeNode?, subRoot: TreeNode?) bool:\n    if root == none:\n        return false\n\n    return (\n        sameTree(root, subRoot) or\n        isSubtree(root.left, subRoot) or\n        isSubtree(root.right, subRoot)\n    )\n\nfn sameTree(p: TreeNode?, q: TreeNode?) bool:\n    if p == none and q == none:\n        return true\n\n    if p == none or q == none or p.val != q.val:\n        return false\n\n    return sameTree(p.left, q.left) and sameTree(p.right, q.right)",
+      "python": "class Solution:\n    def isSubtree(self, root: TreeNode | None, subRoot: TreeNode | None) -> bool:\n        if not root:\n            return False\n\n        return (\n            sameTree(root, subRoot) or\n            self.isSubtree(root.left, subRoot) or\n            self.isSubtree(root.right, subRoot)\n        )\n\n\ndef sameTree(p: TreeNode | None, q: TreeNode | None) -> bool:\n    if not p and not q:\n        return True\n\n    if not p or not q or p.val != q.val:\n        return False\n\n    return sameTree(p.left, q.left) and sameTree(p.right, q.right)"
     },
     {
       "title": "Sum of Two Integers",

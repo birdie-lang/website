@@ -57,18 +57,19 @@ Here, `root` and `alias` refer to the same node. Both observe its updated right 
 - `T?` permits a value of type `T` or the lowercase literal `none`.
 - A `T` value can be used where `T?` is expected. `none` cannot be assigned to a nonoptional type.
 - Optionality does not supply a default: write `= none` explicitly when a field should default to absence.
-- Check absence with `value is none` and presence with `value is not none`. Both forms accept an optional value and return a `bool`, without invoking record equality.
-- `is` currently supports only these absence and presence checks. General reference-identity comparisons remain undecided.
+- Check absence with `value == none` and presence with `value != none`. These comparisons return a `bool` by inspecting presence, without invoking payload equality or reference-identity comparison. They are available for every `T?`, even when equality for `T` is undefined.
+- The draft uses only `==` and `!=` for these tests, without separate comparison aliases.
+- The optional value can be on either side of the comparison. Evaluate operands once, from left to right. A successful presence proof narrows that local binding; general record equality and identity remain undecided.
 - Field access requires a nonoptional record. Accessing a field through `TreeNode?` without proving it is present is a type error.
 - A presence check narrows a local variable to `T` on paths where it cannot be `none`. An early return preserves that knowledge for the remaining body.
 - Reassignment updates the proof of presence; assigning a possibly absent value removes the narrowing.
 - Narrowing a local record reference does not narrow its optional fields or assume those fields stay unchanged across calls.
 - A narrowed binding captured for writing must be checked again after a call that can reassign it through `outer`.
-- Optional values and records have no implicit truthiness. Use `root is none` or `root is not none`, rather than `if not root` or `if root`.
+- Optional values and records have no implicit truthiness. Use `root == none` or `root != none` rather than `if not root` or `if root`. An optional zero, false, or empty collection is still a present value.
 
 ```birdie
 fn nodeValue(root: TreeNode?) int:
-    if root is none:
+    if root == none:
         return 0
 
     return root.val
@@ -79,9 +80,34 @@ After the early return, `root` is known to be a `TreeNode`. Its `left` and `righ
 The presence form narrows inside the guarded branch:
 
 ```birdie
-if root is not none:
+if root != none:
     value = root.val
 ```
+
+### Optional propagation
+
+Postfix `expression?` evaluates a `T?` expression once. A present value produces a `T`; an absent value immediately returns `none` from the nearest enclosing function.
+
+```birdie
+left = height(node.left)?
+```
+
+This has the same control flow as:
+
+```birdie
+left = height(node.left)
+if left == none:
+    return none
+```
+
+- The operand must have an optional type. A successful propagation expression has the underlying nonoptional type, so `left` above is inferred as `int` when `height` returns `int?`.
+- The enclosing function must have an optional result type. Propagation contributes a possible `return none` during return-type inference; an explicit nonoptional return annotation is a type error. The operand's underlying type need not match the enclosing function's result type, because only `none` propagates.
+- An absent operand abandons the current expression, statement, and remaining function body. Later operands and calls are not evaluated. Earlier side effects are not rolled back.
+- Propagation returns from the function containing the expression. Inside a nested helper, it returns from that helper rather than its caller or an enclosing function.
+- `?` is postfix and binds more tightly than arithmetic and comparisons. In a type annotation, `T?` keeps its existing optional-type meaning.
+- The initial form applies to eagerly evaluated function-body expressions. Top-level propagation is a type error; propagation inside deferred generator expressions or field defaults remains open.
+
+See [Balanced Binary Tree](/docs/examples/balanced-binary-tree/) for propagating an absent height. Its empty-node guard still returns zero: an absent node is a valid empty subtree, while an absent height signals imbalance.
 
 ## Inference
 
@@ -253,16 +279,41 @@ See [Encode and Decode Strings](/docs/examples/encode-and-decode-strings/) for d
 
 See [Maximum Depth of Binary Tree](/docs/examples/maximum-depth-of-binary-tree/) for a recursive use of `max`.
 
+### Absolute value
+
+`abs(value)` returns the nonnegative magnitude of an `int`, without modifying the argument.
+
+```birdie
+abs(-3)  # 3
+abs(0)   # 0
+abs(4)   # 4
+```
+
+- Exactly one integer argument is required and evaluated once. Incompatible argument types and other argument counts are type errors.
+- The result has type `int`. Arbitrary precision avoids fixed-width minimum-integer overflow; work and storage depend on operand size.
+- The built-in requires no imports or implicit conversions.
+
+See [Balanced Binary Tree](/docs/examples/balanced-binary-tree/) for comparing child heights with `abs(right - left)`.
+
 ## Booleans and truthiness
 
 - `bool` values are `true` and `false`.
-- Conditions and `not` accept booleans, lists, maps, counters, sets, and stacks.
+- Conditions, `not`, `and`, and `or` accept nonoptional booleans, lists, maps, counters, sets, and stacks.
 - Empty collections are false; nonempty collections are true.
 - A counter is empty when it has no nonzero counts. Negative counts make it nonempty too; summing to zero across different keys does not make it false.
 - `not` returns a boolean. `not opened` tests whether a stack is empty.
 - Numbers require explicit comparisons, such as `count != 0`.
-- Optional values require an explicit `is none` or `is not none` check; records cannot be used as conditions.
-- `or` evaluates left to right and short-circuits when its left operand is true.
+- Optional values require an explicit `== none` or `!= none` check before their contained values can be used as conditions. Records cannot be used as conditions.
+- `and` evaluates left to right and stops when its left operand is false. `or` evaluates left to right and stops when its left operand is true. Both return a `bool`, rather than returning an operand.
+- Comparisons bind more tightly than `not`, then `and`, then `or`. Parentheses can override this grouping.
+- Narrowing follows the paths that reach each operand: the right side of `and` uses facts from a true left side; the right side of `or` uses facts from a false left side. Branches and early returns retain the facts common to their reachable paths.
+
+```birdie
+if root != none and root.val == target:
+    return true
+```
+
+See [Same Tree](/docs/examples/same-tree/) for an `or` guard that checks two optional nodes before reading their fields, followed by a short-circuit recursive `and`.
 
 ## Strings and characters
 
