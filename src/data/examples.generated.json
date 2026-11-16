@@ -140,7 +140,19 @@
         "category": "Trees"
       },
       "blind75": true,
-      "slug": "binary-tree-level-order-traversal"
+      "description": "Return the node values level by level, visiting each level from left to right.",
+      "note": "Capture the queue size once per level, then process those nodes in FIFO order.",
+      "notes": [
+        "The empty-tree guard returns an empty result. Other presence checks use != none explicitly, so a node containing zero is still visited.",
+        "queue([root]) creates a FIFO queue containing one node. push adds at the back and pop removes from the front. Construction retains node references without copying the tree.",
+        "repeat pending.size evaluates the queue size once on entry. It processes only the current level; children enqueued during the body wait for the next outer iteration. Python's range(len(pending)) captures the same count.",
+        "LeetCode supplies TreeNode. The record declaration shows how the same type would be defined in a standalone Birdie program.",
+        "The traversal takes O(n) time and O(w) auxiliary queue space, where w is the maximum level width, plus O(n) output space. It does not modify the tree."
+      ],
+      "slug": "binary-tree-level-order-traversal",
+      "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
+      "birdie": "fn levelOrder(root: TreeNode?) list[list[int]]:\n    if root == none:\n        return []\n\n    res = []\n    pending = queue([root])\n\n    while pending:\n        level_res = []\n\n        repeat pending.size:\n            node = pending.pop()\n            level_res.push(node.val)\n\n            if node.left != none:\n                pending.push(node.left)\n\n            if node.right != none:\n                pending.push(node.right)\n\n        res.push(level_res)\n\n    return res",
+      "python": "from collections import deque\n\n\nclass Solution:\n    def levelOrder(self, root: TreeNode | None) -> list[list[int]]:\n        if root is None:\n            return []\n\n        res = []\n        pending = deque([root])\n\n        while pending:\n            level_res = []\n\n            for _ in range(len(pending)):\n                node = pending.popleft()\n                level_res.append(node.val)\n\n                if node.left is not None:\n                    pending.append(node.left)\n\n                if node.right is not None:\n                    pending.append(node.right)\n\n            res.append(level_res)\n\n        return res"
     },
     {
       "title": "Binary Tree Maximum Path Sum",
@@ -1090,7 +1102,20 @@
         "category": "Trees"
       },
       "blind75": true,
-      "slug": "lowest-common-ancestor-of-a-binary-search-tree"
+      "description": "Descend left when both targets are smaller, descend right when both are larger, and return the first node where the paths split or a target is reached.",
+      "note": "Assume a valid BST with unique values and two distinct target nodes already in the tree. These guarantees ensure that each chosen child exists and that an ancestor is found.",
+      "notes": [
+        "The guard order, recursive calls, and return value follow the Python solution. and short-circuits each pair of comparisons.",
+        "root.left and root.right have type TreeNode?, while the root parameter requires TreeNode. Passing a chosen child checks presence at runtime when it is not otherwise known, preserving the nonoptional function signature without explicit assertion or unwrapping syntax.",
+        "The type checker still validates the node types and their fields. It does not have to prove BST ordering or target membership from the comparisons. If an input violates those guarantees and a recursive call receives none, that checked argument use fails at runtime.",
+        "When the target values lie on different sides, the current node is their lowest common ancestor. Equality with either target also returns the current node, since a node can be its own descendant in the problem definition.",
+        "Shared fixtures encode root as a level-order tree and p and q as values selecting existing nodes from that tree. The returned value is checked to identify an original node rather than a newly allocated copy.",
+        "For tree height h, the algorithm takes O(h) time and O(h) recursion space in the usual unit-cost model. This is O(log n) for a balanced BST and O(n) for a chain. The inputs are not modified."
+      ],
+      "slug": "lowest-common-ancestor-of-a-binary-search-tree",
+      "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
+      "birdie": "fn lowestCommonAncestor(root: TreeNode, p: TreeNode, q: TreeNode) TreeNode:\n    if p.val < root.val and q.val < root.val:\n        return lowestCommonAncestor(root.left, p, q)\n\n    if p.val > root.val and q.val > root.val:\n        return lowestCommonAncestor(root.right, p, q)\n\n    return root",
+      "python": "class Solution:\n    def lowestCommonAncestor(self, root: TreeNode, p: TreeNode, q: TreeNode) -> TreeNode:\n        if p.val < root.val and q.val < root.val:\n            return self.lowestCommonAncestor(root.left, p, q)\n\n        if p.val > root.val and q.val > root.val:\n            return self.lowestCommonAncestor(root.right, p, q)\n\n        return root"
     },
     {
       "title": "LRU Cache",

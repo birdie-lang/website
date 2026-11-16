@@ -8,7 +8,11 @@ order: 0
 
 Birdie is a statically typed programming language for coding challenges and interview problems.
 
+The code should make the algorithm easy to read, explain, and write. Types and inference describe the data and catch incompatible operations, while value-dependent assumptions such as bounds and optional presence can be checked at runtime.
+
 The syntax borrows from Python, with built-in collections such as maps and stacks.
+
+The [philosophy](/docs/philosophy/) explains why Birdie exists and how we choose between language designs.
 
 > **Language status**
 >

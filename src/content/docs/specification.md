@@ -150,11 +150,30 @@ for (c1, c2) in zip(s, t):
 
 The sources must have equal lengths. The parentheses unpack a pair; `for c1, c2 in zip(s, t):` is not the pair-unpacking form.
 
+### Counted repetition
+
+`repeat count:` runs a block a fixed number of times without introducing an index binding:
+
+```birdie
+repeat pending.size:
+    node = pending.pop()
+    # Process this node and enqueue its children.
+```
+
+- The count must be an `int`; incompatible types are type errors. An optional integer follows [checked optional use](/docs/specification/types/#checked-optional-use).
+- Evaluate the count once when entering the loop. Changing a variable or collection used in that expression does not change the active repetition count.
+- Zero or negative counts run the body zero times, matching `for _ until count:`.
+- Each completed iteration consumes one repetition. `continue` also consumes the current repetition before starting the next one; it does not reevaluate the count. `return` exits the enclosing function normally.
+- The body follows ordinary loop scope and initialization rules. No implicit index or other binding is introduced.
+- This is a statement form. It cannot be used as an expression or a comprehension clause.
+
+See [Binary Tree Level Order Traversal](/docs/examples/binary-tree-level-order-traversal/) for a queue whose size is captured at the start of each level.
+
 ### Continue
 
 `continue` is a standalone statement that skips the remainder of the current iteration of the nearest enclosing loop in the same function.
 
-- A `for` loop advances to its next value. A `while` loop reevaluates its condition.
+- A `for` loop advances to its next value. A `repeat` loop advances to its next repetition. A `while` loop reevaluates its condition.
 - It does not restart the loop or repeat its initialization.
 - Use outside a loop, including inside a helper called by a loop but with no loop of its own, is a compile-time error.
 - Comprehensions contain expressions, so `continue` cannot appear inside them.

@@ -1,14 +1,16 @@
 ---
 title: Collections
-description: Birdie’s lists, maps, counters, sets, stacks, construction, and copy behavior.
+description: Birdie’s lists, maps, counters, sets, stacks, queues, construction, and copy behavior.
 navTitle: Collections
 section: specification
 order: 2
 ---
 
-Lists, maps, counters, sets, and stacks are built in and require no imports.
+Lists, maps, counters, sets, stacks, and queues are built in and require no imports.
 
-Collections and strings expose a read-only `int` property, `.size`. It counts list or stack elements, map entries, distinct set elements, counter keys with nonzero counts, or Unicode scalar values in a string.
+Collections and strings expose a read-only `int` property, `.size`. It counts list, stack, or queue elements, map entries, distinct set elements, counter keys with nonzero counts, or Unicode scalar values in a string.
+
+The operation types below describe present values. Optional receivers and operands with compatible underlying types follow [checked optional use](/docs/specification/types/#checked-optional-use); absence fails at runtime when a present value is required.
 
 ## Lists
 
@@ -163,6 +165,7 @@ map(map)     # fresh map with no default per missing key
 map(stack)   # fresh empty stack per missing key
 map(set)     # fresh empty set per missing key
 map(counter) # fresh empty counter per missing key
+map(queue)   # fresh empty queue per missing key
 ```
 
 A default value is evaluated when the map is constructed. A factory is called only when `m[key]` encounters a missing key. The result is stored under that key and returned without copying. Later lookups return the stored value.
@@ -355,6 +358,47 @@ For `s: stack[T]`, `value` must have type `T`.
 
 A stack has no indexing, arbitrary insertion, or sorting.
 
+## Queues
+
+`queue[T]` is a dedicated FIFO collection. `push` adds at the back; `pop` and `peek` access the front.
+
+### Construction
+
+`queue()` creates a fresh empty queue and infers its element type from usage. `queue(source)` creates a fresh queue from a list or string, preserving source order and duplicates. String elements are `char` values.
+
+```birdie
+pending = queue([root])
+numbers = queue([1, 2, 3])
+groups = queue([[1, 2, 3]])
+```
+
+Here, `pending` starts with one tree node, `numbers` with three integers, and `groups` with one list. The argument is always a source sequence, so a single element needs a one-element list such as `[root]`.
+
+- Evaluate the source once and eagerly store its elements from first to last. Construction does not modify the source or share its outer storage.
+- Elements use normal assignment semantics. Records and mutable collections retain their references; their contents are not deep-copied.
+- Empty sources create empty queues. Infer element types from the source and other uses; insufficient or conflicting constraints are type errors. An annotation such as `pending: queue[TreeNode] = queue()` can resolve ambiguity.
+- The constructor takes zero arguments or one list/string source. Other source types and argument counts are type errors. There is no variadic element constructor or implicit singleton conversion.
+- Building a queue from `n` elements takes O(n) work and storage.
+
+### Operations
+
+For `q: queue[T]`, `value` must fit `T` using the ordinary assignment and checked optional-use rules.
+
+| Operation | Returns | Mutates | Behavior |
+| --- | --- | --- | --- |
+| `q.push(value)` | No value | Yes | Add one element at the back. |
+| `q.pop()` | `T` | Yes | Remove and return the front element. |
+| `q.peek()` | `T` | No | Read the front element without removing it. |
+| `q.size` | `int` | No | Read the number of elements. |
+
+`pop()` and `peek()` cause a runtime error on an empty queue. Empty queues are false in conditions; use `while q` or `if not q` for emptiness checks. All operations preserve FIFO order, including when insertions and removals are interleaved.
+
+`pop()`, `peek()`, and `.size` take O(1) work; `push()` takes amortized O(1) work. Removing the front must not shift all remaining elements.
+
+A queue has no indexing or sorting. Direct iteration, reverse traversal, and deque operations remain open.
+
+See [Binary Tree Level Order Traversal](/docs/examples/binary-tree-level-order-traversal/) for FIFO processing with [`repeat`](/docs/specification/#counted-repetition).
+
 ## Lazy traversal and predicate checks
 
 ### Parallel iteration
@@ -398,4 +442,4 @@ See [Valid Anagram](/docs/examples/valid-anagram/) for a strict zipped traversal
 
 ## Further candidates
 
-Heaps and queues/deques are priorities for exploration. Sorted sets, union-find, tries, and graph/grid helpers are also candidates. Their APIs have not been defined here.
+Heaps and deques are priorities for exploration. Sorted sets, union-find, tries, and graph/grid helpers are also candidates. Their APIs have not been defined here.

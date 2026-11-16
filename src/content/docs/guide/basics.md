@@ -1,6 +1,6 @@
 ---
 title: Language basics
-description: Variables, lists, maps, stacks, conditions, and iteration in Birdie.
+description: Variables, lists, maps, stacks, queues, conditions, and iteration in Birdie.
 navTitle: Language basics
 section: guide
 order: 2
@@ -18,6 +18,8 @@ count = count + 1
 ```
 
 Birdie infers `count` as `int`. Reassignments must match that type. You can write an annotation when it helps: `count: int = 0`.
+
+Static types describe the data and catch incompatible operations. Some assumptions are checked at runtime: indices must be in bounds, and an optional value used where a present value is required must actually be present. The algorithm does not need extra assertion or unwrapping syntax solely to establish those facts.
 
 Names use `camelCase`, such as `currentLength`. User-defined types use `PascalCase`, such as `TreeNode`. See [naming conventions](/docs/specification/#naming-conventions) for the full convention.
 
@@ -44,7 +46,7 @@ ordered = nums.sorted()
 
 Indices start at zero. Negative indices are errors. `push` adds an item at the end; `sorted()` produces a new list and leaves `nums` unchanged.
 
-## Maps and stacks
+## Maps, stacks, and queues
 
 Collections are built in, so no imports are needed. An empty map can get its types from later use:
 
@@ -75,9 +77,20 @@ removed = opened.pop()
 
 `peek()` reads the top item; `pop()` removes and returns it. Both require a nonempty stack.
 
+A queue uses the same method names for first-in, first-out access:
+
+```birdie
+pending = queue([1, 2])
+pending.push(3)
+first = pending.peek()  # 1
+removed = pending.pop() # 1; the queue now contains 2, 3
+```
+
+`queue()` creates an empty queue. `queue(items)` takes the elements of a list or string in order; `[root]` supplies a single node. `push()` adds at the back, and `peek()` and `pop()` access the front. Both front operations require a nonempty queue.
+
 ## Conditions
 
-Use `if`, `else if`, and `else`. Empty lists, maps, and stacks are false in conditions:
+Use `if`, `else if`, and `else`. Empty collections, including stacks and queues, are false in conditions:
 
 ```birdie
 if not opened:
@@ -86,7 +99,7 @@ else:
     opened.pop()
 ```
 
-Numbers need an explicit comparison such as `count != 0`. Optional values need explicit absence or presence checks such as `root == none` or `root != none`.
+Numbers need an explicit comparison such as `count != 0`. Use `root == none` or `root != none` to ask about optional absence or presence. An optional boolean or collection can be used for its contained truth value; if it is absent, that use raises a runtime error instead of treating absence as false. Records have no truthiness.
 
 `not` produces a boolean. `and` skips its right operand when the left is false; `or` skips it when the left is true. Both return a boolean.
 
@@ -118,6 +131,16 @@ for i in reverse 0 until 8 step 2:  # 6, 4, 2, 0
 Place `reverse` immediately after `in` to traverse a list, string, or range backwards. Indexed loops keep the original indices.
 
 `while condition:` repeats while its condition is true.
+
+Use `repeat count:` when you need a fixed number of repetitions without an index:
+
+```birdie
+repeat pending.size:
+    node = pending.pop()
+    # Process this node and enqueue its children.
+```
+
+The count is evaluated once on entry. Nodes added during the body do not increase the active repetition count. Zero or negative counts skip the body. See [Binary Tree Level Order Traversal](/docs/examples/binary-tree-level-order-traversal/) for a complete example.
 
 ## Where to go next
 

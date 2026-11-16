@@ -19,10 +19,13 @@ order: 1
 | `counter[T]` | Keys of type `T` with signed integer counts; zero counts are omitted |
 | `set[T]` | Mutable collection of distinct values of type `T` |
 | `stack[T]` | LIFO stack of elements of type `T` |
+| `queue[T]` | FIFO queue of elements of type `T` |
 | `(A, B)` | Fixed pair with a type for each position |
 | `T?` | A value of type `T` or `none` |
 
-Collection type arguments use brackets and can nest: `list[int]`, `map[str, int]`, `counter[char]`, `set[int]`, `stack[char]`, and `list[list[str]]`.
+Collection type arguments use brackets and can nest: `list[int]`, `map[str, int]`, `counter[char]`, `set[int]`, `stack[char]`, `queue[TreeNode]`, and `list[list[str]]`.
+
+Types describe the algorithm's data and valid operations. Birdie checks incompatible types statically, while value-dependent requirements such as index bounds and the presence of an optional value can be checked at runtime. Operation signatures describe present values; [checked optional use](#checked-optional-use) applies when the underlying type is compatible.
 
 ## Record types
 
@@ -55,17 +58,17 @@ Here, `root` and `alias` refer to the same node. Both observe its updated right 
 ## Optional values
 
 - `T?` permits a value of type `T` or the lowercase literal `none`.
-- A `T` value can be used where `T?` is expected. `none` cannot be assigned to a nonoptional type.
+- A `T` value can be used where `T?` is expected. Nonoptional storage and parameters require present values; a checked use of `T?` either supplies its `T` value or fails before storing or passing `none`.
 - Optionality does not supply a default: write `= none` explicitly when a field should default to absence.
 - Check absence with `value == none` and presence with `value != none`. These comparisons return a `bool` by inspecting presence, without invoking payload equality or reference-identity comparison. They are available for every `T?`, even when equality for `T` is undefined.
 - The draft uses only `==` and `!=` for these tests, without separate comparison aliases.
 - The optional value can be on either side of the comparison. Evaluate operands once, from left to right. A successful presence proof narrows that local binding; general record equality and identity remain undecided.
-- Field access requires a nonoptional record. Accessing a field through `TreeNode?` without proving it is present is a type error.
+- Field access through `TreeNode?` checks that the record is present at runtime when presence has not already been established. Unknown fields are still type errors.
 - A presence check narrows a local variable to `T` on paths where it cannot be `none`. An early return preserves that knowledge for the remaining body.
 - Reassignment updates the proof of presence; assigning a possibly absent value removes the narrowing.
 - Narrowing a local record reference does not narrow its optional fields or assume those fields stay unchanged across calls.
-- A narrowed binding captured for writing must be checked again after a call that can reassign it through `outer`.
-- Optional values and records have no implicit truthiness. Use `root == none` or `root != none` rather than `if not root` or `if root`. An optional zero, false, or empty collection is still a present value.
+- A call that can reassign a captured binding through `outer` invalidates its previous narrowing. Later uses follow the checked-use rules again.
+- Conditions never interpret optionality as presence. Records have no truthiness, so use `root == none` or `root != none` rather than `if not root` or `if root`. An optional boolean or collection follows its underlying truth test after a presence check; an absent operand fails at runtime.
 
 ```birdie
 fn nodeValue(root: TreeNode?) int:
@@ -83,6 +86,27 @@ The presence form narrows inside the guarded branch:
 if root != none:
     value = root.val
 ```
+
+### Checked optional use
+
+When an operation requires `T` and receives `T?`, it checks for a present value without requiring explicit assertion or unwrapping syntax. A present value is used with its ordinary semantics; `none` causes a runtime error at that use site.
+
+```birdie
+fn requiredValue(node: TreeNode?) int:
+    return node.val
+```
+
+Calling `requiredValue(none)` fails at the field access. In contrast, the `nodeValue` example above deliberately returns zero for an empty node. The guard expresses algorithmic behavior rather than satisfying a mandatory proof requirement.
+
+- Checked use applies to member access, indexing, traversal, ordinary operators, and typed arguments, assignments, and return values that require a present value. The underlying type must support the operation; a `str?` cannot be used as an integer, and an unknown member remains a type error.
+- Evaluate the optional expression once and check its presence before continuing the operation. Operands and arguments follow their normal left-to-right order. A failed check prevents later evaluation, the call, or the destination write; earlier effects are not rolled back.
+- Checking presence does not clone or modify the value. Records and collections retain their reference-sharing behavior. Zero, `false`, and empty collections are present values and pass the check unchanged.
+- `== none` and `!= none` inspect absence directly, without requiring a present payload. General record equality remains undecided.
+- Inference preserves optionality. Reading an optional field into a local infers `T?`; later checked uses do not silently change that inferred type. An inferred function result can likewise remain optional even when a caller requires a present result.
+- Explicit guards still narrow local types and can establish that a later presence check is unnecessary. Possible absence alone is not a compile-time rejection or a requirement to add suppression syntax. Tooling can display the inferred optional types.
+- A missing value is never silently converted to zero, `false`, an empty collection, or another fallback. Checked use also does not return `none` from the current function; that behavior requires explicit control flow or postfix `?`.
+
+See [Lowest Common Ancestor of a Binary Search Tree](/docs/examples/lowest-common-ancestor-of-a-binary-search-tree/) for passing optional child references to a function requiring a present node. The BST input guarantees justify that algorithmic assumption; violating it causes a runtime error.
 
 ### Optional propagation
 
@@ -117,7 +141,7 @@ See [Balanced Binary Tree](/docs/examples/balanced-binary-tree/) for propagating
 - Check independently defined functions without inferring their types from callers.
 - Function parameter types are explicit. Return annotations are optional when the body determines the type unambiguously.
 - Require an annotation when inference is ambiguous. Do not fall back to a dynamic type.
-- Conflicting constraints are type errors. An annotation does not resolve incompatible uses.
+- Conflicting underlying type constraints are type errors. An annotation does not resolve incompatible uses. Nullable-to-present uses follow the runtime checks above rather than requiring a proof of presence.
 - The current [algorithm examples](/docs/examples/) must require no local type annotations.
 
 An initially empty collection can get its type from a later operation:
@@ -298,12 +322,12 @@ See [Balanced Binary Tree](/docs/examples/balanced-binary-tree/) for comparing c
 ## Booleans and truthiness
 
 - `bool` values are `true` and `false`.
-- Conditions, `not`, `and`, and `or` accept nonoptional booleans, lists, maps, counters, sets, and stacks.
+- Conditions, `not`, `and`, and `or` accept booleans, lists, maps, counters, sets, stacks, and queues. Optional operands with one of these underlying types use a runtime presence check when needed.
 - Empty collections are false; nonempty collections are true.
 - A counter is empty when it has no nonzero counts. Negative counts make it nonempty too; summing to zero across different keys does not make it false.
 - `not` returns a boolean. `not opened` tests whether a stack is empty.
 - Numbers require explicit comparisons, such as `count != 0`.
-- Optional values require an explicit `== none` or `!= none` check before their contained values can be used as conditions. Records cannot be used as conditions.
+- An optional condition tests its contained value, never its presence. A present `false` or empty collection is false; an absent value causes a runtime error. Use `== none` or `!= none` when the intended question is absence or presence. Records and integers remain invalid condition types, including their optional forms.
 - `and` evaluates left to right and stops when its left operand is false. `or` evaluates left to right and stops when its left operand is true. Both return a `bool`, rather than returning an operand.
 - Comparisons bind more tightly than `not`, then `and`, then `or`. Parentheses can override this grouping.
 - Narrowing follows the paths that reach each operand: the right side of `and` uses facts from a true left side; the right side of `or` uses facts from a false left side. Branches and early returns retain the facts common to their reachable paths.
@@ -311,6 +335,12 @@ See [Balanced Binary Tree](/docs/examples/balanced-binary-tree/) for comparing c
 ```birdie
 if root != none and root.val == target:
     return true
+```
+
+```birdie
+ready: bool? = false
+disabled = not ready  # true: the present boolean is false
+enabled = ready != none and ready  # false, also false if ready is absent
 ```
 
 See [Same Tree](/docs/examples/same-tree/) for an `or` guard that checks two optional nodes before reading their fields, followed by a short-circuit recursive `and`.
