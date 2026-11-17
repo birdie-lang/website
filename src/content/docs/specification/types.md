@@ -10,7 +10,8 @@ order: 1
 
 | Type | Meaning |
 | --- | --- |
-| `int` | Signed, arbitrary-precision integer |
+| `int` | Finite, signed, arbitrary-precision integer |
+| `number` | An `int`, negative infinity, or positive infinity |
 | `bool` | `true` or `false` |
 | `str` | Immutable string, written with double quotes |
 | `char` | One Unicode scalar value, written with single quotes |
@@ -141,7 +142,7 @@ See [Balanced Binary Tree](/docs/examples/balanced-binary-tree/) for propagating
 - Check independently defined functions without inferring their types from callers.
 - Function parameter types are explicit. Return annotations are optional when the body determines the type unambiguously.
 - Require an annotation when inference is ambiguous. Do not fall back to a dynamic type.
-- Conflicting underlying type constraints are type errors. An annotation does not resolve incompatible uses. Nullable-to-present uses follow the runtime checks above rather than requiring a proof of presence.
+- Conflicting underlying type constraints are type errors. An annotation does not resolve incompatible uses. Integers and `number` values have the common numeric type `number`; an initializer or direct assignment containing infinity contributes that wider type. Nullable-to-present and `number`-to-`int` uses follow their runtime checks rather than requiring a proof of presence or finiteness.
 - The current [algorithm examples](/docs/examples/) must require no local type annotations.
 
 An initially empty collection can get its type from a later operation:
@@ -159,9 +160,35 @@ This constrains `seen` to `map[str, int]`. A function that only returns `map()` 
 - At the top level, `=` introduces a variable when the name is not already defined; otherwise it reassigns it.
 - Optional explicit annotation: `name: Type = value`.
 - Reassignments must be compatible with the variable's inferred type.
-- Local variables require an initial value. There is no declaration-only form.
-- Every read requires an assignment on every execution path reaching it.
-- Assignment inside a branch or loop updates an existing enclosing local in the same function. Crossing a function boundary requires `outer`.
+- Assignment syntax requires an initializer expression. There is no declaration-only form.
+- Ordinary branches and loops do not introduce a variable scope. A name first assigned inside one belongs to the enclosing function, or to the file for top-level code, and is visible outside that block.
+- Reads check initialization at runtime when it is not already known. A path that reaches a read without assigning that binding raises a runtime error; a static proof of assignment on every path is not required.
+- Assignment inside a branch or loop creates or updates the same function-local binding. Crossing a function boundary requires `outer`.
+
+### Scope and initialization
+
+Names resolve lexically from the source's enclosing scopes. A function cannot read a caller's locals merely because that caller invokes it. Scope, static type, and runtime initialization are separate properties of a binding.
+
+```birdie
+fn chosenValue(ready: bool) int:
+    if ready:
+        value = 3
+
+    return value + 1
+```
+
+`value` is a function-local `int`. `chosenValue(true)` returns `4`; `chosenValue(false)` raises an initialization error when reading `value`, before performing the addition. Both calls use the same statically checked function body.
+
+- Determine local names from assignments and ordinary `for` bindings across the whole function body, including branches and loops. Nested function and comprehension bindings belong to their own scopes. Types follow the ordinary inference rules; all assignments must fit a binding's inferred or declared type, even when conditional. Uninitialized state does not widen that type or introduce `any`.
+- A local binding exists throughout its function body, including before its first assignment. A read before an executed assignment raises a runtime error instead of falling back to an enclosing variable of the same name. A name with no binding in any applicable lexical scope is a compile-time error.
+- Each function call starts with initialized parameters and uninitialized ordinary locals. Executing an assignment initializes or updates its target after evaluating the right-hand side. The declaration syntax still requires an initializer; there is no declaration-only form.
+- An uninitialized binding is an internal runtime state, distinct from every language value, including `none`, `0`, and `false`. Reading it, even in `value == none`, fails. No default value is supplied.
+- Branches and loop iterations share the enclosing function's bindings. Skipping an assignment or executing a loop zero times leaves an existing value unchanged; a binding that has never received a value stays uninitialized.
+- Ordinary `for` bindings follow the same assignment rules and are visible after the loop. Comprehension and generator bindings remain local to their expressions, as specified separately.
+- Captures retain lexical bindings and use the same initialization checks. Registering a nested helper does not initialize its captured locals. Calling it before a captured value is assigned fails if that value is read; calling it after assignment observes the stored value.
+- Compound assignments, increments, and in-place operations read their targets using the same rules. They cannot initialize an uninitialized binding by reading a default value.
+
+See [Binary Tree Right Side View](/docs/examples/binary-tree-right-side-view/) for using the last node assigned inside `repeat` after that loop finishes.
 
 ### Outer variables
 
@@ -172,11 +199,11 @@ outer diameter
 ```
 
 - Write one name per declaration, at the start of the nested function body before using or assigning that name. The declaration applies throughout that function body.
-- The name must resolve to a variable binding in an enclosing function scope. A missing binding, a top-level-only binding, or `outer` outside a nested function is a compile-time error. Early function registration does not initialize that binding; reads still require definite initialization.
+- The name must resolve to a variable binding in an enclosing function scope. A missing binding, a top-level-only binding, or `outer` outside a nested function is a compile-time error. Early function registration does not initialize that binding; a read before assignment fails at runtime.
 - The name cannot also be a parameter or a separately declared local in that function.
-- Reads and writes use the same enclosing binding. Its inferred or declared type stays unchanged, and every read still requires definite initialization.
-- Bare-name writes using assignment, compound assignment, tuple unpacking, increment/decrement, `swap!`, `min!`, and `max!` all follow this rule.
-- Without `outer`, an assignment introduces or updates a local binding even when an enclosing function has a variable with the same name. Reading the new local before initialization is an error; `diameter = max(diameter, candidate)` cannot implicitly read the outer `diameter`.
+- Reads and writes use the same enclosing binding. Its inferred or declared type stays unchanged, and reads use the runtime initialization checks above. Ordinary assignment through `outer` can initialize the enclosing binding.
+- Bare-name writes using assignment, `for` bindings, compound assignment, tuple unpacking, increment/decrement, `swap!`, `min!`, and `max!` all follow this rule.
+- Without `outer`, an assignment introduces or updates a local binding even when an enclosing function has a variable with the same name. Reading the new local before initialization is a runtime error; `diameter = max(diameter, candidate)` cannot implicitly read the outer `diameter`.
 - Mutating a field or collection through a captured reference does not rebind the captured name and needs no `outer` declaration.
 
 This keeps recursive helper locals separate while allowing an explicitly shared accumulator. See [Diameter of Binary Tree](/docs/examples/diameter-of-binary-tree/).
@@ -195,20 +222,20 @@ quotient //= divisor
 
 - The target must be an initialized writable location, such as a local variable, record field, list element, map entry, or counter entry. Compound assignment does not initialize a new variable.
 - Resolve the target location once, including its receiver and index expressions, and read its existing value. Then evaluate the right-hand side once, apply the operation, and store the result at that same location.
-- Follow the corresponding binary operator and ordinary assignment type rules. In the current draft, these forms require an integer target and integer right-hand side. They do not introduce collection repetition, string concatenation, or implicit character conversions.
+- Follow the corresponding binary operator and ordinary assignment type rules. Targets can have type `int` or `number`. `+=`, `-=`, and `*=` use the numeric arithmetic rules below; `//=` requires finite integer operands. A result written to an `int` target must be finite. These operations do not introduce collection repetition, string concatenation, or implicit character conversions.
 - Read locations using their normal rules. Invalid list indices fail; a missing ordinary map entry fails; a map with a default can insert that default; a missing counter entry reads as zero without insertion.
 - Apply normal write behavior, including removing a counter key when its resulting count is zero.
 - `//=` uses floor division, including for negative operands. A zero divisor causes a runtime error and does not write a quotient.
 - Errors do not undo side effects from target evaluation, reading a map default, or evaluating the right-hand side.
-- An uninitialized variable, a nonwritable target, incompatible types, and use inside an expression are errors. Rebinding an enclosing function's variable still requires `outer`.
+- Reading an uninitialized target fails at runtime before evaluating the right-hand side. Undefined names, nonwritable targets, incompatible types, and use inside an expression are compile-time errors. Rebinding an enclosing function's variable still requires `outer`.
 
 See [Product of Array Except Self](/docs/examples/product-of-array-except-self/) for multiplication assignments in two indexed passes.
 
 ### Increment and decrement
 
 - `target++` and `target--` are standalone statements with no result value.
-- The target must be a writable integer location, such as a variable or map entry.
-- Add or subtract one.
+- The target must be an initialized writable location of type `int` or `number`, such as a variable or map entry.
+- Add or subtract one using the corresponding numeric compound-assignment rules. An infinity stored in a `number` target stays the same infinity.
 - Prefix forms and use inside expressions are not supported.
 
 ### In-place operations
@@ -242,7 +269,7 @@ Tuple assignment remains available; `swap!` provides a concise form for an excha
 
 ### Minimum and maximum updates
 
-`max!(target, candidate)` keeps the larger integer in the target. `min!(target, candidate)` keeps the smaller integer.
+`max!(target, candidate)` keeps the larger numeric value in the target. `min!(target, candidate)` keeps the smaller.
 
 ```birdie
 max!(longestSeq, currSeq)
@@ -250,20 +277,64 @@ max!(diameter, left + right)
 min!(distances[node], candidate)
 ```
 
-- Exactly two operands are required. The first must be an initialized writable integer location; the second must produce an `int`.
+- Exactly two operands are required. The first must be an initialized writable location of type `int` or `number`; the second must produce an `int` or `number`.
 - Resolve the target location once and read its current value, then evaluate the candidate once. Use the same location-evaluation and scope rules as compound assignment.
 - Write the candidate only when it is strictly larger for `max` or strictly smaller for `min`. Equal values leave the target unchanged, with no final write.
+- Keep the target's inferred or declared type. If an improving candidate is infinite and the target has type `int`, the finite-value check fails before writing; a non-improving candidate requires no write. A `number` target can store either integers or infinities.
 - Reads use normal location rules, including map-default insertion and nonmutating zero reads from counters. Writes use normal assignment behavior, including counter zero removal.
 - A read or candidate evaluation can have its ordinary side effects even when the candidate does not improve the target. Errors do not roll those effects back.
-- A new or uninitialized variable, a nonwritable target, incompatible operand types, and use inside an expression are errors. Rebinding an enclosing function's variable requires `outer`.
+- Reading an uninitialized target fails at runtime before evaluating the candidate. Undefined names, nonwritable targets, incompatible operand types, and use inside an expression are compile-time errors. Rebinding an enclosing function's variable requires `outer`.
 
 `max(a, b)` and `min(a, b)` remain ordinary value-returning function calls. Only the first argument of `max!` or `min!` is a writable argument; the candidate is evaluated as an ordinary value.
 
 See [Longest Consecutive Sequence](/docs/examples/longest-consecutive-sequence/) for a running maximum update.
 
+## Numbers and infinity
+
+`int` contains finite arbitrary-precision integers. `number` contains those same integer values plus negative and positive infinity. There are no floating-point values, fractions, or NaN in the current numeric design.
+
+`inf` is a reserved numeric literal of type `number`, available without imports. `-inf` applies unary negation to produce negative infinity. Finite integer literals still have type `int`.
+
+```birdie
+lower: number = -inf
+upper: number = inf
+best = inf
+min!(best, 7)
+min!(best, 3)  # best now holds 3, with static type number
+```
+
+### Compatibility and exact ordering
+
+- Every `int` can be used where `number` is expected. This preserves its exact integer value, without conversion to floating point or a fixed-width representation.
+- When an operation, argument, assignment, or return requires `int` and receives `number`, check that it contains a finite integer. Use that integer unchanged, or raise a runtime error if it is infinite. For example, `repeat inf:` fails before entering the body. Indices, collection sizes, ranges, and counter counts remain finite integers.
+- A binding's inferred type stays `number` after a checked finite use. Inference can preserve an integer type when only integer values are involved; combining integers and infinity in an inferred binding or collection gives the common element type `number`.
+- All numeric comparisons accept integers and `number` values. Negative infinity is below every finite integer; positive infinity is above every finite integer. Each infinity equals itself, and the two infinities are unequal. Finite values compare exactly, regardless of their size.
+- Numeric values are immutable. Widening an integer to `number` does not change its value, and arithmetic must not mutate integer values held by other bindings or AST literals.
+- Numeric equality and hashing agree across integer and `number` uses. A finite numeric key hashes like the same integer key; each infinity has stable equality and hashing. This permits `number` keys in maps, sets, and counters, using their existing order rules.
+- `number?` adds ordinary absence to this numeric domain. `none` is distinct from both infinities and has no numeric ordering. Neither integers nor `number` values have implicit truthiness.
+
+See [Validate Binary Search Tree](/docs/examples/validate-binary-search-tree/) for bounds that start at `-inf` and `inf` and become integer node values in recursive calls.
+
+### Arithmetic
+
+Unary `+` preserves a numeric value; unary `-` negates it and exchanges the two infinities. Both preserve the operand's static numeric type. Binary `+`, `-`, and `*` return `int` for two `int` operands, or `number` when either operand has static type `number`. Finite arithmetic remains exact.
+
+| Operation | Result |
+| --- | --- |
+| An infinity plus a finite integer | The same infinity |
+| Two infinities with the same sign added together | That infinity |
+| Opposite infinities added together | Runtime error |
+| Subtraction | Add the negation of the right operand; the same addition rules apply |
+| An infinity multiplied by a nonzero integer or another infinity | Infinity with the product's sign |
+| Zero multiplied by an infinity | Runtime error |
+
+For example, `inf + 5` is `inf`, `5 - inf` is `-inf`, and `inf - inf` raises a runtime error. Undefined operations produce an error, without introducing NaN. Evaluate operands once, from left to right; errors do not undo earlier effects or write a compound-assignment result.
+
+Floor division `//` continues to require finite integers, using the checked finite-use rule when an operand has type `number`. Division by zero fails as before. Fractional division remains open.
+
 ## Integers and division
 
-- `int` is signed and arbitrary precision, with no fixed bit width or wrapping overflow.
+- `int` is finite, signed, and arbitrary precision, with no fixed bit width or wrapping overflow.
 - `int()` returns zero.
 - Value size is limited by available resources. Operation costs depend on operand size.
 - `//` is floor division. Integer operands produce an integer.
@@ -273,7 +344,7 @@ See [Longest Consecutive Sequence](/docs/examples/longest-consecutive-sequence/)
 
 ### Decimal conversions
 
-`str(value)` formats an `int` as decimal text. `int(text)` parses a decimal `str` into an `int`. Both are built in and evaluate their argument once.
+`str(value)` formats a numeric value as text. `int(text)` parses a decimal `str` into an `int`. Both are built in and evaluate their argument once.
 
 ```birdie
 label = str(42)       # "42"
@@ -282,21 +353,21 @@ count = int("0042")   # 42
 signed = int("-7")    # -7
 ```
 
-- Formatting uses ASCII digits, a leading `-` for negative values, and no leading zeros except for `"0"` itself. It adds no whitespace or locale-specific separators.
+- Finite integer formatting uses ASCII digits, a leading `-` for negative values, and no leading zeros except for `"0"` itself. It adds no whitespace or locale-specific separators. Infinities format as `"inf"` and `"-inf"`.
 - Parsing accepts an optional ASCII `+` or `-` followed by one or more ASCII digits: `[+-]?[0-9]+`. Leading zeros are allowed; `int("-0")` is zero.
 - The entire input must match. Empty text, a sign alone, whitespace, digit separators, base prefixes, and non-ASCII digits cause a runtime error. Parsing does not trim text or return a fallback value.
 - These conversions preserve arbitrary-precision integer values, subject to available resources. Conversion work depends on the number of digits and the integer's size.
-- `str(value)` requires one `int`; `int(text)` requires one `str`. Incompatible argument types and unsupported argument counts are type errors. The existing zero-argument `int()` form still returns zero.
+- `str(value)` requires one `int` or `number`; `int(text)` requires one `str`. `int(value)` also accepts a numeric value, returning its finite integer unchanged or raising a runtime error for an infinity. Incompatible argument types and unsupported argument counts are type errors. The zero-argument `int()` form still returns zero. Parsing `"inf"` or `"-inf"` as an integer is an error.
 
 See [Encode and Decode Strings](/docs/examples/encode-and-decode-strings/) for decimal length headers.
 
 ### Minimum and maximum
 
-`max(a, b)` returns the larger of two `int` values; `min(a, b)` returns the smaller. Both are built-in functions that need no imports.
+`max(a, b)` returns the larger of two numeric values; `min(a, b)` returns the smaller. Both are built-in functions that need no imports.
 
-- Both arguments must be integers. Other argument types and argument counts are type errors.
+- Both arguments must have type `int` or `number`. Other argument types and argument counts are type errors.
 - Evaluate each argument once, from left to right, before comparing the values.
-- The result has type `int`; equal arguments produce that same integer value.
+- The result has type `int` when both arguments have type `int`, or `number` otherwise. Equal arguments return the first value. Integer and infinity comparisons use the exact ordering above.
 - Calls return a value and do not rebind either argument. A discarded `max(a, b)` or `min(a, b)` result does not update `a` or `b`.
 - Use [`max!(target, candidate)` or `min!(target, candidate)`](#minimum-and-maximum-updates) to update an initialized writable location instead.
 - Variadic and collection forms remain undecided.
@@ -305,7 +376,7 @@ See [Maximum Depth of Binary Tree](/docs/examples/maximum-depth-of-binary-tree/)
 
 ### Absolute value
 
-`abs(value)` returns the nonnegative magnitude of an `int`, without modifying the argument.
+`abs(value)` returns the nonnegative magnitude of a numeric value, without modifying the argument.
 
 ```birdie
 abs(-3)  # 3
@@ -313,11 +384,31 @@ abs(0)   # 0
 abs(4)   # 4
 ```
 
-- Exactly one integer argument is required and evaluated once. Incompatible argument types and other argument counts are type errors.
-- The result has type `int`. Arbitrary precision avoids fixed-width minimum-integer overflow; work and storage depend on operand size.
-- The built-in requires no imports or implicit conversions.
+- Exactly one `int` or `number` argument is required and evaluated once. Incompatible argument types and other argument counts are type errors.
+- An `int` argument returns `int`; a `number` argument returns `number`. `abs(inf)` and `abs(-inf)` both return `inf`. Finite values preserve arbitrary precision; work and storage depend on operand size.
+- The built-in requires no imports or floating-point conversions.
 
 See [Balanced Binary Tree](/docs/examples/balanced-binary-tree/) for comparing child heights with `abs(right - left)`.
+
+## Chained comparisons
+
+Comparisons can form a chain of adjacent tests:
+
+```birdie
+lower < value < upper
+0 <= index < items.size
+not lower < value < upper
+```
+
+`lower < value < upper` tests `lower < value` and then `value < upper`, retaining the first evaluation of `value`. It does not compare a boolean result with `upper`.
+
+- Chains can combine `<`, `<=`, `>`, `>=`, `==`, and `!=`. Each adjacent pair must support its own comparison under the ordinary type rules. Chaining does not introduce new ordering or equality for any type.
+- Evaluate operands from left to right, at most once each. Compare the first two values; only if that comparison succeeds, evaluate the next operand and compare it with the retained middle value. Continue in the same way through longer chains.
+- Stop at the first false comparison without evaluating later operands. The chain returns a `bool`: false on the first failure, or true when all comparisons succeed.
+- Retained operands use normal value and reference semantics. A call used as a middle operand runs once, even though its result participates in two comparisons. Later changes to the original variable do not replace a value already retained by the chain.
+- Type-check every adjacent pair before execution, including comparisons that might be skipped at runtime. Explicit parentheses delimit expressions: `(a < b) < c` attempts to order a boolean against `c`, and is a type error when `c` is an integer.
+- Chains bind more tightly than `not`, `and`, and `or`. `not lower < value < upper` negates the result of the whole chain. `and` and `or` can combine complete chains with other conditions.
+- Optional operands keep their existing rules. `== none` and `!= none` inspect presence; an ordering comparison requires present values and checks them at runtime when needed. `none` has no implicit lower-bound or upper-bound ordering.
 
 ## Booleans and truthiness
 
@@ -327,7 +418,7 @@ See [Balanced Binary Tree](/docs/examples/balanced-binary-tree/) for comparing c
 - A counter is empty when it has no nonzero counts. Negative counts make it nonempty too; summing to zero across different keys does not make it false.
 - `not` returns a boolean. `not opened` tests whether a stack is empty.
 - Numbers require explicit comparisons, such as `count != 0`.
-- An optional condition tests its contained value, never its presence. A present `false` or empty collection is false; an absent value causes a runtime error. Use `== none` or `!= none` when the intended question is absence or presence. Records and integers remain invalid condition types, including their optional forms.
+- An optional condition tests its contained value, never its presence. A present `false` or empty collection is false; an absent value causes a runtime error. Use `== none` or `!= none` when the intended question is absence or presence. Records, integers, and `number` values remain invalid condition types, including their optional forms.
 - `and` evaluates left to right and stops when its left operand is false. `or` evaluates left to right and stops when its left operand is true. Both return a `bool`, rather than returning an operand.
 - Comparisons bind more tightly than `not`, then `and`, then `or`. Parentheses can override this grouping.
 - Narrowing follows the paths that reach each operand: the right side of `and` uses facts from a true left side; the right side of `or` uses facts from a false left side. Branches and early returns retain the facts common to their reachable paths.
@@ -430,7 +521,6 @@ Escapes count as their resulting characters; `'\n'` is one `char`. Unknown escap
 
 ## Open questions
 
-- Visibility outside a block of variables first introduced inside it.
 - Floating-point arithmetic.
 - Remainder semantics and explicit truncating division.
 - Conversion and concatenation between `char` and `str`.

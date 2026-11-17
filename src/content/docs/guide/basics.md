@@ -21,6 +21,8 @@ Birdie infers `count` as `int`. Reassignments must match that type. You can writ
 
 Static types describe the data and catch incompatible operations. Some assumptions are checked at runtime: indices must be in bounds, and an optional value used where a present value is required must actually be present. The algorithm does not need extra assertion or unwrapping syntax solely to establish those facts.
 
+Variables first assigned inside a branch or loop belong to the enclosing function and can be used after the block. Their types are still checked statically. If execution reaches a read before that variable has received a value, Birdie raises a runtime error. This is lexical function scope; a function does not look up variables in its caller. See [scope and initialization](/docs/specification/types/#scope-and-initialization) for the exact rules.
+
 Names use `camelCase`, such as `currentLength`. User-defined types use `PascalCase`, such as `TreeNode`. See [naming conventions](/docs/specification/#naming-conventions) for the full convention.
 
 Strings use double quotes, and individual characters use single quotes:
@@ -31,6 +33,18 @@ letter = 'b'
 ```
 
 Both strings and characters use Unicode. A character is one Unicode scalar value; a visible symbol can contain several of them.
+
+## Numbers and infinity
+
+`int` holds finite integers of arbitrary size. Use `number` when a value can also be negative or positive infinity. The built-in `-inf` and `inf` bounds compare exactly with integers, without converting them to floats:
+
+```birdie
+best = inf
+min!(best, 7)
+min!(best, 3)  # best is now 3
+```
+
+See [Validate Binary Search Tree](/docs/examples/validate-binary-search-tree/) for recursive bounds, or the [numeric rules](/docs/specification/types/#numbers-and-infinity) for arithmetic and finite-value checks.
 
 ## Lists
 
@@ -102,6 +116,15 @@ else:
 Numbers need an explicit comparison such as `count != 0`. Use `root == none` or `root != none` to ask about optional absence or presence. An optional boolean or collection can be used for its contained truth value; if it is absent, that use raises a runtime error instead of treating absence as false. Records have no truthiness.
 
 `not` produces a boolean. `and` skips its right operand when the left is false; `or` skips it when the left is true. Both return a boolean.
+
+Comparisons can be chained:
+
+```birdie
+if 0 <= index < items.size:
+    return items[index]
+```
+
+The chain checks adjacent pairs from left to right, evaluates each operand at most once, and stops at the first false comparison. `not lower < value < upper` negates the complete chain. See [chained comparisons](/docs/specification/types/#chained-comparisons) for the exact rules.
 
 ## Loops
 

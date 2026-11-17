@@ -180,7 +180,20 @@
         "category": "Trees"
       },
       "blind75": false,
-      "slug": "binary-tree-right-side-view"
+      "description": "Return the rightmost visible node value at each depth, from top to bottom.",
+      "note": "Visit each level from left to right and keep the value of its last node.",
+      "notes": [
+        "The queue starts with the present root. Each node's left child is enqueued before its right child, so the last node removed from a level is that level's rightmost node.",
+        "repeat pending.size evaluates the count once before processing the level. Children added during its body wait for the next outer iteration, matching Python's range(len(pending)).",
+        "node is a function-local TreeNode even though its first assignment is inside repeat. The nonempty queue ensures at least one assignment on each outer iteration before res.push(node.val). A read with no prior assignment would raise a runtime initialization error; uninitialized state is distinct from none and does not change the static type.",
+        "Explicit presence checks preserve nodes whose value is zero. A deeper level can be visible entirely from the left subtree when the right subtree ends earlier.",
+        "LeetCode supplies TreeNode. The record declaration shows how the same type would be defined in a standalone Birdie program.",
+        "The traversal takes O(n) time and O(w) auxiliary queue space, where w is the maximum level width, plus O(h) result space for h levels. It does not modify the tree."
+      ],
+      "slug": "binary-tree-right-side-view",
+      "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
+      "birdie": "fn rightSideView(root: TreeNode?) list[int]:\n    if root == none:\n        return []\n\n    res = []\n    pending = queue([root])\n\n    while pending:\n        repeat pending.size:\n            node = pending.pop()\n\n            if node.left != none:\n                pending.push(node.left)\n            if node.right != none:\n                pending.push(node.right)\n\n        res.push(node.val)\n\n    return res",
+      "python": "from collections import deque\n\n\nclass Solution:\n    def rightSideView(self, root: TreeNode | None) -> list[int]:\n        if root is None:\n            return []\n\n        res = []\n        pending = deque([root])\n\n        while pending:\n            for _ in range(len(pending)):\n                node = pending.popleft()\n\n                if node.left is not None:\n                    pending.append(node.left)\n                if node.right is not None:\n                    pending.append(node.right)\n\n            res.append(node.val)\n\n        return res"
     },
     {
       "title": "Burst Balloons",
@@ -385,7 +398,20 @@
         "category": "Trees"
       },
       "blind75": false,
-      "slug": "count-good-nodes-in-binary-tree"
+      "description": "Count nodes whose value is at least every value on the path from the root to that node.",
+      "note": "Pass the maximum value seen on the current path down each recursive branch.",
+      "notes": [
+        "The problem guarantees a nonempty tree, so goodNodes takes TreeNode and starts with root.val as the path maximum. The helper takes TreeNode? because children can be absent; its none guard returns zero for an empty subtree.",
+        "Each recursive call has its own max_val parameter. Updating it for a node does not change the parent's parameter or the maximum used by a sibling branch. There is no captured accumulator or outer declaration.",
+        "Equality counts as good. Inside node.val >= max_val, assigning max_val = node.val already maintains the path maximum, so a separate max or max! operation is unnecessary.",
+        "dfs captures no state and is a separate function below goodNodes in both versions. Birdie registers function declarations before execution, so the main algorithm can call the helper written below it.",
+        "LeetCode supplies TreeNode. The record declaration shows how the same type would be defined in a standalone Birdie program.",
+        "The traversal takes O(n) time and O(h) recursion space, where h is the tree height. It does not modify the tree."
+      ],
+      "slug": "count-good-nodes-in-binary-tree",
+      "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
+      "birdie": "fn goodNodes(root: TreeNode) int:\n    return dfs(root, root.val)\n\nfn dfs(node: TreeNode?, max_val: int) int:\n    if node == none:\n        return 0\n\n    count = 0\n    if node.val >= max_val:\n        count = 1\n        max_val = node.val\n\n    return count + dfs(node.left, max_val) + dfs(node.right, max_val)",
+      "python": "class Solution:\n    def goodNodes(self, root: TreeNode) -> int:\n        return dfs(root, root.val)\n\n\ndef dfs(node: TreeNode | None, max_val: int) -> int:\n    if node is None:\n        return 0\n\n    count = 0\n    if node.val >= max_val:\n        count = 1\n        max_val = node.val\n\n    return count + dfs(node.left, max_val) + dfs(node.right, max_val)"
     },
     {
       "title": "Counting Bits",
@@ -2256,7 +2282,21 @@
         "category": "Trees"
       },
       "blind75": true,
-      "slug": "validate-binary-search-tree"
+      "description": "Validate every node against the strict lower and upper bounds inherited from its ancestors.",
+      "note": "Start with infinite bounds, then tighten the appropriate bound when descending into each subtree.",
+      "notes": [
+        "The helper's number bounds accept exact integers and the built-in -inf and inf values. Node values stay finite integers. Python imports inf from math and uses int | float annotations because its infinity values are floats; it does not convert integer node values to floats.",
+        "An absent node is a valid empty subtree, so the helper returns true immediately. An empty input tree is valid too.",
+        "The chained comparison min_val < node.val < max_val enforces strict ordering, rejects duplicates, and checks inherited ancestor bounds. Each operand is evaluated at most once, and a failed comparison skips the rest of the chain.",
+        "The recursive and visits the right subtree first and skips the left subtree when the right subtree is invalid. This preserves the original traversal order while avoiding the eager evaluation caused by separate right and left assignments.",
+        "dfs captures no state and is a separate helper below isValidBST in both versions. LeetCode supplies TreeNode; the record declaration shows its standalone Birdie form.",
+        "Shared cases include distinct integers above floating-point precision and beyond machine integer ranges to check exact ordering. The initial infinities do not impose a finite maximum or minimum integer value.",
+        "Worst-case time is O(n), with O(h) recursion space for tree height h. Invalid subtrees can end the traversal early. The tree is not modified."
+      ],
+      "slug": "validate-binary-search-tree",
+      "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
+      "birdie": "fn isValidBST(root: TreeNode?) bool:\n    return dfs(root, -inf, inf)\n\nfn dfs(node: TreeNode?, min_val: number, max_val: number) bool:\n    if node == none:\n        return true\n\n    if not min_val < node.val < max_val:\n        return false\n\n    return (\n        dfs(node.right, node.val, max_val)\n        and dfs(node.left, min_val, node.val)\n    )",
+      "python": "from math import inf\n\n\nclass Solution:\n    def isValidBST(self, root: TreeNode | None) -> bool:\n        return dfs(root, -inf, inf)\n\n\ndef dfs(node: TreeNode | None, min_val: int | float, max_val: int | float) -> bool:\n    if node is None:\n        return True\n\n    if not min_val < node.val < max_val:\n        return False\n\n    return (\n        dfs(node.right, node.val, max_val)\n        and dfs(node.left, min_val, node.val)\n    )"
     },
     {
       "title": "Walls And Gates",

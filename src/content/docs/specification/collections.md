@@ -12,6 +12,8 @@ Collections and strings expose a read-only `int` property, `.size`. It counts li
 
 The operation types below describe present values. Optional receivers and operands with compatible underlying types follow [checked optional use](/docs/specification/types/#checked-optional-use); absence fails at runtime when a present value is required.
 
+Integer-only inputs such as indices and construction counts also accept `number` values through a [finite-value check](/docs/specification/types/#compatibility-and-exact-ordering). An infinity fails at that use site. Integer elements can be stored in `number` collections without losing precision.
+
 ## Lists
 
 `list[T]` is a growable list. `list[int]` holds integers, `list[(int, int)]` holds pairs, and `list[list[str]]` holds lists of strings.

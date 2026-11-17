@@ -76,10 +76,10 @@ fn name(param: Type) ReturnType:
 - Named functions declared directly in a file or function body are visible throughout that body, regardless of their position in the source.
 - Register those declarations when entering the body, before executing its ordinary statements. Registration does not execute the declared functions or change the order of variable initialization.
 - A function can call a helper written below it. Separate helpers are preferred when they need no captured variables; the main algorithm can appear first.
-- A nested helper can capture an enclosing binding before its initializer executes, but it cannot read that binding before definite initialization. Forward function references do not initialize captured variables early.
+- A nested helper can capture an enclosing binding before its initializer executes. Reading that binding before assignment raises a runtime initialization error. Forward function references do not initialize captured variables early.
 - Duplicate function declarations with the same name in one scope are errors.
 
-These are language semantics shared by the planned interpreter and VM. Declarations inside conditional or loop blocks remain open.
+These are language semantics shared by the planned interpreter and VM. Function declarations inside conditional or loop blocks remain open.
 
 ### Nested functions
 
@@ -119,6 +119,8 @@ Branches use `if condition:`, `else if condition:`, and `else:`. Branch headers 
 
 Conditions follow the [truthiness rules](/docs/specification/types/#booleans-and-truthiness).
 
+[Chained comparisons](/docs/specification/types/#chained-comparisons) such as `0 <= index < items.size` test adjacent pairs, evaluating each operand at most once and stopping at the first false comparison.
+
 ## Loops
 
 `while condition:` tests the condition before each iteration and stops when false.
@@ -133,6 +135,8 @@ For lists and strings:
 | `for i, (x, y) in points:` | Index and unpacked tuple |
 
 String iteration yields `char` values. Parentheses distinguish tuple unpacking from an index-and-value loop.
+
+Ordinary `for` bindings and assignments inside loop bodies belong to the enclosing function or file, following [scope and initialization](/docs/specification/types/#scope-and-initialization). They remain visible after the loop. A loop that runs zero times does not assign its bindings or clear any earlier values. Comprehension and generator bindings have their own expression-local scopes.
 
 For sets, `for value in values:` visits each distinct element in insertion order. See [set iteration](/docs/specification/collections/#set-iteration-and-order). Indexed and reverse set forms remain open.
 
@@ -164,10 +168,12 @@ repeat pending.size:
 - Evaluate the count once when entering the loop. Changing a variable or collection used in that expression does not change the active repetition count.
 - Zero or negative counts run the body zero times, matching `for _ until count:`.
 - Each completed iteration consumes one repetition. `continue` also consumes the current repetition before starting the next one; it does not reevaluate the count. `return` exits the enclosing function normally.
-- The body follows ordinary loop scope and initialization rules. No implicit index or other binding is introduced.
+- The header introduces no bindings. Assignments in the body follow the ordinary [scope and initialization rules](/docs/specification/types/#scope-and-initialization), so a value assigned in the body can be read after the loop. If no assignment has executed, reading it raises a runtime error.
 - This is a statement form. It cannot be used as an expression or a comprehension clause.
 
 See [Binary Tree Level Order Traversal](/docs/examples/binary-tree-level-order-traversal/) for a queue whose size is captured at the start of each level.
+
+See [Binary Tree Right Side View](/docs/examples/binary-tree-right-side-view/) for reading the last node assigned by a nonempty repetition after it finishes.
 
 ### Continue
 
