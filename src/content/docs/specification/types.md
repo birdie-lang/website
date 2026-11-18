@@ -134,6 +134,41 @@ if left == none:
 
 See [Balanced Binary Tree](/docs/examples/balanced-binary-tree/) for propagating an absent height. Its empty-node guard still returns zero: an absent node is a valid empty subtree, while an absent height signals imbalance.
 
+### Conditional return
+
+`return? expression` returns an optional expression's payload when it is present. When the expression is `none`, execution proceeds to the next statement.
+
+```birdie
+return? dfs(node.left)
+```
+
+This has the same control flow as the following code, without introducing a visible local binding:
+
+```birdie
+left = dfs(node.left)
+if left != none:
+    return left
+```
+
+- Write `return?` with the `?` immediately after the keyword. It is a standalone statement requiring an expression, not an expression itself. Use outside a function is a compile-time error.
+- The expression must have an optional type `T?`. A nonoptional operand is a type error; this form does not implicitly add optionality to an already present expression.
+- Evaluate the expression exactly once. If it is present, return its `T` payload from the nearest enclosing function, using ordinary return compatibility and value checks. An incompatible payload type is a compile-time error, even if the expression might be absent at runtime.
+- Presence is independent of truthiness. A present `0`, `false`, empty string, or empty collection is returned unchanged. Records and collections retain their normal reference semantics.
+- If the expression is absent, perform no return and run the next statement. Inside a loop, execution remains in the current iteration. This statement does not supply an implicit `return none` or another fallback; write subsequent control flow for the unmatched case.
+- The enclosing function can have a nonoptional or optional return type. During inference, the statement contributes a possible return of `T` and leaves a fallthrough path; absence alone does not contribute a `none` result type.
+- Evaluation errors and uninitialized reads propagate normally. The statement does not catch errors or undo side effects. A successful conditional return skips the remaining function body.
+
+The position of `?` determines the control flow:
+
+```birdie
+return? find()    # Present: return its payload. Absent: run the next statement.
+value = find()?  # Present: unwrap. Absent: return none from this function.
+```
+
+The second form still requires an optional-returning function. `return find()?` also retains ordinary postfix propagation: it returns the found payload or returns `none`, so it does not fall through on absence.
+
+See [Kth Smallest Element in a BST](/docs/examples/kth-smallest-element-in-a-bst/) for propagating a found value, including zero, while continuing the traversal when a subtree contains no result.
+
 ## Inference
 
 - Birdie is statically typed.
@@ -450,21 +485,22 @@ See [Same Tree](/docs/examples/same-tree/) for an `or` guard that checks two opt
 
 ### String slicing
 
-`text[start:end]` returns a `str` containing the Unicode scalar values from `start` up to, but excluding, `end`.
+`text[start:end]` returns a `str` containing the Unicode scalar values from the inclusive `start` up to, but excluding, `end`. An omitted start means zero; an omitted end means the string's size. The forms `text[:end]`, `text[start:]`, and `text[:]` follow the same rules.
 
 ```birdie
 text = "bird"
 middle = text[1:3]  # "ir"
 empty = text[2:2]   # ""
+suffix = text[2:]   # "rd"
 ```
 
-- Both bounds must be integers satisfying `0 <= start <= end <= text.size`. Noninteger bounds are type errors; negative, reversed, or out-of-bounds ranges cause a runtime error. Bounds are not clamped.
-- Evaluate the source, start, and end expressions once, in that order.
+- Both bounds must be finite integers under the ordinary checked-use rules and satisfy `0 <= start <= end <= text.size`. Incompatible bound types are compile-time errors; negative, reversed, or out-of-bounds ranges cause a runtime error. Bounds are not clamped.
+- Evaluate and retain the source, then each explicit bound once, from left to right, applying required presence and finite-value checks before evaluating the next operand. Supply omitted bounds after those evaluations and validate the range against the retained string.
 - Equal bounds produce an empty string, including when both equal `text.size`. Indexing a single position still returns a `char`; slicing returns a `str`.
-- Slicing preserves the exact scalar sequence without normalization or mutation. It uses the same exclusive-end convention as [list prefix slicing](/docs/specification/collections/#prefix-slicing).
+- Slicing preserves the exact scalar sequence without normalization or mutation. It uses the same inclusive-start, exclusive-end convention as [list slicing](/docs/specification/collections/#slicing).
 - The intended cost model permits one linear preprocessing pass per string for scalar indexing. After that preparation, size and indexed access should take constant time and copying a slice of length k should take O(k) work. The representation remains undecided; repeatedly scanning a UTF-8 prefix for each access would violate this cost target.
 
-Additional omitted-bound forms, steps, and slice assignment remain open. See [Encode and Decode Strings](/docs/examples/encode-and-decode-strings/) for header and payload slices.
+Slice steps and slice assignment remain open. See [Encode and Decode Strings](/docs/examples/encode-and-decode-strings/) for header and payload slices.
 
 ### Character codes
 

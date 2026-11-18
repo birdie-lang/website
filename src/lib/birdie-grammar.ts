@@ -35,6 +35,7 @@ export const birdieGrammar: NonNullable<ShikiConfig['langs']>[number] = {
     },
     { name: 'support.function.birdie', match: '\\b(swap|min|max)!(?=\\s*\\()' },
     { name: 'keyword.other.birdie', match: '\\bouter\\b' },
+    { name: 'keyword.control.birdie', match: '\\breturn\\?' },
     { name: 'keyword.control.birdie', match: '\\b(return|for|in|if|else|while|repeat|continue|not|and|or|until|through|step|reverse)\\b' },
     { name: 'storage.type.birdie', match: '\\b(int|number|bool|str|char)\\b' },
     { name: 'storage.type.birdie', match: '\\b(list|map|counter|set|stack|queue)(?=\\s*\\[)' },

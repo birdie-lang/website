@@ -60,6 +60,19 @@ ordered = nums.sorted()
 
 Indices start at zero. Negative indices are errors. `push` adds an item at the end; `sorted()` produces a new list and leaves `nums` unchanged.
 
+Slices include the start and exclude the end. Omit the start for zero, or the end for `.size`:
+
+```birdie
+middle = nums[1:3]
+prefix = nums[:2]
+suffix = nums[2:]
+copy = nums[:]
+```
+
+A slice creates a new outer list, sharing any nested records or collections. Equal bounds produce an empty slice. Negative, reversed, and oversized bounds are runtime errors. Strings use the same slicing forms with Unicode scalar positions. See the [slicing rules](/docs/specification/collections/#slicing) for details.
+
+`nums.index(value)` returns the first matching index, or `none` if the value is absent. The result has type `int?`, so use `position != none` to test for a match; zero is a valid position.
+
 ## Maps, stacks, and queues
 
 Collections are built in, so no imports are needed. An empty map can get its types from later use:
@@ -125,6 +138,20 @@ if 0 <= index < items.size:
 ```
 
 The chain checks adjacent pairs from left to right, evaluates each operand at most once, and stops at the first false comparison. `not lower < value < upper` negates the complete chain. See [chained comparisons](/docs/specification/types/#chained-comparisons) for the exact rules.
+
+## Returning an optional result
+
+Use [`return? expression`](/docs/specification/types/#conditional-return) to return a result only when it is present:
+
+```birdie
+fn preferFirst(first: int?, fallback: int) int:
+    return? first
+    return fallback
+```
+
+`preferFirst(0, 7)` returns zero; `preferFirst(none, 7)` returns seven. The expression is evaluated once, and only `none` makes execution proceed to the next statement.
+
+[Postfix `expression?`](/docs/specification/types/#optional-propagation) unwraps a present value or returns `none` from an optional-returning function. See the [kth-smallest example](/docs/examples/kth-smallest-element-in-a-bst/) for a complete search using conditional return.
 
 ## Loops
 

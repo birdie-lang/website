@@ -333,7 +333,20 @@
         "category": "Trees"
       },
       "blind75": true,
-      "slug": "construct-binary-tree-from-preorder-and-inorder-traversal"
+      "description": "Reconstruct a binary tree by splitting each inorder traversal around the root found at the start of its preorder traversal.",
+      "note": "Use copying slices to pass the left and right traversal segments into recursive calls.",
+      "notes": [
+        "Assume valid matching traversals with distinct values. Empty traversals produce none. The algorithm preserves the traversal order; the reconstructed tree need not be a binary search tree.",
+        "List index(value) returns int? and identifies the first matching position, including zero. Valid traversals guarantee a match, so mid can be used directly in arithmetic and slice bounds through checked optional use. An absent match would fail when an integer position is required.",
+        "Slices include the start and exclude the end. inorder[:mid] excludes the root, and preorder[1:mid + 1] contains exactly mid nodes. An omitted start is zero and an omitted end is the source size. Empty subtrees naturally use equal-bound or empty suffix slices.",
+        "TreeNode(value, left, right) uses the generated record constructor in field order. This constructs the children directly instead of allocating a node and assigning its fields afterward. The Python reference uses the same structure.",
+        "Slices create fresh outer lists and index lookup does not mutate its receiver. Neither input traversal is modified. LeetCode supplies TreeNode; the record declaration shows its standalone Birdie form.",
+        "This keeps the simpler slicing algorithm. Under copying-slice semantics, worst-case time and auxiliary slice storage are O(n^2) on a skewed tree. The recursion uses O(h) stack space and the output has O(n) nodes."
+      ],
+      "slug": "construct-binary-tree-from-preorder-and-inorder-traversal",
+      "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
+      "birdie": "fn buildTree(preorder: list[int], inorder: list[int]) TreeNode?:\n    if not preorder or not inorder:\n        return none\n\n    value = preorder[0]\n    mid = inorder.index(value)\n\n    return TreeNode(\n        value,\n        buildTree(preorder[1:mid + 1], inorder[:mid]),\n        buildTree(preorder[mid + 1:], inorder[mid + 1:]),\n    )",
+      "python": "class Solution:\n    def buildTree(self, preorder: list[int], inorder: list[int]) -> TreeNode | None:\n        if not preorder or not inorder:\n            return None\n\n        value = preorder[0]\n        mid = inorder.index(value)\n\n        return TreeNode(\n            value,\n            self.buildTree(preorder[1:mid + 1], inorder[:mid]),\n            self.buildTree(preorder[mid + 1:], inorder[mid + 1:]),\n        )"
     },
     {
       "title": "Container With Most Water",
@@ -949,7 +962,22 @@
         "category": "Trees"
       },
       "blind75": true,
-      "slug": "kth-smallest-element-in-a-bst"
+      "description": "Visit BST nodes in ascending order and return the value at the one-based rank k.",
+      "note": "Share a remaining-node countdown across the recursive traversal, returning as soon as a result is found.",
+      "notes": [
+        "The input is a BST and k is a valid one-based rank. The helper returns none for an absent subtree or an exhausted search, while a present integer is a found result.",
+        "return? dfs(node.left) evaluates the left search once and returns a present result, including zero. If it returns none, execution continues with the current node. Python expands this into a temporary and an explicit is not None guard.",
+        "The nested helper captures k. outer k permits rebinding that parameter in Birdie; Python uses nonlocal k. All recursive helper calls share the same countdown, without storing state on Solution or modifying the caller's integer value.",
+        "k-- decrements the countdown after visiting the left subtree. When it reaches zero, the current node is the answer. The right recursive call is returned directly because there is no later work in that helper call.",
+        "The main function returns int while dfs returns int?. The valid-rank guarantee makes the final result present. Birdie's ordinary return applies a runtime presence check if needed, without an explicit unwrap. An invalid rank that produces none fails at that checked return.",
+        "Postfix expression? has different control flow: it returns none when the operand is absent. Using it on the left subtree would stop this search before visiting the current node.",
+        "LeetCode supplies TreeNode. The record declaration shows its standalone Birdie form. Fixtures include zero-valued results from each traversal position and an integer above floating-point precision.",
+        "Under unit-cost integer operations, the traversal takes O(h + k) time and O(h) recursion space, where h is tree height; worst-case time is O(n). The tree is not modified."
+      ],
+      "slug": "kth-smallest-element-in-a-bst",
+      "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
+      "birdie": "fn kthSmallest(root: TreeNode?, k: int) int:\n    fn dfs(node: TreeNode?) int?:\n        outer k\n\n        if node == none:\n            return none\n\n        return? dfs(node.left)\n\n        k--\n        if k == 0:\n            return node.val\n\n        return dfs(node.right)\n\n    return dfs(root)",
+      "python": "class Solution:\n    def kthSmallest(self, root: TreeNode | None, k: int) -> int:\n        def dfs(node: TreeNode | None) -> int | None:\n            nonlocal k\n\n            if node is None:\n                return None\n\n            left = dfs(node.left)\n            if left is not None:\n                return left\n\n            k -= 1\n            if k == 0:\n                return node.val\n\n            return dfs(node.right)\n\n        return dfs(root)"
     },
     {
       "title": "Largest Rectangle In Histogram",

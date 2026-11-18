@@ -68,6 +68,7 @@ fn name(param: Type) ReturnType:
 - Return type inference follows the [typing rules](/docs/specification/types/#inference).
 - Functions can call themselves recursively. An explicit return annotation supplies the type needed to check recursive calls; broader recursive return inference remains open.
 - [Optional propagation](/docs/specification/types/#optional-propagation) with postfix `?` can return `none` early from a function with an optional result type.
+- [Conditional return](/docs/specification/types/#conditional-return) with `return? expression` returns a present optional payload, or runs the next statement when absent. It can be used in functions with nonoptional or optional results.
 
 [`swap!`, `min!`, and `max!`](/docs/specification/types/#in-place-operations) are built-in in-place operations with parentheses. Their specified writable arguments identify caller locations; they are standalone statements rather than ordinary function values.
 

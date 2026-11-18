@@ -69,9 +69,30 @@ For `items: list[T]`, `value` must have type `T` and `i` must have type `int`.
 | `items.last` | `T` | No | Read the last element. |
 | `items.size` | `int` | No | Read the number of elements. |
 | `items.sorted()` | `list[T]` | No | Allocate a new list in ascending order. |
+| `items.index(value)` | `int?` | No | Find the first matching index, or return `none`. |
+| `items[start:end]` | `list[T]` | No | Allocate a shallow copy from `start` up to, excluding, `end`. |
 | `items[:end]` | `list[T]` | No | Allocate a shallow copy of the first `end` elements. |
+| `items[start:]` | `list[T]` | No | Allocate a shallow copy from `start` to the end. |
+| `items[:]` | `list[T]` | No | Allocate a shallow copy of the whole list. |
 
 Use `push` to add an element; there is no `append` alias. `pop()` and `.last` cause a runtime error on an empty list. `sorted()` requires an element type with a defined ordering and leaves the original list unchanged.
+
+### Index lookup
+
+`items.index(value)` scans from the beginning and returns the first zero-based matching index as `int?`. If no element matches, including in an empty list, it returns `none`.
+
+```birdie
+items = [4, 2, 4]
+first = items.index(4)   # 0
+missing = items.index(9) # none
+```
+
+- Exactly one search value is required and must fit the list's element type. Evaluate the receiver and search expression once, in that order, before searching. The lookup does not modify the list.
+- The element type must have defined value equality. Compare elements using those existing rules, from first to last, and stop at the first match. This operation does not add equality for records, lists, or optional payloads whose equality remains unspecified.
+- A found index of zero is a present result. Use `position != none` to test for a match. A valid-input guarantee can also justify using the result directly where `int` is required, through the ordinary checked optional-use rules.
+- Lookup performs at most one equality comparison per element. It uses O(1) auxiliary space; the cost of each comparison follows the element type's equality rules.
+
+See [Construct Binary Tree from Preorder and Inorder Traversal](/docs/examples/construct-binary-tree-from-preorder-and-inorder-traversal/) for locating each subtree's root value.
 
 ### Bulk insertion
 
@@ -100,19 +121,32 @@ packed = parts.join("")   # "birdsong"
 
 See [Encode and Decode Strings](/docs/examples/encode-and-decode-strings/) for collecting fragments and joining once.
 
-### Prefix slicing
+<a id="prefix-slicing"></a>
 
-`items[:end]` creates a fresh `list[T]` containing indices `0` through `end - 1`, preserving order.
+### Slicing
 
-- `end` must be an `int` and satisfy `0 <= end <= items.size`. Noninteger ends are type errors; negative and oversized ends cause runtime errors, following the indexing bounds discipline.
-- Evaluate the source and end expression once, in that order.
-- An end of zero creates an empty list. An end equal to the source size still creates a separate outer list.
-- Slicing is a shallow copy. Replacing entries in the result does not change the source; nested records and collections remain shared.
-- Copying a prefix of length `end` takes work and storage proportional to that length.
+`items[start:end]` creates a fresh `list[T]` containing elements from the inclusive `start` index to the exclusive `end` index, preserving order. An omitted start means zero; an omitted end means the source size.
 
-General start/end slicing for lists, steps, negative-bound conventions, and slice assignment remain open. [String slicing](/docs/specification/types/#string-slicing) uses the same strict bounds and exclusive end.
+```birdie
+items = [10, 20, 30, 40]
+middle = items[1:3] # [20, 30]
+prefix = items[:2]  # [10, 20]
+suffix = items[2:]  # [30, 40]
+copy = items[:]    # [10, 20, 30, 40]; separate outer list
+empty = items[2:2] # []
+```
+
+- Bounds require finite integers under the ordinary checked-use rules and must satisfy `0 <= start <= end <= items.size`. Incompatible types are compile-time errors. Negative, reversed, or oversized bounds cause runtime errors; they are never clamped or interpreted relative to the end.
+- Evaluate and retain the source first, then each explicit bound once, from left to right. Apply required presence and finite-value checks to each operand before evaluating the next. Supply omitted bounds after those evaluations, reading the retained source's current size for an omitted end, then validate the range. Reassigning the source variable during bound evaluation does not replace the retained source object.
+- The result contains `end - start` elements. Equal bounds produce an empty list, including `items[items.size:]`. Empty sources support `items[:]` and `items[0:0]`.
+- Every slice creates a separate outer list, even `items[:]` and empty slices. Replacing entries in the result does not change the source. Nested records and collections remain shared through ordinary assignment semantics; there is no deep copy or mutable view.
+- Copying `k` elements takes O(k) work and storage, plus constant overhead. Bounds checks complete before elements are copied; a failing slice does not undo side effects from evaluating its source or bounds.
+
+For example, `items[-1:]`, `items[3:1]`, and `items[:5]` all fail for the four-element list above. Slice steps and slice assignment remain open. [String slicing](/docs/specification/types/#string-slicing) uses the same omitted-bound and strict exclusive-end conventions, with Unicode scalar positions.
 
 See [Top K Frequent Elements](/docs/examples/top-k-frequent-elements/) for bulk insertion followed by a bounded prefix copy.
+
+See [Construct Binary Tree from Preorder and Inorder Traversal](/docs/examples/construct-binary-tree-from-preorder-and-inorder-traversal/) for middle and suffix copies.
 
 ### Size and indexing
 
