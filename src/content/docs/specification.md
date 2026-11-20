@@ -63,14 +63,38 @@ fn name(param: Type) ReturnType:
 ```
 
 - Declare functions with `fn` and explicit parameter types.
+- Nested functions can list writable captures after their parameters, as in `fn dfs(node: TreeNode?, outer res) int:`. Captures use the enclosing binding's type and are not call arguments.
 - The optional return type follows `)`, without an arrow.
 - The colon and indentation define the function body.
 - Return type inference follows the [typing rules](/docs/specification/types/#inference).
-- Functions can call themselves recursively. An explicit return annotation supplies the type needed to check recursive calls; broader recursive return inference remains open.
+- Functions can call themselves recursively. Value-returning recursive functions use an explicit result annotation; recursive procedures need none. Broader recursive return inference remains open.
 - [Optional propagation](/docs/specification/types/#optional-propagation) with postfix `?` can return `none` early from a function with an optional result type.
 - [Conditional return](/docs/specification/types/#conditional-return) with `return? expression` returns a present optional payload, or runs the next statement when absent. It can be used in functions with nonoptional or optional results.
 
 [`swap!`, `min!`, and `max!`](/docs/specification/types/#in-place-operations) are built-in in-place operations with parentheses. Their specified writable arguments identify caller locations; they are standalone statements rather than ordinary function values.
+
+### Procedures
+
+A function that performs work without producing a result is a procedure. Omit the return annotation, use bare `return` to exit early, or let execution reach the end:
+
+```birdie
+fn writeTree(node: TreeNode?, parts: list[str]):
+    if node == none:
+        parts.push("|")
+        return
+
+    parts.push(str(node.val))
+    writeTree(node.left, parts)
+    writeTree(node.right, parts)
+```
+
+- With no result annotation and no value-returning statements in its own body, infer a procedure. Nested functions' returns do not affect that classification. Recursive calls do not require a result annotation in this case.
+- Bare `return` and reaching the end both finish the current procedure. They produce no value, including no implicit `none`.
+- Procedure calls are statements. Using one as an initializer, argument, condition, return value, or other value expression is a compile-time error. A procedure cannot serve as a factory that must return an element.
+- A function with a declared or inferred result type uses `return expression`, including explicit `return none` for an absent optional result. Bare `return` is a compile-time error in a value-returning function. `return? expression` contributes a possible value return and follows its existing typing rules.
+- Calling a value-returning function as a statement can discard its result. Bare `return` outside a function is an error.
+
+See [Serialize and Deserialize Binary Tree](/docs/examples/serialize-and-deserialize-binary-tree/) for a nested procedure that collects tokens in a captured list.
 
 ### Definition visibility
 
@@ -90,9 +114,7 @@ An `fn` definition can appear inside another function. The nested function has l
 fn countNodes(root: TreeNode?) int:
     count = 0
 
-    fn visit(node: TreeNode?) int:
-        outer count
-
+    fn visit(node: TreeNode?, outer count) int:
         if node == none:
             return 0
 
@@ -107,7 +129,7 @@ fn countNodes(root: TreeNode?) int:
 
 - Each invocation has its own parameters and local variables, including during recursion.
 - Reading an enclosing variable needs no declaration. Check captured values using the enclosing binding's static type, without assuming a caller's temporary narrowing.
-- Rebinding an enclosing variable requires [`outer name`](/docs/specification/types/#outer-variables). Ordinary assignments inside the nested function create or update its own locals.
+- Rebinding an enclosing variable requires an [`outer name` entry in the function header](/docs/specification/types/#outer-variables). Calls supply only ordinary parameters; `visit(root)` does not pass `count`. Ordinary assignments to names without a writable capture create or update the nested function's own locals.
 - Captures refer to bindings rather than copying their values. All calls to the same nested helper see updates to its captured bindings.
 - A separate call to the enclosing function creates fresh local bindings and a new helper capturing those bindings.
 - Nested functions follow the same parameter and return typing rules as other functions; their enclosing types are available during checking.
@@ -142,6 +164,8 @@ Ordinary `for` bindings and assignments inside loop bodies belong to the enclosi
 For sets, `for value in values:` visits each distinct element in insertion order. See [set iteration](/docs/specification/collections/#set-iteration-and-order). Indexed and reverse set forms remain open.
 
 For counters, `for key, count in counts:` binds each stored key and its integer count in insertion order. See [counter iteration](/docs/specification/collections/#iteration-and-order). Single-binding and indexed counter forms remain open.
+
+For an [explicit iterator](/docs/specification/collections/#iterators), `for value in cursor:` consumes its remaining elements from the current position. Reusing the iterator continues from that position rather than restarting it. Exhaustion ends the loop normally; other errors propagate. A single binding or parenthesized tuple unpacking is supported; indexed and reverse forms remain open.
 
 For maps, `for key, value in counts:` is a proposal. Single-binding and indexed forms, along with map iteration order, remain open.
 
@@ -193,7 +217,7 @@ An expression followed by one or more `for` clauses describes a lazy traversal. 
 return all(value == 0 for value in freqs)
 ```
 
-When a generator is the sole argument of a call, the call's parentheses also delimit the generator. Multiple clauses follow the nesting and scope rules below. General generator values, their type syntax, escaping lifetimes, and comprehension filters remain open.
+When a generator is the sole argument of a call, the call's parentheses also delimit the generator. Multiple clauses follow the nesting and scope rules below. The explicit `iterator[T]` API initially covers list and string cursors; assigning or returning generator expressions, their type syntax and escaping lifetimes, and comprehension filters remain open.
 
 ### List comprehensions
 

@@ -1,6 +1,6 @@
 ---
 title: Collections
-description: Birdie’s lists, maps, counters, sets, stacks, queues, construction, and copy behavior.
+description: Birdie’s lists, maps, counters, sets, stacks, queues, iterators, and copy behavior.
 navTitle: Collections
 section: specification
 order: 2
@@ -8,7 +8,7 @@ order: 2
 
 Lists, maps, counters, sets, stacks, and queues are built in and require no imports.
 
-Collections and strings expose a read-only `int` property, `.size`. It counts list, stack, or queue elements, map entries, distinct set elements, counter keys with nonzero counts, or Unicode scalar values in a string.
+Collections and strings expose a read-only `int` property, `.size`. It counts list, stack, or queue elements, map entries, distinct set elements, counter keys with nonzero counts, or Unicode scalar values in a string. Iterators are cursors rather than collections and have no `.size` property.
 
 The operation types below describe present values. Optional receivers and operands with compatible underlying types follow [checked optional use](/docs/specification/types/#checked-optional-use); absence fails at runtime when a present value is required.
 
@@ -70,6 +70,7 @@ For `items: list[T]`, `value` must have type `T` and `i` must have type `int`.
 | `items.size` | `int` | No | Read the number of elements. |
 | `items.sorted()` | `list[T]` | No | Allocate a new list in ascending order. |
 | `items.index(value)` | `int?` | No | Find the first matching index, or return `none`. |
+| `items.iter()` | `iterator[T]` | No | Create an independent forward cursor without copying the list. |
 | `items[start:end]` | `list[T]` | No | Allocate a shallow copy from `start` up to, excluding, `end`. |
 | `items[:end]` | `list[T]` | No | Allocate a shallow copy of the first `end` elements. |
 | `items[start:]` | `list[T]` | No | Allocate a shallow copy from `start` to the end. |
@@ -435,6 +436,37 @@ A queue has no indexing or sorting. Direct iteration, reverse traversal, and deq
 
 See [Binary Tree Level Order Traversal](/docs/examples/binary-tree-level-order-traversal/) for FIFO processing with [`repeat`](/docs/specification/#counted-repetition).
 
+## Iterators
+
+`iterator[T]` is a mutable, single-pass cursor. The initial API creates cursors over lists and strings:
+
+```birdie
+items = [10, 20, 30]
+cursor = items.iter()
+first = cursor.next() # 10
+
+shared = cursor
+second = shared.next() # 20; advances cursor too
+
+for value in cursor:
+    # Visits only 30.
+    last = value
+```
+
+- `items.iter()` returns a fresh `iterator[T]` starting at the first list element. `text.iter()` returns an `iterator[char]` traversing Unicode scalars. Both take no arguments and evaluate their receiver once.
+- Each `.iter()` call creates an independent position. The cursor retains its source without copying its contents, even if the variable holding that source is later reassigned.
+- Assignment, parameter passing, and capture share the iterator object and its position. They do not clone or restart it. Advancing through one reference affects all references to that iterator.
+- `cursor.next()` takes no arguments, consumes one element, and returns `T` using ordinary assignment semantics. An exhausted cursor raises a runtime exhaustion error. It does not return a sentinel or an optional wrapper; if `T` is optional, an element equal to `none` is still an ordinary consumed element.
+- `for value in cursor:` evaluates and retains the cursor once, then consumes from its current position. Exhaustion ends the loop normally, using an internal end signal distinct from every element value. Other errors propagate. Additional reads from the same cursor inside the body advance that same position.
+- A consumed element stays consumed if the body exits or raises an error. `continue` advances normally to the next remaining element; `return` leaves the cursor at its current position. An exhausted iterator stays exhausted, and a later loop over it runs zero times.
+- Tuple elements can use parenthesized unpacking. Comprehension and predicate clauses can use the same single-value iterator traversal; they consume the source too. Indexed and reverse iterator traversal remain open.
+- An iterator is not a collection and has no truthiness, indexing, `.size`, reset, or implicit copy. Use `for` for exhaustion-aware traversal. Incompatible receiver types, arguments to `.iter()` or `.next()`, and unsupported operations are compile-time errors.
+- Creating a list cursor takes O(1) work and auxiliary storage; advancing it takes O(1). String cursors allow the existing one-time linear Unicode preparation, followed by O(1) work per scalar. The retained source stays alive for the cursor's lifetime.
+
+Mutating a source list during traversal remains open, as for ordinary collection loops. This API does not yet add cursors for maps, sets, counters, stacks, queues, ranges, `zip`, or generator expressions. Custom iterator protocols, `yield`, generator functions, and iterator combinators remain open.
+
+See [Serialize and Deserialize Binary Tree](/docs/examples/serialize-and-deserialize-binary-tree/) for recursive calls consuming a shared token cursor. Advancing a captured iterator mutates the cursor; it does not rebind its name and needs no `outer` capture entry.
+
 ## Lazy traversal and predicate checks
 
 ### Parallel iteration
@@ -458,7 +490,7 @@ Broader input types and reverse traversal of zipped values remain open. Mutation
 
 ### Predicate expressions and `all`
 
-`all(predicate for ...)` checks a predicate lazily using the same bindings and traversals as an ordinary loop, including lists, strings, ranges, sets, counter key/count traversal, and `zip`:
+`all(predicate for ...)` checks a predicate lazily using the same bindings and traversals as an ordinary loop, including lists, strings, explicit iterators, ranges, sets, counter key/count traversal, and `zip`:
 
 ```birdie
 return all(value == 0 for value in freqs)

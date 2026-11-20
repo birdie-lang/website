@@ -139,6 +139,10 @@ if 0 <= index < items.size:
 
 The chain checks adjacent pairs from left to right, evaluates each operand at most once, and stops at the first false comparison. `not lower < value < upper` negates the complete chain. See [chained comparisons](/docs/specification/types/#chained-comparisons) for the exact rules.
 
+## Procedures
+
+A helper that only performs work can be a [procedure](/docs/specification/#procedures): omit its result annotation, use bare `return` to exit early, or reach the end. Procedure calls are statements and produce no value. This is different from a function returning an optional value such as `none`.
+
 ## Returning an optional result
 
 Use [`return? expression`](/docs/specification/types/#conditional-return) to return a result only when it is present:
@@ -191,6 +195,23 @@ repeat pending.size:
 ```
 
 The count is evaluated once on entry. Nodes added during the body do not increase the active repetition count. Zero or negative counts skip the body. See [Binary Tree Level Order Traversal](/docs/examples/binary-tree-level-order-traversal/) for a complete example.
+
+## Iterators
+
+Use an iterator when several operations need to share one traversal position:
+
+```birdie
+tokens = "1,2,|,|,3,|,|".split(",").iter()
+first = tokens.next() # "1"
+
+for token in tokens:
+    # Consume the remaining tokens, starting with "2".
+    last = token
+```
+
+`split` creates the complete token list; `.iter()` adds a cursor without copying it. Passing that cursor to a helper shares its position. Another `.iter()` call on the list would create an independent cursor.
+
+`next()` consumes one value and raises an error if exhausted. A `for` loop stops normally at exhaustion. Iterators have no truthiness or `.size`. See [Serialize and Deserialize Binary Tree](/docs/examples/serialize-and-deserialize-binary-tree/) for recursive token reading, or the [iterator rules](/docs/specification/collections/#iterators) for details.
 
 ## Where to go next
 

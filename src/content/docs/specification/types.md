@@ -21,10 +21,11 @@ order: 1
 | `set[T]` | Mutable collection of distinct values of type `T` |
 | `stack[T]` | LIFO stack of elements of type `T` |
 | `queue[T]` | FIFO queue of elements of type `T` |
+| `iterator[T]` | Shared, single-pass cursor yielding elements of type `T` |
 | `(A, B)` | Fixed pair with a type for each position |
 | `T?` | A value of type `T` or `none` |
 
-Collection type arguments use brackets and can nest: `list[int]`, `map[str, int]`, `counter[char]`, `set[int]`, `stack[char]`, `queue[TreeNode]`, and `list[list[str]]`.
+Collection and iterator type arguments use brackets and can nest: `list[int]`, `map[str, int]`, `counter[char]`, `set[int]`, `stack[char]`, `queue[TreeNode]`, `iterator[str]`, and `list[list[str]]`.
 
 Types describe the algorithm's data and valid operations. Birdie checks incompatible types statically, while value-dependent requirements such as index bounds and the presence of an optional value can be checked at runtime. Operation signatures describe present values; [checked optional use](#checked-optional-use) applies when the underlying type is compatible.
 
@@ -175,7 +176,7 @@ See [Kth Smallest Element in a BST](/docs/examples/kth-smallest-element-in-a-bst
 - Infer local variables, return types, and collection type arguments from usage.
 - Infer locals from later uses within the same function or top-level script body.
 - Check independently defined functions without inferring their types from callers.
-- Function parameter types are explicit. Return annotations are optional when the body determines the type unambiguously.
+- Function parameter types are explicit. Return annotations are optional when the body determines the type unambiguously. A function with no result annotation and no value-returning statements is a [procedure](/docs/specification/#procedures); its calls produce no value, rather than `none`.
 - Require an annotation when inference is ambiguous. Do not fall back to a dynamic type.
 - Conflicting underlying type constraints are type errors. An annotation does not resolve incompatible uses. Integers and `number` values have the common numeric type `number`; an initializer or direct assignment containing infinity contributes that wider type. Nullable-to-present and `number`-to-`int` uses follow their runtime checks rather than requiring a proof of presence or finiteness.
 - The current [algorithm examples](/docs/examples/) must require no local type annotations.
@@ -191,14 +192,14 @@ This constrains `seen` to `map[str, int]`. A function that only returns `map()` 
 
 ## Variables
 
-- Within a function, `=` introduces or updates that function's local binding, unless the name is declared `outer`. It never implicitly rebinds an enclosing function's variable.
+- Within a function, `=` introduces or updates that function's local binding, unless the name appears as `outer name` in its header. It never implicitly rebinds an enclosing function's variable.
 - At the top level, `=` introduces a variable when the name is not already defined; otherwise it reassigns it.
 - Optional explicit annotation: `name: Type = value`.
 - Reassignments must be compatible with the variable's inferred type.
 - Assignment syntax requires an initializer expression. There is no declaration-only form.
 - Ordinary branches and loops do not introduce a variable scope. A name first assigned inside one belongs to the enclosing function, or to the file for top-level code, and is visible outside that block.
 - Reads check initialization at runtime when it is not already known. A path that reaches a read without assigning that binding raises a runtime error; a static proof of assignment on every path is not required.
-- Assignment inside a branch or loop creates or updates the same function-local binding. Crossing a function boundary requires `outer`.
+- Assignment inside a branch or loop creates or updates the same function-local binding. Rebinding an enclosing function's variable requires an `outer` capture in the nested function's header.
 
 ### Scope and initialization
 
@@ -214,7 +215,7 @@ fn chosenValue(ready: bool) int:
 
 `value` is a function-local `int`. `chosenValue(true)` returns `4`; `chosenValue(false)` raises an initialization error when reading `value`, before performing the addition. Both calls use the same statically checked function body.
 
-- Determine local names from assignments and ordinary `for` bindings across the whole function body, including branches and loops. Nested function and comprehension bindings belong to their own scopes. Types follow the ordinary inference rules; all assignments must fit a binding's inferred or declared type, even when conditional. Uninitialized state does not widen that type or introduce `any`.
+- Determine local names from assignments and ordinary `for` bindings across the whole function body, including branches and loops, excluding names captured with `outer` in its header. Nested function and comprehension bindings belong to their own scopes. Types follow the ordinary inference rules; all assignments must fit a binding's inferred or declared type, even when conditional. Uninitialized state does not widen that type or introduce `any`.
 - A local binding exists throughout its function body, including before its first assignment. A read before an executed assignment raises a runtime error instead of falling back to an enclosing variable of the same name. A name with no binding in any applicable lexical scope is a compile-time error.
 - Each function call starts with initialized parameters and uninitialized ordinary locals. Executing an assignment initializes or updates its target after evaluating the right-hand side. The declaration syntax still requires an initializer; there is no declaration-only form.
 - An uninitialized binding is an internal runtime state, distinct from every language value, including `none`, `0`, and `false`. Reading it, even in `value == none`, fails. No default value is supplied.
@@ -227,19 +228,22 @@ See [Binary Tree Right Side View](/docs/examples/binary-tree-right-side-view/) f
 
 ### Outer variables
 
-`outer name` lets a nested function rebind a variable from the nearest enclosing function scope that defines it. It is a scope declaration, with no runtime result value.
+An `outer name` entry in a nested function's header lets it rebind a variable from the nearest enclosing function scope that defines it.
 
 ```birdie
-outer diameter
+fn dfs(node: TreeNode?, outer diameter) int:
 ```
 
-- Write one name per declaration, at the start of the nested function body before using or assigning that name. The declaration applies throughout that function body.
-- The name must resolve to a variable binding in an enclosing function scope. A missing binding, a top-level-only binding, or `outer` outside a nested function is a compile-time error. Early function registration does not initialize that binding; a read before assignment fails at runtime.
-- The name cannot also be a parameter or a separately declared local in that function.
+For this header, calls pass only the node, as in `dfs(root)`. The enclosing `diameter` binding is captured automatically.
+
+- Put ordinary parameters first, followed by one `outer name` entry per writable capture: `fn update(value: int, outer total, outer count) int:`. A function with no ordinary parameters can use a header such as `fn next(outer count) int:` and is called as `next()`.
+- Capture entries do not affect the function's argument count or callable type. Their types come from the enclosing bindings and have no separate annotations or default values. `outer` is allowed only in nested function headers, not as a body statement.
+- The name must resolve to a variable binding in an enclosing function scope. A missing binding, a top-level-only binding, or `outer` on a top-level function is a compile-time error. Resolving a capture does not read or initialize its binding; a later read before assignment fails at runtime.
+- Duplicate captures are errors. A captured name cannot also be an ordinary parameter or a separately declared local in that function. Its scope applies throughout the function body.
 - Reads and writes use the same enclosing binding. Its inferred or declared type stays unchanged, and reads use the runtime initialization checks above. Ordinary assignment through `outer` can initialize the enclosing binding.
 - Bare-name writes using assignment, `for` bindings, compound assignment, tuple unpacking, increment/decrement, `swap!`, `min!`, and `max!` all follow this rule.
 - Without `outer`, an assignment introduces or updates a local binding even when an enclosing function has a variable with the same name. Reading the new local before initialization is a runtime error; `diameter = max(diameter, candidate)` cannot implicitly read the outer `diameter`.
-- Mutating a field or collection through a captured reference does not rebind the captured name and needs no `outer` declaration.
+- Reading an enclosing variable, or mutating a field or collection through its reference, needs no `outer` entry because it does not rebind that name.
 
 This keeps recursive helper locals separate while allowing an explicitly shared accumulator. See [Diameter of Binary Tree](/docs/examples/diameter-of-binary-tree/).
 
@@ -262,7 +266,7 @@ quotient //= divisor
 - Apply normal write behavior, including removing a counter key when its resulting count is zero.
 - `//=` uses floor division, including for negative operands. A zero divisor causes a runtime error and does not write a quotient.
 - Errors do not undo side effects from target evaluation, reading a map default, or evaluating the right-hand side.
-- Reading an uninitialized target fails at runtime before evaluating the right-hand side. Undefined names, nonwritable targets, incompatible types, and use inside an expression are compile-time errors. Rebinding an enclosing function's variable still requires `outer`.
+- Reading an uninitialized target fails at runtime before evaluating the right-hand side. Undefined names, nonwritable targets, incompatible types, and use inside an expression are compile-time errors. Rebinding an enclosing function's variable still requires an `outer` capture in the function header.
 
 See [Product of Array Except Self](/docs/examples/product-of-array-except-self/) for multiplication assignments in two indexed passes.
 
@@ -318,7 +322,7 @@ min!(distances[node], candidate)
 - Keep the target's inferred or declared type. If an improving candidate is infinite and the target has type `int`, the finite-value check fails before writing; a non-improving candidate requires no write. A `number` target can store either integers or infinities.
 - Reads use normal location rules, including map-default insertion and nonmutating zero reads from counters. Writes use normal assignment behavior, including counter zero removal.
 - A read or candidate evaluation can have its ordinary side effects even when the candidate does not improve the target. Errors do not roll those effects back.
-- Reading an uninitialized target fails at runtime before evaluating the candidate. Undefined names, nonwritable targets, incompatible operand types, and use inside an expression are compile-time errors. Rebinding an enclosing function's variable requires `outer`.
+- Reading an uninitialized target fails at runtime before evaluating the candidate. Undefined names, nonwritable targets, incompatible operand types, and use inside an expression are compile-time errors. Rebinding an enclosing function's variable requires an `outer` capture in the function header.
 
 `max(a, b)` and `min(a, b)` remain ordinary value-returning function calls. Only the first argument of `max!` or `min!` is a writable argument; the candidate is evaluated as an ordinary value.
 
@@ -482,6 +486,24 @@ See [Same Tree](/docs/examples/same-tree/) for an `or` guard that checks two opt
 - String iteration and indexing yield `char` values.
 - String size and indices count Unicode scalar values, not bytes.
 - `s.sorted()` returns a new `str` with characters sorted by Unicode scalar value, without locale-dependent ordering or mutation of the original string.
+
+### Splitting strings
+
+`text.split(separator)` returns a fresh `list[str]` of pieces separated by exact occurrences of a nonempty `str` separator:
+
+```birdie
+"bird,song".split(",") # ["bird", "song"]
+"a,,b,".split(",")    # ["a", "", "b", ""]
+"".split(",")         # [""]
+```
+
+- Exactly one `str` separator is required. An empty separator causes a runtime error; a missing argument or incompatible type is a compile-time error. There is no implicit whitespace mode, regular expression, or split limit in this form.
+- Evaluate the receiver and separator once, in that order. Scan left to right for nonoverlapping matches of the exact Unicode scalar sequence, without normalization. After a match, continue after that separator.
+- Keep empty pieces at the beginning, between adjacent separators, and at the end. If there is no match, return a one-element list containing the whole source, including when the source is empty. Multiple-scalar separators are supported.
+- Splitting is eager. It leaves the source unchanged and constructs every piece before returning. The intended cost is O(n + s) work for n source scalars and s separator scalars, with O(n + k) result storage for k pieces; repeated rescanning must not make a split quadratic.
+- The result is a mutable list of immutable strings. `text.split(separator).iter()` creates a cursor over that list; it does not make splitting lazy. Lazy splitting remains open.
+
+See [Serialize and Deserialize Binary Tree](/docs/examples/serialize-and-deserialize-binary-tree/) for splitting a preorder encoding into tokens.
 
 ### String slicing
 

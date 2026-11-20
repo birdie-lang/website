@@ -166,7 +166,20 @@
         "category": "Trees"
       },
       "blind75": true,
-      "slug": "binary-tree-maximum-path-sum"
+      "description": "Find the largest sum along any nonempty path between nodes in the tree.",
+      "note": "Track complete paths separately from the single-branch gain returned to each parent.",
+      "notes": [
+        "This solution assumes a nonempty input tree. Starting res from root.val ensures that an all-negative tree still returns a node value. The optional root signature is retained; its initial field access checks presence at runtime when needed.",
+        "outer res in the dfs header allows max! to update the enclosing accumulator, matching Python's nonlocal res in the helper body. It is a writable capture, not a call argument; dfs still takes only the node. Each recursive call has its own node, left, and right locals.",
+        "max(0, dfs(child)) discards a child path when its gain is negative. An absent child contributes zero, while every candidate complete path still includes the current node.",
+        "max!(res, node.val + left + right) considers a complete path joining both child branches through the node. The helper returns node.val + max(left, right), extending through only one child so its parent can attach without creating a branching path.",
+        "The Python reference keeps the same traversal and expression order. LeetCode supplies TreeNode; the record declaration shows its standalone Birdie form. The tree is not modified.",
+        "Under unit-cost integer operations, time is O(n) and recursion space is O(h), where h is tree height. Integer arithmetic remains exact; the cases include a path sum above floating-point precision."
+      ],
+      "slug": "binary-tree-maximum-path-sum",
+      "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
+      "birdie": "fn maxPathSum(root: TreeNode?) int:\n    res = root.val\n\n    fn dfs(node: TreeNode?, outer res) int:\n        if node == none:\n            return 0\n\n        left = max(0, dfs(node.left))\n        right = max(0, dfs(node.right))\n\n        max!(res, node.val + left + right)\n        return node.val + max(left, right)\n\n    dfs(root)\n    return res",
+      "python": "class Solution:\n    def maxPathSum(self, root: TreeNode | None) -> int:\n        res = root.val\n\n        def dfs(node: TreeNode | None) -> int:\n            nonlocal res\n\n            if node is None:\n                return 0\n\n            left = max(0, dfs(node.left))\n            right = max(0, dfs(node.right))\n\n            res = max(res, node.val + left + right)\n            return node.val + max(left, right)\n\n        dfs(root)\n        return res"
     },
     {
       "title": "Binary Tree Right Side View",
@@ -554,14 +567,14 @@
       "note": "The longest path can lie entirely inside a subtree; it does not have to pass through the root.",
       "notes": [
         "The nested dfs helper returns subtree height in nodes. At each node, left + right gives the length in edges of the longest path through that node.",
-        "outer diameter lets max!(diameter, left + right) update the enclosing function’s accumulator when it finds a longer path. All recursive dfs calls share that binding, while left and right remain separate locals in each recursive call. Python expresses the scope declaration with nonlocal diameter and the update with an assignment using max.",
+        "outer diameter in the dfs header lets max!(diameter, left + right) update the enclosing function’s accumulator when it finds a longer path. It is a writable capture, not a call argument; calls still pass only the node. All recursive dfs calls share that binding, while left and right remain separate locals in each recursive call. Python expresses the capture with nonlocal diameter in the body and the update with an assignment using max.",
         "Each call to diameterOfBinaryTree starts with a fresh diameter of zero. An empty tree or a single node returns zero.",
         "LeetCode supplies TreeNode. The record declaration shows how the same type would be defined in a standalone Birdie program.",
         "The traversal takes O(n) time and O(h) recursion space, where h is the tree height. It does not modify the tree."
       ],
       "slug": "diameter-of-binary-tree",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
-      "birdie": "fn diameterOfBinaryTree(root: TreeNode?) int:\n    diameter = 0\n\n    fn dfs(node: TreeNode?) int:\n        outer diameter\n\n        if node == none:\n            return 0\n\n        left = dfs(node.left)\n        right = dfs(node.right)\n\n        max!(diameter, left + right)\n\n        return 1 + max(left, right)\n\n    dfs(root)\n    return diameter",
+      "birdie": "fn diameterOfBinaryTree(root: TreeNode?) int:\n    diameter = 0\n\n    fn dfs(node: TreeNode?, outer diameter) int:\n        if node == none:\n            return 0\n\n        left = dfs(node.left)\n        right = dfs(node.right)\n\n        max!(diameter, left + right)\n\n        return 1 + max(left, right)\n\n    dfs(root)\n    return diameter",
       "python": "class Solution:\n    def diameterOfBinaryTree(self, root: TreeNode | None) -> int:\n        diameter = 0\n\n        def dfs(node: TreeNode | None) -> int:\n            nonlocal diameter\n\n            if node is None:\n                return 0\n\n            left = dfs(node.left)\n            right = dfs(node.right)\n\n            diameter = max(diameter, left + right)\n\n            return 1 + max(left, right)\n\n        dfs(root)\n        return diameter"
     },
     {
@@ -967,7 +980,7 @@
       "notes": [
         "The input is a BST and k is a valid one-based rank. The helper returns none for an absent subtree or an exhausted search, while a present integer is a found result.",
         "return? dfs(node.left) evaluates the left search once and returns a present result, including zero. If it returns none, execution continues with the current node. Python expands this into a temporary and an explicit is not None guard.",
-        "The nested helper captures k. outer k permits rebinding that parameter in Birdie; Python uses nonlocal k. All recursive helper calls share the same countdown, without storing state on Solution or modifying the caller's integer value.",
+        "outer k in the dfs header permits rebinding the enclosing function's parameter; it is a writable capture, not a call argument. Python uses nonlocal k in the helper body. All recursive helper calls share the same countdown, without storing state on Solution or modifying the caller's integer value.",
         "k-- decrements the countdown after visiting the left subtree. When it reaches zero, the current node is the answer. The right recursive call is returned directly because there is no later work in that helper call.",
         "The main function returns int while dfs returns int?. The valid-rank guarantee makes the final result present. Birdie's ordinary return applies a runtime presence check if needed, without an explicit unwrap. An invalid rank that produces none fails at that checked return.",
         "Postfix expression? has different control flow: it returns none when the operand is absent. Using it on the left subtree would stop this search before visiting the current node.",
@@ -976,7 +989,7 @@
       ],
       "slug": "kth-smallest-element-in-a-bst",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
-      "birdie": "fn kthSmallest(root: TreeNode?, k: int) int:\n    fn dfs(node: TreeNode?) int?:\n        outer k\n\n        if node == none:\n            return none\n\n        return? dfs(node.left)\n\n        k--\n        if k == 0:\n            return node.val\n\n        return dfs(node.right)\n\n    return dfs(root)",
+      "birdie": "fn kthSmallest(root: TreeNode?, k: int) int:\n    fn dfs(node: TreeNode?, outer k) int?:\n        if node == none:\n            return none\n\n        return? dfs(node.left)\n\n        k--\n        if k == 0:\n            return node.val\n\n        return dfs(node.right)\n\n    return dfs(root)",
       "python": "class Solution:\n    def kthSmallest(self, root: TreeNode | None, k: int) -> int:\n        def dfs(node: TreeNode | None) -> int | None:\n            nonlocal k\n\n            if node is None:\n                return None\n\n            left = dfs(node.left)\n            if left is not None:\n                return left\n\n            k -= 1\n            if k == 0:\n                return node.val\n\n            return dfs(node.right)\n\n        return dfs(root)"
     },
     {
@@ -1905,7 +1918,22 @@
         "category": "Trees"
       },
       "blind75": true,
-      "slug": "serialize-and-deserialize-binary-tree"
+      "description": "Encode a binary tree as text and reconstruct its values and shape.",
+      "note": "Use preorder tokens with explicit missing-child markers, and share one cursor while reading them.",
+      "notes": [
+        "Preorder writes the current value, then the left subtree, then the right subtree. The | marker represents each absent child, so trees with the same values but different shapes have different encodings. An empty tree serializes to |.",
+        "The nested write procedure captures parts and pushes tokens into it. Mutating this list does not rebind its name, so no outer entry is needed. The procedure omits a result annotation; bare return exits without producing a value.",
+        "Collecting tokens and joining once avoids repeatedly copying subtree strings during recursive concatenation. Commas appear only between tokens, with no trailing comma. The Python reference uses the same token order and join strategy.",
+        "split(\",\") eagerly produces list[str]; iter() adds a forward cursor without copying that list. Every recursive readTree call receives the same iterator object, so next() advances one shared position. Reassigning an iterator variable would be different from advancing the cursor.",
+        "next() returns the next string and raises a runtime error on exhaustion. A | token means an absent child; exhausted input is not another spelling of an absent child. for loops over iterators handle normal exhaustion internally.",
+        "The decoder assumes a complete, valid encoding from this serializer. It does not validate that the input ends immediately after the tree. Truncated or malformed required tokens fail when read or converted; extra tokens are ignored. No generator functions, yield, string interpolation, or user-defined methods are needed.",
+        "Birdie uses separate serialize and deserialize functions, with readTree below them because it captures no variables. Python keeps LeetCode's Codec class and passes its iterator to a matching helper. LeetCode supplies TreeNode; the record declaration shows its standalone Birdie form.",
+        "Traversal, token splitting, and joining take O(n + L) work for n nodes and L encoded characters; integer parsing and formatting add their own cost. Token storage is O(n + L), recursion space is O(h), and reconstruction allocates O(n) tree nodes. Shared fixtures check round trips for empty, sparse, skewed, repeated-value, zero, negative, and exact large-integer trees."
+      ],
+      "slug": "serialize-and-deserialize-binary-tree",
+      "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
+      "birdie": "fn serialize(root: TreeNode?) str:\n    parts = []\n\n    fn write(node: TreeNode?):\n        if node == none:\n            parts.push(\"|\")\n            return\n\n        parts.push(str(node.val))\n        write(node.left)\n        write(node.right)\n\n    write(root)\n    return parts.join(\",\")\n\n\nfn deserialize(data: str) TreeNode?:\n    return readTree(data.split(\",\").iter())\n\n\nfn readTree(tokens: iterator[str]) TreeNode?:\n    value = tokens.next()\n\n    if value == \"|\":\n        return none\n\n    node = TreeNode(int(value))\n    node.left = readTree(tokens)\n    node.right = readTree(tokens)\n    return node",
+      "python": "from collections.abc import Iterator\n\n\nclass Codec:\n    def serialize(self, root: TreeNode | None) -> str:\n        parts = []\n\n        def write(node: TreeNode | None) -> None:\n            if node is None:\n                parts.append(\"|\")\n                return\n\n            parts.append(str(node.val))\n            write(node.left)\n            write(node.right)\n\n        write(root)\n        return \",\".join(parts)\n\n    def deserialize(self, data: str) -> TreeNode | None:\n        return self.readTree(iter(data.split(\",\")))\n\n    def readTree(self, tokens: Iterator[str]) -> TreeNode | None:\n        value = next(tokens)\n\n        if value == \"|\":\n            return None\n\n        node = TreeNode(int(value))\n        node.left = self.readTree(tokens)\n        node.right = self.readTree(tokens)\n        return node"
     },
     {
       "title": "Set Matrix Zeroes",
