@@ -4,7 +4,6 @@
 .main-nav a, .footer-links a { text-decoration: none; }
 .main-nav a:hover, .footer-links a:hover { color: var(--accent); }
 .main-nav a[aria-current] .nav-label { text-decoration: underline; text-underline-offset: 6px; }
-.soon-label { margin-left: 6px; color: var(--muted); font-size: 0.65rem; vertical-align: super; }
 .github-link span { margin-left: 4px; }
 .theme-toggle { display: grid; visibility: hidden; border: 0; border-left: 1px solid var(--line); padding: 2px 0 2px 24px; background: transparent; color: var(--muted); font-size: 0.75rem; }
 [data-theme-ready] .theme-toggle { visibility: visible; }
@@ -73,13 +72,7 @@ birdie-examples { display: block; }
 .footer-identity .brand-bird { width: 27px; height: 29px; }
 .footer-identity > span, .footer-links { color: var(--muted); font-size: 0.6875rem; }
 .footer-links { display: flex; gap: 28px; }
-.play-intro { padding-block: 72px 100px; }
-.play-intro h1, .not-found h1 { margin-block: 24px; font-size: clamp(3rem, 6vw, 4.5rem); line-height: 1.05; font-weight: 620; letter-spacing: -0.06em; }
-.play-intro > p { max-width: 460px; line-height: 1.75; color: var(--muted); }
-.play-placeholder { display: flex; align-items: center; gap: 48px; padding: 48px; margin-block: 48px 28px; border: 1px solid var(--line); border-radius: 4px; }
-.play-placeholder > svg { flex-shrink: 0; transform: rotate(-6deg); }
-.play-placeholder h2 { font-size: 1.5rem; letter-spacing: -0.045em; font-weight: 580; }
-.play-placeholder p { color: var(--muted); max-width: 510px; font-size: 0.875rem; line-height: 1.75; margin-bottom: 24px; }
+.not-found h1 { margin-block: 24px; font-size: clamp(3rem, 6vw, 4.5rem); line-height: 1.05; font-weight: 620; letter-spacing: -0.06em; }
 .not-found { padding-block: 80px 120px; }
 .not-found .status-label { margin-top: 32px; }
 .not-found > p:not(.status-label) { color: var(--muted); margin-bottom: 32px; line-height: 1.65; }
@@ -104,7 +97,7 @@ birdie-examples { display: block; }
   .brand { font-size: 1.45rem; }
   .brand-bird { width: 29px; height: 31px; }
   .main-nav { gap: 18px; font-size: 0.75rem; }
-  .github-link, .soon-label { display: none; }
+  .github-link { display: none; }
   .theme-toggle { padding-left: 14px; font-size: 0.6875rem; }
   .hero { grid-template-columns: minmax(0, 1fr); padding-block: 44px 48px; position: relative; }
   .hero-kicker { font-size: 0.6875rem; max-width: 210px; line-height: 1.6; margin-bottom: 22px; }
@@ -136,8 +129,6 @@ birdie-examples { display: block; }
   .footer-identity > span { display: block; font-size: 0.625rem; }
   .footer-identity { gap: 20px; }
   .footer-links { gap: 24px; }
-  .play-intro { padding-block: 44px 64px; }
-  .play-placeholder { flex-direction: column; align-items: flex-start; gap: 26px; padding: 28px 24px; margin-block: 32px 24px; }
 }
 
 @media (max-width: 380px) {

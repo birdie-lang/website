@@ -9,6 +9,7 @@ export default defineConfig({
   trailingSlash: 'always',
   devToolbar: { enabled: false },
   redirects: {
+    '/play/': '/playground/',
     '/docs/syntax/': '/docs/specification/',
     '/docs/collections/': '/docs/specification/collections/',
   },

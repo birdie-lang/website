@@ -1,0 +1,265 @@
+---
+import SiteLayout from '../layouts/site-layout.astro';
+
+const example = 'fn add(a: int, b: int) int:\n    return a + b\n\nadd(20, 22)';
+---
+
+<SiteLayout title="Playground · Birdie" description="Try the Birdie playground interface with sample results.">
+  <birdie-playground class="playground wrap">
+    <header class="intro">
+      <h1>Playground<span class="red-period">.</span></h1>
+    </header>
+
+    <div class="code-sheet">
+      <div class="toolbar">
+        <select name="example" aria-label="Examples" disabled>
+          <option value="" disabled selected>Choose example</option>
+          <option value="addition">Add two numbers</option>
+          <option value="diagnostic">Unknown variable</option>
+        </select>
+        <button class="button button-primary" type="button" data-run disabled
+          aria-keyshortcuts="Control+Enter Meta+Enter">Run <kbd aria-hidden="true" data-shortcut>Ctrl ↵</kbd></button>
+      </div>
+
+      <div class="panes">
+        <div class="editor-pane">
+          <h2 class="pane-heading filename" id="editor-title">main.bd</h2>
+          <div data-editor>
+            <textarea spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"
+              wrap="off" aria-labelledby="editor-title">{example}</textarea>
+          </div>
+        </div>
+        <section class="output-pane" aria-labelledby="output-title">
+          <h2 class="pane-heading" id="output-title">Result</h2>
+          <div class="result" aria-live="polite">
+            <p data-status>Run an example to see a sample result.</p>
+            <pre data-value hidden></pre>
+            <button class="diagnostic" type="button" data-diagnostic hidden>
+              <span class="filename" data-position></span>
+              <span class="diagnostic-message">Unknown variable <code>missing</code></span>
+              <span aria-hidden="true">↖</span>
+            </button>
+          </div>
+          <noscript><p class="no-script">Enable JavaScript to use the playground controls.</p></noscript>
+        </section>
+      </div>
+
+      <div class="code-sheet-footer">
+        <span id="playground-mode">Preview mode · Sample results</span>
+        <span id="editor-help">Press <kbd>Esc</kbd> then <kbd>Tab</kbd> to leave the editor</span>
+      </div>
+    </div>
+  </birdie-playground>
+</SiteLayout>
+
+<script>
+  import { defaultKeymap, history, historyKeymap, indentWithTab, isolateHistory } from '@codemirror/commands';
+  import { diagnosticCount, setDiagnostics, setDiagnosticsEffect } from '@codemirror/lint';
+  import { EditorState } from '@codemirror/state';
+  import { drawSelection, EditorView, keymap, lineNumbers } from '@codemirror/view';
+  import { birdieEditorLanguage } from '../lib/birdie-editor';
+
+  const invalid = 'fn answer() int:\n    return missing\n\nanswer()';
+  const missing = invalid.indexOf('missing');
+  const sampleDiagnostic = { from: missing, to: missing + 'missing'.length, severity: 'error', message: 'Unknown variable “missing”' } as const;
+  const idleMessage = 'Run an example to see a sample result.';
+
+  class BirdiePlayground extends HTMLElement {
+    #editor?: EditorView;
+
+    connectedCallback() {
+      if (this.#editor) return;
+      const editorHost = this.querySelector<HTMLElement>('[data-editor]');
+      const fallback = this.querySelector('textarea');
+      const examples = this.querySelector('select');
+      const runButton = this.querySelector<HTMLButtonElement>('[data-run]');
+      const shortcut = this.querySelector('[data-shortcut]');
+      const status = this.querySelector('[data-status]');
+      const value = this.querySelector<HTMLPreElement>('[data-value]');
+      const diagnostic = this.querySelector<HTMLButtonElement>('[data-diagnostic]');
+      const position = this.querySelector('[data-position]');
+      if (!editorHost || !fallback || !examples || !runButton || !shortcut || !status || !value || !diagnostic || !position) return;
+
+      const addition = fallback.defaultValue;
+      shortcut.textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘ ↵' : 'Ctrl ↵';
+
+      const showStatus = (message: string) => {
+        if (status.textContent !== message) status.textContent = message;
+        value.hidden = true;
+        diagnostic.hidden = true;
+      };
+
+      const run = (editor: EditorView) => {
+        const { state } = editor;
+        const source = state.doc.toString().trimEnd();
+        if (!source.trim()) {
+          showStatus('Enter Birdie code or pick an example.');
+        } else if (source === addition.trimEnd()) {
+          showStatus('Sample output');
+          value.textContent = '42';
+          value.hidden = false;
+        } else if (source === invalid) {
+          const line = state.doc.lineAt(sampleDiagnostic.from);
+          position.textContent = `${line.number}:${sampleDiagnostic.from - line.from + 1}`;
+          showStatus('Sample diagnostic');
+          diagnostic.hidden = false;
+          editor.dispatch(setDiagnostics(state, [sampleDiagnostic]));
+        } else {
+          showStatus('Sample results are available for the original examples. Choose an example to try one.');
+        }
+        return true;
+      };
+
+      const editor = new EditorView({
+        parent: editorHost,
+        doc: fallback.value,
+        extensions: [
+          birdieEditorLanguage,
+          lineNumbers(),
+          drawSelection(),
+          history(),
+          EditorState.tabSize.of(4),
+          EditorView.contentAttributes.of({
+            'aria-labelledby': 'editor-title',
+            'aria-describedby': 'editor-help',
+            autocapitalize: 'off',
+          }),
+          keymap.of([
+            { key: 'Ctrl-Enter', run },
+            { key: 'Meta-Enter', run },
+            indentWithTab,
+            ...defaultKeymap,
+            ...historyKeymap,
+          ]),
+          EditorState.transactionExtender.of((transaction) =>
+            transaction.docChanged && diagnosticCount(transaction.startState)
+              ? { effects: setDiagnosticsEffect.of([]) }
+              : null),
+          EditorView.updateListener.of((update) => {
+            if (update.docChanged) showStatus(idleMessage);
+          }),
+        ],
+      });
+      this.#editor = editor;
+      fallback.hidden = true;
+      showStatus(idleMessage);
+      examples.disabled = false;
+      runButton.disabled = false;
+
+      runButton.onclick = () => run(editor);
+      examples.onchange = () => {
+        const source = examples.value === 'diagnostic' ? invalid : addition;
+        if (source !== editor.state.doc.toString()) {
+          editor.dispatch({
+            changes: { from: 0, to: editor.state.doc.length, insert: source },
+            selection: { anchor: 0 },
+            annotations: isolateHistory.of('full'),
+            scrollIntoView: true,
+          });
+        }
+        examples.value = '';
+      };
+      diagnostic.onclick = () => {
+        editor.dispatch({
+          selection: { anchor: sampleDiagnostic.from, head: sampleDiagnostic.to },
+          scrollIntoView: true,
+        });
+        editor.focus();
+      };
+    }
+
+    disconnectedCallback() {
+      this.#editor?.destroy();
+      this.#editor = undefined;
+    }
+  }
+
+  customElements.define('birdie-playground', BirdiePlayground);
+</script>
+
+<style>
+  .playground {
+    --syntax-literal: #0550ae;
+    --syntax-string: #0a3069;
+    --syntax-function: #6639ba;
+    --editor-height: clamp(21rem, 48vh, 32rem);
+    display: block;
+    padding-block: 56px 80px;
+  }
+  :global([data-theme='dark']) .playground {
+    --syntax-literal: #79c0ff;
+    --syntax-string: #a5d6ff;
+    --syntax-function: #d2a8ff;
+  }
+  .intro { margin-bottom: 28px; }
+  h1 { margin-bottom: 0; font-size: clamp(2.75rem, 6vw, 4.5rem); font-weight: 660; line-height: 1.04; letter-spacing: -0.065em; }
+  .toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  select { min-width: 0; max-width: 100%; min-height: 40px; padding-inline: 10px; border: 1px solid var(--line); border-radius: 4px; color: var(--ink); background: var(--paper); font-size: 0.8125rem; cursor: pointer; }
+  .toolbar .button { min-height: 40px; padding: 8px 14px; gap: 14px; }
+  .toolbar :disabled { opacity: 0.6; cursor: not-allowed; }
+  .toolbar .button:disabled:hover { background: var(--ink); }
+  kbd { font-size: 0.6875rem; }
+  .panes { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  .output-pane { border-inline-start: 1px solid var(--line); background: var(--soft); }
+  .pane-heading { margin: 0; padding: 12px 18px; border-bottom: 1px solid var(--line); font-size: 0.75rem; font-weight: 550; line-height: 1.5; }
+  [data-editor] { font: 0.9375rem/1.8 var(--font-mono); }
+  textarea { display: block; width: 100%; height: var(--editor-height); padding: 14px 18px; resize: none; border: 0; background: var(--paper); color: var(--ink); font: inherit; }
+  textarea:focus-visible { outline-offset: -2px; }
+
+  .editor-pane :global(.cm-editor) { height: var(--editor-height); }
+  .editor-pane :global(.cm-editor.cm-focused) { outline: none; }
+  .editor-pane:focus-within .pane-heading { border-bottom-color: var(--accent); }
+  .editor-pane :global(.cm-scroller) { font: inherit; }
+  .editor-pane :global(.cm-content) { padding-block: 14px; }
+  .editor-pane :global(.cm-line) { padding-inline: 12px 18px; }
+  .editor-pane :global(.cm-gutters) { background: var(--paper); border-right: 1px solid var(--line); color: var(--muted); }
+  .editor-pane :global(.cm-lineNumbers .cm-gutterElement) { min-width: 3ch; padding-inline: 8px; }
+  .editor-pane :global(.cm-cursor) { border-left-color: var(--ink); }
+  .editor-pane :global(.cm-editor .cm-selectionBackground),
+  .editor-pane :global(.cm-editor.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground) {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+  .editor-pane :global(.cm-lintRange-error) {
+    background-image: none;
+    text-decoration: underline wavy var(--accent);
+    text-underline-offset: 0.25em;
+  }
+  .editor-pane :global(.cm-tooltip) { border-color: var(--line); background: var(--paper); color: var(--ink); }
+  .editor-pane :global(.cm-diagnostic-error) { border-inline-start-color: var(--accent); }
+
+  .result { padding: 16px 18px 24px; overflow-wrap: anywhere; }
+  .result p, .no-script { margin: 0; color: var(--muted); font-size: 0.8125rem; line-height: 1.6; }
+  .no-script { margin: 0 18px 16px; }
+  .result pre { margin: 8px 0 0; padding: 0; font-size: 1.25rem; white-space: pre-wrap; }
+  .diagnostic {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
+    align-items: baseline;
+    gap: 6px;
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+    border-inline-start: 2px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    text-align: left;
+  }
+  .diagnostic:hover .diagnostic-message { text-decoration: underline; text-underline-offset: 3px; }
+  .code-sheet-footer { padding-inline: 18px; }
+  @media (max-width: 680px) {
+    .playground { --editor-height: clamp(15rem, 38vh, 21rem); padding-block: 38px 56px; }
+    .panes { grid-template-columns: minmax(0, 1fr); }
+    [data-editor] { font-size: 1rem; }
+    .output-pane { border-inline-start: 0; border-top: 1px solid var(--line); min-height: 130px; }
+  }
+  @media (max-width: 520px) {
+    select { flex: 1 1 0; max-width: 12rem; }
+    select, .toolbar .button { min-height: 44px; }
+  }
+  @media (pointer: coarse) {
+    [data-shortcut], #editor-help { display: none; }
+  }
+</style>

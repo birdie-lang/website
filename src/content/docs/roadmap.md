@@ -40,7 +40,7 @@ Checked features are available on `main` in the [language repository](https://gi
 - [ ] Counters
 - [ ] Records
 - [ ] Optional values
-- [ ] [Browser playground](/play/) with WebAssembly
+- [ ] [Browser playground](/playground/) with WebAssembly
 - [ ] Deterministic operation counts
 - [ ] Bytecode compiler and VM
 - [ ] Language server and editor integration
