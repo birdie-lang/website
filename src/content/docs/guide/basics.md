@@ -44,7 +44,7 @@ min!(best, 7)
 min!(best, 3)  # best is now 3
 ```
 
-See [Validate Binary Search Tree](/docs/examples/validate-binary-search-tree/) for recursive bounds, or the [numeric rules](/docs/specification/types/#numbers-and-infinity) for arithmetic and finite-value checks.
+See [Validate Binary Search Tree](/docs/examples/validate-binary-search-tree/) for recursive bounds, or the [numeric rules](/docs/specification/values-and-operators/#numbers-and-infinity) for arithmetic and finite-value checks.
 
 ## Lists
 
@@ -69,7 +69,7 @@ suffix = nums[2:]
 copy = nums[:]
 ```
 
-A slice creates a new outer list, sharing any nested records or collections. Equal bounds produce an empty slice. Negative, reversed, and oversized bounds are runtime errors. Strings use the same slicing forms with Unicode scalar positions. See the [slicing rules](/docs/specification/collections/#slicing) for details.
+A slice creates a new outer list, sharing any nested records or collections. Equal bounds produce an empty slice. Negative, reversed, and oversized bounds are runtime errors. Strings use the same slicing forms with Unicode scalar positions. See the [slicing rules](/docs/specification/collections/lists/#slicing) for details.
 
 `nums.index(value)` returns the first matching index, or `none` if the value is absent. The result has type `int?`, so use `position != none` to test for a match; zero is a valid position.
 
@@ -91,7 +91,7 @@ counts = map(0)
 counts["bird"]++
 ```
 
-`map(list)` works similarly, creating a fresh list for each missing key. See [map defaults](/docs/specification/collections/#default-values-and-factories) for the full rules.
+`map(list)` works similarly, creating a fresh list for each missing key. See [map defaults](/docs/specification/collections/maps-sets-counters/#default-values-and-factories) for the full rules.
 
 A stack makes last-in, first-out access explicit:
 
@@ -137,7 +137,7 @@ if 0 <= index < items.size:
     return items[index]
 ```
 
-The chain checks adjacent pairs from left to right, evaluates each operand at most once, and stops at the first false comparison. `not lower < value < upper` negates the complete chain. See [chained comparisons](/docs/specification/types/#chained-comparisons) for the exact rules.
+The chain checks adjacent pairs from left to right, evaluates each operand at most once, and stops at the first false comparison. `not lower < value < upper` negates the complete chain. See [chained comparisons](/docs/specification/values-and-operators/#chained-comparisons) for the exact rules.
 
 ## Procedures
 
@@ -145,7 +145,7 @@ A helper that only performs work can be a [procedure](/docs/specification/#proce
 
 ## Returning an optional result
 
-Use [`return? expression`](/docs/specification/types/#conditional-return) to return a result only when it is present:
+Use [`return? expression`](/docs/specification/records-and-optionals/#conditional-return) to return a result only when it is present:
 
 ```birdie
 fn preferFirst(first: int?, fallback: int) int:
@@ -155,7 +155,7 @@ fn preferFirst(first: int?, fallback: int) int:
 
 `preferFirst(0, 7)` returns zero; `preferFirst(none, 7)` returns seven. The expression is evaluated once, and only `none` makes execution proceed to the next statement.
 
-[Postfix `expression?`](/docs/specification/types/#optional-propagation) unwraps a present value or returns `none` from an optional-returning function. See the [kth-smallest example](/docs/examples/kth-smallest-element-in-a-bst/) for a complete search using conditional return.
+[Postfix `expression?`](/docs/specification/records-and-optionals/#optional-propagation) unwraps a present value or returns `none` from an optional-returning function. See the [kth-smallest example](/docs/examples/kth-smallest-element-in-a-bst/) for a complete search using conditional return.
 
 ## Loops
 
@@ -211,8 +211,8 @@ for token in tokens:
 
 `split` creates the complete token list; `.iter()` adds a cursor without copying it. Passing that cursor to a helper shares its position. Another `.iter()` call on the list would create an independent cursor.
 
-`next()` consumes one value and raises an error if exhausted. A `for` loop stops normally at exhaustion. Iterators have no truthiness or `.size`. See [Serialize and Deserialize Binary Tree](/docs/examples/serialize-and-deserialize-binary-tree/) for recursive token reading, or the [iterator rules](/docs/specification/collections/#iterators) for details.
+`next()` consumes one value and raises an error if exhausted. A `for` loop stops normally at exhaustion. Iterators have no truthiness or `.size`. See [Serialize and Deserialize Binary Tree](/docs/examples/serialize-and-deserialize-binary-tree/) for recursive token reading, or the [iterator rules](/docs/specification/collections/iterators/#explicit-iterators) for details.
 
 ## Where to go next
 
-Read the [algorithm examples](/docs/examples/) to see these pieces together. For exact rules and open questions, use the [draft specification](/docs/specification/).
+Read the [algorithm examples](/docs/examples/) to see these pieces together. For exact rules and open questions, use the [specification](/docs/specification/).

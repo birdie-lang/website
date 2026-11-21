@@ -1,6 +1,6 @@
 export const docSections = {
   guide: 'Guide',
-  specification: 'Draft specification',
+  specification: 'Specification',
   project: 'Project',
 } as const;
 

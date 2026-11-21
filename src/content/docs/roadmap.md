@@ -1,39 +1,46 @@
 ---
-title: Implementation plan
-description: Plans for Birdie’s interpreter, WebAssembly playground, and operation counts.
-navTitle: Implementation plan
+title: Roadmap
+description: Birdie features that work today, what’s in development, and what’s planned.
+navTitle: Roadmap
 section: project
 order: 1
 ---
 
-The [draft specification](/docs/specification/) lives on this website. The language repository currently contains example programs, which are being used to settle syntax and collection behavior. The interpreter has not been implemented yet.
+Checked features are available on `main` in the [language repository](https://github.com/birdie-lang/birdie).
 
-## Interpreter
+## Available
 
-The planned implementation is in Go. Its first milestones are:
+- [x] Indentation-aware lexer
+- [x] Parser and AST for basic expressions and assignments
+- [x] Interactive REPL with source diagnostics
+- [x] Integer arithmetic, floor division, and comparisons
+- [x] Boolean literals and equality
+- [x] Variable assignment and lookup
 
-1. Refine representative examples and the language specification.
-2. Implement a lexer, parser, and AST.
-3. Build a minimal AST interpreter.
-4. Add collections and type checking sufficient to execute Two Sum end to end.
-5. Extend the language as more examples need it.
+## In progress
 
-Parsing, static analysis, runtime values, and execution will remain separate so the same core can serve a CLI, REPL, and browser.
+- [ ] Conditional branches
+- [ ] Function declarations, calls, and returns
 
-## Browser playground
+## Next
 
-The planned playground will run locally in the browser. The Go interpreter or eventual VM will be compiled to WebAssembly and run in a Web Worker.
+- [ ] Run `.bd` files from the command line
+- [ ] `while` loops
+- [ ] Lists and indexing
+- [ ] `for` loops and indexed iteration
+- [ ] Maps and key lookup
+- [ ] Static type checking and inference
 
-The worker will keep execution off the UI thread. Execution budgets and memory/output protections will be needed for runaway programs. The [playground page](/play/) currently explains this future feature; it does not run code.
+## Later
 
-## Operation counts
-
-A later cost model aims to report language-level work, including comparisons, collection operations, and allocations. The starting point will be a vector of operation counts, with explicitly defined costs for built-ins.
-
-These counts will not automatically prove complexity or predict hardware performance. Repeatability across execution backends is a design goal that still needs implementation and validation.
-
-## Later work
-
-A bytecode compiler and VM are planned after the semantics stabilize. A language server and editor integration can share the parser and type checker. Native compilation is an optional investigation.
-
-These milestones have no release dates. Development will happen in the [language repository](https://github.com/birdie-lang/birdie).
+- [ ] Strings and characters
+- [ ] Stacks
+- [ ] Queues
+- [ ] Sets
+- [ ] Counters
+- [ ] Records
+- [ ] Optional values
+- [ ] [Browser playground](/play/) with WebAssembly
+- [ ] Deterministic operation counts
+- [ ] Bytecode compiler and VM
+- [ ] Language server and editor integration

@@ -28,4 +28,4 @@ Every feature adds something to learn. We prefer a few rules that work across ma
 
 We develop Birdie through [example problems](/docs/examples/), often comparing the same algorithm in Python and Birdie. That gives us something concrete to judge each design choice against and helps us spot where the language gets in the way.
 
-Birdie is still in the design stage. The [draft specification](/docs/specification/) records the proposed syntax and behavior.
+The [specification](/docs/specification/) records the proposed syntax and behavior.

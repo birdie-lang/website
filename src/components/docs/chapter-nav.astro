@@ -8,19 +8,41 @@ interface Props {
 }
 
 const { pages, activeId } = Astro.props;
-const sections = Object.entries(docSections).map(([id, title]) => ({
-  title,
-  pages: pages.filter((page) => page.data.section === id),
-})).filter((section) => section.pages.length > 0);
+
+function chapterId(pageId: string) {
+  return pageId.split('/').slice(0, 2).join('/');
+}
+
+const sections = Object.entries(docSections).map(([id, title]) => {
+  const sectionPages = pages.filter((page) => page.data.section === id);
+  const pageIds = new Set(sectionPages.map((page) => page.id));
+  const chapters = sectionPages
+    .filter((page) => page.id === chapterId(page.id) || !pageIds.has(chapterId(page.id)))
+    .map((page) => ({
+      page,
+      children: sectionPages.filter((child) => child.id !== page.id && chapterId(child.id) === page.id),
+    }));
+
+  return { title, chapters };
+}).filter((section) => section.chapters.length > 0);
 ---
 
 <nav class="chapter-nav" aria-label="Documentation">
   {sections.map((section) => (
     <div class="chapter-group">
-      <p class="docs-nav-label">{section.title}</p>
+      <h2 class="chapter-group-label">{section.title}</h2>
       <ul>
-        {section.pages.map((page) => (
-          <li><a href={docHref(page.id)} aria-current={page.id === activeId ? 'page' : undefined}>{page.data.navTitle}</a></li>
+        {section.chapters.map(({ page, children }) => (
+          <li>
+            <a class:list={{ 'chapter-parent': children.length > 0 }} href={docHref(page.id)} aria-current={page.id === activeId ? 'page' : undefined}>{page.data.navTitle}</a>
+            {children.length > 0 && (
+              <ul class="chapter-children">
+                {children.map((child) => (
+                  <li><a href={docHref(child.id)} aria-current={child.id === activeId ? 'page' : undefined}>{child.data.navTitle}</a></li>
+                ))}
+              </ul>
+            )}
+          </li>
         ))}
       </ul>
     </div>

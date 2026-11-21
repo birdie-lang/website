@@ -17,5 +17,5 @@ Check types with `bun run typecheck`.
 
 ## Content
 
-- `src/content/docs/`: guide, draft specification, and project notes.
+- `src/content/docs/`: guide, specification, and project notes.
 - `src/data/examples/`: examples displayed on the website.

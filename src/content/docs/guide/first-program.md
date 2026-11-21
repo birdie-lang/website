@@ -6,7 +6,7 @@ section: guide
 order: 1
 ---
 
-Birdie programs cannot run yet. This example introduces the current draft syntax.
+This example introduces draft function syntax and file execution.
 
 ## A small program
 

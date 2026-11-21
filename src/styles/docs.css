@@ -13,9 +13,12 @@
 .docs-nav-label { margin: 4px 0 20px; color: var(--muted); font-size: 0.75rem; font-weight: 500; }
 .chapter-nav ul, .docs-toc ul { list-style: none; margin: 0; padding: 0; }
 .chapter-group + .chapter-group { margin-top: 28px; }
-.chapter-group .docs-nav-label { margin-bottom: 10px; }
-.chapter-nav li + li { margin-top: 5px; }
-.chapter-nav a { display: block; padding: 9px 12px; margin-left: -12px; border-radius: 4px; color: var(--muted); text-decoration: none; font-size: 0.8125rem; line-height: 1.45; }
+.chapter-group-label { margin: 0 0 8px; padding: 0 10px 8px; border-bottom: 1px solid var(--line); color: var(--ink); font-size: 0.6875rem; font-weight: 650; letter-spacing: 0.09em; line-height: 1.4; text-transform: uppercase; }
+.chapter-nav li + li { margin-top: 3px; }
+.chapter-nav a { display: block; padding: 7px 10px; border-radius: 4px; color: var(--muted); text-decoration: none; font-size: 0.8125rem; line-height: 1.45; }
+.chapter-nav .chapter-parent { color: var(--ink); }
+.chapter-nav ul.chapter-children { margin: 3px 0 7px 10px; padding-inline-start: 6px; border-inline-start: 1px solid var(--line); }
+.chapter-nav .chapter-children a { padding-inline: 8px; }
 .chapter-nav a:hover { color: var(--ink); background: var(--soft); }
 .chapter-nav a[aria-current='page'] { color: var(--accent); background: var(--accent-soft); font-weight: 550; }
 .docs-toc li + li { margin-top: 12px; }
@@ -26,7 +29,7 @@
 .docs-section-label { margin-bottom: 14px; color: var(--muted); font-size: 0.75rem; }
 .docs-page-heading { margin-bottom: 36px; }
 .docs-page-heading h1 { margin-bottom: 0; font-size: clamp(2rem, 3.2vw, 2.75rem); font-weight: 620; letter-spacing: -0.055em; line-height: 1.12; }
-.docs-draft-note { margin: 14px 0 0; color: var(--muted); font-size: 0.8125rem; line-height: 1.6; }
+.docs-status-note { margin: 14px 0 0; color: var(--muted); font-size: 0.8125rem; line-height: 1.6; }
 .docs-mobile-nav, .docs-mobile-toc { display: none; }
 
 .docs-prose { font-size: 0.9375rem; line-height: 1.8; overflow-wrap: break-word; }
@@ -39,6 +42,9 @@
 .docs-prose strong { font-weight: 600; }
 .docs-prose ul, .docs-prose ol { padding-left: 1.4rem; margin-block: 1rem 1.5rem; }
 .docs-prose li + li { margin-top: 0.4rem; }
+.docs-prose .contains-task-list { padding-inline-start: 0; }
+.docs-prose .task-list-item::marker { content: ''; }
+.docs-prose .task-list-item > input { margin-inline: 0 0.375rem; }
 .docs-prose :not(pre) > code { padding: 0.15em 0.3em; border-radius: 3px; background: var(--soft); font-size: 0.85em; overflow-wrap: anywhere; }
 .docs-prose blockquote { margin: 1.75rem 0; padding: 17px 20px; border-left: 2px solid var(--accent); border-radius: 0 4px 4px 0; background: var(--accent-soft); font-size: 0.875rem; }
 .docs-prose blockquote p { margin-bottom: 0.5rem; }
@@ -86,7 +92,6 @@
   .docs-mobile-nav { display: block; margin-bottom: 32px; padding: 14px 0; border-bottom: 1px solid var(--line); }
   .docs-mobile-nav summary > span { margin-left: 12px; color: var(--ink); }
   .docs-mobile-nav .chapter-nav { padding-top: 16px; }
-  .docs-mobile-nav .chapter-nav a { margin-left: 0; }
   .docs-page-heading { margin-bottom: 28px; }
   .docs-page-heading h1 { font-size: 2.125rem; }
   .docs-section-label { font-size: 0.6875rem; }
