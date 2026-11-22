@@ -67,4 +67,4 @@ For `q: queue[T]`, `value` must fit `T` using the ordinary assignment and checke
 
 A queue has no indexing or sorting. Direct iteration, reverse traversal, and deque operations remain open.
 
-See [Binary Tree Level Order Traversal](/docs/examples/binary-tree-level-order-traversal) for FIFO processing with [`repeat`](/docs/specification#counted-repetition).
+See [Binary Tree Level Order Traversal](/examples/binary-tree-level-order-traversal) for FIFO processing with [`repeat`](/docs/specification#counted-repetition).

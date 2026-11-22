@@ -6,7 +6,7 @@ section: guide
 order: 2
 ---
 
-The [playground](/playground) has runnable examples of functions, branches, and recursion. This guide also covers planned features such as collections and loops. See the [roadmap](/docs/roadmap) for implementation status, or explore complete solutions in the [algorithm examples](/docs/examples).
+The [playground](/playground) has runnable examples of functions, branches, and recursion. This guide also covers planned features such as collections and loops. See the [roadmap](/docs/roadmap) for implementation status, or explore complete solutions in the [algorithm examples](/examples).
 
 ## Variables and types
 
@@ -44,7 +44,7 @@ min!(best, 7)
 min!(best, 3)  # best is now 3
 ```
 
-See [Validate Binary Search Tree](/docs/examples/validate-binary-search-tree) for recursive bounds, or the [numeric rules](/docs/specification/values-and-operators#numbers-and-infinity) for arithmetic and finite-value checks.
+See [Validate Binary Search Tree](/examples/validate-binary-search-tree) for recursive bounds, or the [numeric rules](/docs/specification/values-and-operators#numbers-and-infinity) for arithmetic and finite-value checks.
 
 ## Lists
 
@@ -155,7 +155,7 @@ fn preferFirst(first: int?, fallback: int) int:
 
 `preferFirst(0, 7)` returns zero; `preferFirst(none, 7)` returns seven. The expression is evaluated once, and only `none` makes execution proceed to the next statement.
 
-[Postfix `expression?`](/docs/specification/records-and-optionals#optional-propagation) unwraps a present value or returns `none` from an optional-returning function. See the [kth-smallest example](/docs/examples/kth-smallest-element-in-a-bst) for a complete search using conditional return.
+[Postfix `expression?`](/docs/specification/records-and-optionals#optional-propagation) unwraps a present value or returns `none` from an optional-returning function. See the [kth-smallest example](/examples/kth-smallest-element-in-a-bst) for a complete search using conditional return.
 
 ## Loops
 
@@ -194,7 +194,7 @@ repeat pending.size:
     # Process this node and enqueue its children.
 ```
 
-The count is evaluated once on entry. Nodes added during the body do not increase the active repetition count. Zero or negative counts skip the body. See [Binary Tree Level Order Traversal](/docs/examples/binary-tree-level-order-traversal) for a complete example.
+The count is evaluated once on entry. Nodes added during the body do not increase the active repetition count. Zero or negative counts skip the body. See [Binary Tree Level Order Traversal](/examples/binary-tree-level-order-traversal) for a complete example.
 
 ## Iterators
 
@@ -211,8 +211,8 @@ for token in tokens:
 
 `split` creates the complete token list; `.iter()` adds a cursor without copying it. Passing that cursor to a helper shares its position. Another `.iter()` call on the list would create an independent cursor.
 
-`next()` consumes one value and raises an error if exhausted. A `for` loop stops normally at exhaustion. Iterators have no truthiness or `.size`. See [Serialize and Deserialize Binary Tree](/docs/examples/serialize-and-deserialize-binary-tree) for recursive token reading, or the [iterator rules](/docs/specification/collections/iterators#explicit-iterators) for details.
+`next()` consumes one value and raises an error if exhausted. A `for` loop stops normally at exhaustion. Iterators have no truthiness or `.size`. See [Serialize and Deserialize Binary Tree](/examples/serialize-and-deserialize-binary-tree) for recursive token reading, or the [iterator rules](/docs/specification/collections/iterators#explicit-iterators) for details.
 
 ## Where to go next
 
-Read the [algorithm examples](/docs/examples) to see these pieces together. For exact rules and open questions, use the [specification](/docs/specification).
+Read the [algorithm examples](/examples) to see these pieces together. For exact rules and open questions, use the [specification](/docs/specification).

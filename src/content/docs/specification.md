@@ -94,7 +94,7 @@ fn writeTree(node: TreeNode?, parts: list[str]):
 - A function with a declared or inferred result type uses `return expression`, including explicit `return none` for an absent optional result. Bare `return` is a compile-time error in a value-returning function. `return? expression` contributes a possible value return and follows its existing typing rules.
 - Calling a value-returning function as a statement can discard its result. Bare `return` outside a function is an error.
 
-See [Serialize and Deserialize Binary Tree](/docs/examples/serialize-and-deserialize-binary-tree) for a nested procedure that collects tokens in a captured list.
+See [Serialize and Deserialize Binary Tree](/examples/serialize-and-deserialize-binary-tree) for a nested procedure that collects tokens in a captured list.
 
 ### Definition visibility
 
@@ -134,7 +134,7 @@ fn countNodes(root: TreeNode?) int:
 - A separate call to the enclosing function creates fresh local bindings and a new helper capturing those bindings.
 - Nested functions follow the same parameter and return typing rules as other functions; their enclosing types are available during checking.
 
-See [Diameter of Binary Tree](/docs/examples/diameter-of-binary-tree) for a recursive helper that updates an outer accumulator.
+See [Diameter of Binary Tree](/examples/diameter-of-binary-tree) for a recursive helper that updates an outer accumulator.
 
 ## Branches
 
@@ -196,9 +196,9 @@ repeat pending.size:
 - The header introduces no bindings. Assignments in the body follow the ordinary [scope and initialization rules](/docs/specification/types#scope-and-initialization), so a value assigned in the body can be read after the loop. If no assignment has executed, reading it raises a runtime error.
 - This is a statement form. It cannot be used as an expression or a comprehension clause.
 
-See [Binary Tree Level Order Traversal](/docs/examples/binary-tree-level-order-traversal) for a queue whose size is captured at the start of each level.
+See [Binary Tree Level Order Traversal](/examples/binary-tree-level-order-traversal) for a queue whose size is captured at the start of each level.
 
-See [Binary Tree Right Side View](/docs/examples/binary-tree-right-side-view) for reading the last node assigned by a nonempty repetition after it finishes.
+See [Binary Tree Right Side View](/examples/binary-tree-right-side-view) for reading the last node assigned by a nonempty repetition after it finishes.
 
 ### Continue
 
@@ -242,7 +242,7 @@ square = [
 - Store element values using normal assignment semantics. Mutable results remain references; comprehension construction does not deep-copy them.
 - Filters, dictionary/set comprehensions, and asynchronous forms remain open.
 
-See [Valid Sudoku](/docs/examples/valid-sudoku) for eager column and square construction with a separate validation helper.
+See [Valid Sudoku](/examples/valid-sudoku) for eager column and square construction with a separate validation helper.
 
 ### Ranges
 

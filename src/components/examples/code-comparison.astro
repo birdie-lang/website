@@ -1,0 +1,111 @@
+---
+import type { Example } from '../../data/examples';
+import CodeBlock from '../docs/code-block.astro';
+
+interface Props {
+  example: Example;
+}
+
+const { example } = Astro.props;
+const languages = [
+  { id: 'birdie', label: 'Birdie', source: example.source, filename: example.filename },
+  { id: 'python', label: 'Python', source: example.python, filename: `${example.slug}.py` },
+] as const;
+---
+
+<birdie-code-tabs class="code-comparison code-sheet">
+  <header class="code-navigation" hidden>
+    <div class="example-tabs" role="tablist" aria-label={`Code language for ${example.title}`}>
+      {languages.map((language, index) => (
+        <button
+          type="button"
+          role="tab"
+          id={`${example.id}-${language.id}-tab`}
+          aria-controls={`${example.id}-${language.id}-panel`}
+          aria-selected={index === 0 ? 'true' : 'false'}
+          tabindex={index === 0 ? 0 : -1}
+        >{language.label}</button>
+      ))}
+    </div>
+  </header>
+  {languages.map((language, index) => (
+    <section
+      role="tabpanel"
+      id={`${example.id}-${language.id}-panel`}
+      aria-labelledby={`${example.id}-${language.id}-tab`}
+      hidden={index !== 0}
+    >
+      <CodeBlock
+        code={language.source}
+        lang={language.id}
+        filename={language.filename}
+        status={language.id === 'birdie' ? 'Proposed syntax' : undefined}
+      />
+    </section>
+  ))}
+</birdie-code-tabs>
+
+<noscript>
+  <style is:inline>
+    .code-comparison [role='tabpanel'][hidden] { display: block !important; border-top: 1px solid var(--line); }
+  </style>
+</noscript>
+
+<script>
+  class BirdieCodeTabs extends HTMLElement {
+    connectedCallback() {
+      const tabs = Array.from(this.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+      const panels = Array.from(this.querySelectorAll<HTMLElement>('[role="tabpanel"]'));
+      const navigation = this.querySelector<HTMLElement>('.code-navigation');
+      if (!navigation?.hidden) return;
+      navigation.hidden = false;
+
+      const select = (selected: HTMLButtonElement) => {
+        tabs.forEach((tab) => {
+          const active = tab === selected;
+          tab.setAttribute('aria-selected', String(active));
+          tab.tabIndex = active ? 0 : -1;
+        });
+        panels.forEach((panel) => {
+          panel.hidden = panel.id !== selected.getAttribute('aria-controls');
+        });
+      };
+
+      tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => select(tab));
+        tab.addEventListener('keydown', (event) => {
+          let next: HTMLButtonElement | undefined;
+          if (event.key === 'ArrowRight') next = tabs[(index + 1) % tabs.length];
+          if (event.key === 'ArrowLeft') next = tabs[(index - 1 + tabs.length) % tabs.length];
+          if (event.key === 'Home') next = tabs[0];
+          if (event.key === 'End') next = tabs[tabs.length - 1];
+          if (!next) return;
+          event.preventDefault();
+          select(next);
+          next.focus();
+        });
+      });
+    }
+  }
+
+  if (!customElements.get('birdie-code-tabs')) customElements.define('birdie-code-tabs', BirdieCodeTabs);
+</script>
+
+<style>
+  .code-comparison { display: block; }
+  .code-navigation { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 7px; border-bottom: 1px solid var(--line); }
+  .example-tabs button { min-height: 28px; padding: 4px 10px; outline-offset: 2px; }
+  .example-tabs button[aria-selected='true'] { background: var(--accent-soft); color: var(--accent); font-weight: 550; }
+  .code-comparison :global(.docs-code) { margin: 0; }
+  .code-comparison :global(.docs-code-toolbar) { position: static; justify-content: flex-start; gap: 10px 14px; min-height: 30px; padding: 4px 12px; background: var(--soft); }
+  .code-comparison :global(.docs-code-filename) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .code-comparison :global(.proposed-label) { flex-shrink: 0; font-family: var(--font-sans); }
+  .code-comparison :global(.docs-code-toolbar button) { margin-inline-start: auto; }
+  .code-comparison :global(pre.astro-code) { max-height: min(60svh, 32rem); padding: 12px 16px; border: 0; border-radius: 0; overflow: auto; line-height: 1.6; }
+  .code-comparison :global(pre.astro-code:focus-visible) { outline-offset: -3px; }
+
+  @media (max-width: 767px) {
+    .code-comparison :global(.docs-code-toolbar) { gap: 8px; padding-inline: 12px; }
+    .code-comparison :global(pre.astro-code) { padding-inline: 12px; }
+  }
+</style>

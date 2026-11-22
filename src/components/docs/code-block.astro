@@ -6,13 +6,17 @@ interface Props {
   code: string;
   lang: 'birdie' | 'python';
   filename: string;
+  status?: string;
 }
 
-const { code, lang, filename } = Astro.props;
+const { code, lang, filename, status } = Astro.props;
 ---
 
 <div class="docs-code">
-  <div class="docs-code-toolbar"><span>{filename}</span></div>
+  <div class="docs-code-toolbar">
+    <span class="docs-code-filename" title={filename}>{filename}</span>
+    {status && <span class="proposed-label">{status}</span>}
+  </div>
   <Code
     code={code.trimEnd()}
     lang={lang === 'birdie' ? birdieGrammar : 'python'}

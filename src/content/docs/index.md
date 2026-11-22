@@ -22,7 +22,7 @@ The [philosophy](/docs/philosophy) explains why Birdie exists and how we choose 
 
 Start with [your first program](/docs/guide/first-program), then learn the [language basics](/docs/guide/basics): variables, collections, conditions, and loops.
 
-The [algorithm examples](/docs/examples) show complete solutions alongside Python versions.
+The [algorithm examples](/examples) show complete solutions alongside Python versions.
 
 ## Specification
 

@@ -1,20 +1,39 @@
 ---
 import Brand from './brand.astro';
 
-const isPlayground = Astro.url.pathname === '/playground';
-const isDocs = Astro.url.pathname === '/docs' ? 'page' : Astro.url.pathname.startsWith('/docs/') ? 'true' : undefined;
+const { pathname } = Astro.url;
+const links = [
+  { href: '/docs', label: 'Docs' },
+  { href: '/examples', label: 'Examples' },
+  { href: '/playground', label: 'Playground' },
+];
 ---
 
 <header class="site-header wrap" transition:persist="site-header">
   <Brand />
   <nav aria-label="Main navigation" class="main-nav">
-    <a href="/docs" aria-current={isDocs}><span class="nav-label">Docs</span></a>
-    <a href="/playground" aria-current={isPlayground ? 'page' : undefined}><span class="nav-label">Playground</span></a>
+    {links.map(({ href, label }) => (
+      <a href={href} aria-current={pathname === href ? 'page' : pathname.startsWith(`${href}/`) ? 'true' : undefined}>
+        <span class="nav-label">{label}</span>
+      </a>
+    ))}
     <a class="github-link" href="https://github.com/birdie-lang/birdie">GitHub <span aria-hidden="true">↗</span></a>
+    <button class="theme-toggle" type="button" data-theme-toggle>
+      <span class="show-in-light">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6.5 6.5 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" />
+        </svg>
+        <span class="sr-only">Switch to dark theme</span>
+      </span>
+      <span class="show-in-dark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42m0-14.14-1.42 1.42m-11.3 11.3-1.42 1.42" />
+        </svg>
+        <span class="sr-only">Switch to light theme</span>
+      </span>
+    </button>
   </nav>
-  <button class="theme-toggle" type="button" aria-label="Switch color theme" data-theme-toggle>
-    <span class="show-in-light">Dark</span><span class="show-in-dark">Light</span>
-  </button>
 </header>
 
 <script>

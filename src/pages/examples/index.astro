@@ -1,0 +1,40 @@
+---
+import SiteLayout from '../../layouts/site-layout.astro';
+import ExampleCatalog from '../../components/examples/example-catalog.astro';
+import { catalog, examples, problems } from '../../data/examples';
+import '../../styles/docs.css';
+
+const neetcodeCount = problems.filter((problem) => problem.neetcode150).length;
+---
+
+<SiteLayout title="Algorithm examples · Birdie" description="The NeetCode 150 catalog, with Birdie translations, Python comparisons, and Blind 75 membership.">
+  <article class="catalog-page docs-content wrap">
+    <header class="docs-page-heading">
+      <h1>Algorithm examples</h1>
+      <p class="catalog-stats">
+        <a href={catalog.neetcode150.url}>{neetcodeCount} NeetCode problems</a>
+        <span aria-hidden="true">·</span>
+        {examples.length} Birdie translations
+      </p>
+    </header>
+    <div class="docs-prose">
+      <p class="catalog-intro">
+        Linked problem titles open Birdie and Python solutions. The Birdie code illustrates proposed syntax and includes features still on the <a href="/docs/roadmap">roadmap</a>.
+        For examples you can run today, open the <a href="/playground">playground</a>.
+      </p>
+      <ExampleCatalog />
+    </div>
+  </article>
+</SiteLayout>
+
+<style>
+  .catalog-page { padding-block: 52px 80px; }
+  .catalog-stats { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 9px; margin: 14px 0 0; color: var(--muted); font-size: 0.8125rem; line-height: 1.6; font-variant-numeric: tabular-nums; }
+  .catalog-stats a { text-underline-offset: 4px; }
+  .catalog-stats a:hover { color: var(--accent); }
+  .catalog-intro { max-width: 65ch; }
+
+  @media (max-width: 767px) {
+    .catalog-page { padding-block: 24px 48px; }
+  }
+</style>

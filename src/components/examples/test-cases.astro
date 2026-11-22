@@ -1,0 +1,82 @@
+---
+import type { ExampleFixture } from '../../lib/example-schema';
+
+interface Props {
+  fixture: ExampleFixture;
+}
+
+const { fixture } = Astro.props;
+const cases = fixture.cases.map((testCase) => ({
+  ...testCase,
+  label: testCase.name.charAt(0).toUpperCase() + testCase.name.slice(1).replaceAll('-', ' '),
+}));
+const outputLabel = fixture.check === 'codec-round-trip' ? 'Expected decoded value' : 'Expected output';
+const checkNotes = {
+  '': '',
+  exact: '',
+  unordered: 'Output order can vary.',
+  'unordered-groups': 'Group order and item order within each group can vary.',
+  'codec-round-trip': 'The encoded value is decoded for comparison.',
+};
+const adapters = [...(fixture.argAdapters ?? []), fixture.resultAdapter];
+const notes = [
+  checkNotes[fixture.check ?? ''],
+  adapters.includes('tree') && 'Trees use level-order arrays.',
+  adapters.includes('node') && 'Node references are shown by value.',
+].filter(Boolean).join(' ');
+---
+
+<section id="test-cases" class="example-test-cases" aria-labelledby="test-cases-heading">
+  <h2 id="test-cases-heading">Test cases <span class="case-count">({cases.length})</span></h2>
+  <table aria-labelledby="test-cases-heading" aria-describedby={notes ? 'test-case-notes' : undefined}>
+    <colgroup>
+      <col class="case-name-column" />
+      <col />
+      <col class="case-output-column" />
+    </colgroup>
+    <thead>
+      <tr>
+        <th scope="col">Case</th>
+        <th scope="col">Inputs</th>
+        <th scope="col">{outputLabel}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {cases.map(({ label, args, expected }) => (
+        <tr>
+          <th scope="row">{label}</th>
+          <td>
+            <div class="case-arguments">
+              {args.length === 0 && <span class="empty-arguments">No arguments</span>}
+              {args.map((arg) => <code>{arg}</code>)}
+            </div>
+          </td>
+          <td><code>{expected}</code></td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+  {notes && <p id="test-case-notes" class="case-note">{notes}</p>}
+</section>
+
+<style>
+  .example-test-cases { container-type: inline-size; scroll-margin-top: 24px; border: 1px solid var(--line); border-radius: 4px; }
+  h2 { margin: 0; padding: 12px 14px; font-size: 0.9375rem; font-weight: 620; }
+  .case-count { margin-inline-start: 4px; color: var(--muted); font-size: 0.75rem; font-weight: 400; }
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 0.8125rem; line-height: 1.5; }
+  .case-name-column { width: 28%; }
+  .case-output-column { width: 26%; }
+  th, td { padding: 7px 14px; border-top: 1px solid var(--line); text-align: start; vertical-align: top; overflow-wrap: anywhere; }
+  th { font-weight: 500; }
+  thead th { color: var(--muted); background: var(--soft); font-size: 0.75rem; }
+  .case-arguments { display: flex; flex-wrap: wrap; gap: 4px; }
+  code { display: inline-block; max-width: 100%; padding: 1px 5px; border-radius: 3px; background: var(--soft); font-size: 0.75rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .empty-arguments, .case-note { color: var(--muted); font-size: 0.75rem; line-height: 1.5; }
+  .case-note { margin: 0; padding: 10px 14px; border-top: 1px solid var(--line); }
+
+  @container (max-width: 540px) {
+    h2, th, td, .case-note { padding-inline: 8px; }
+    .case-name-column { width: 30%; }
+    .case-output-column { width: 29%; }
+  }
+</style>

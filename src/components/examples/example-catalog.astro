@@ -1,5 +1,5 @@
 ---
-import { catalog, problems } from '../../data/examples';
+import { problems } from '../../data/examples';
 import CatalogIcon from './catalog-icon.astro';
 
 const categories = [...new Set(problems.map((problem) => problem.neetcode150?.category ?? 'Other problems'))]
@@ -8,11 +8,6 @@ const categories = [...new Set(problems.map((problem) => problem.neetcode150?.ca
     return { name, entries };
   });
 ---
-
-<p>
-  Problems from the <a href={catalog.neetcode150.url}>NeetCode 150</a>.
-  Linked titles open Birdie translations; unlinked titles are awaiting translation.
-</p>
 
 {problems.length === 0 && <p>No problems have been added yet.</p>}
 

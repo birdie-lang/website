@@ -35,7 +35,7 @@ for value in cursor:
 
 Mutating a source list during traversal remains open, as for ordinary collection loops. This API does not yet add cursors for maps, sets, counters, stacks, queues, ranges, `zip`, or generator expressions. Custom iterator protocols, `yield`, generator functions, and iterator combinators remain open.
 
-See [Serialize and Deserialize Binary Tree](/docs/examples/serialize-and-deserialize-binary-tree) for recursive calls consuming a shared token cursor. Advancing a captured iterator mutates the cursor; it does not rebind its name and needs no `outer` capture entry.
+See [Serialize and Deserialize Binary Tree](/examples/serialize-and-deserialize-binary-tree) for recursive calls consuming a shared token cursor. Advancing a captured iterator mutates the cursor; it does not rebind its name and needs no `outer` capture entry.
 
 ## Lazy traversal and predicate checks
 
@@ -76,4 +76,4 @@ return all(value == 0 for value in freqs)
 
 Multiple clauses follow the same nesting and scope rules as [list comprehensions](/docs/specification#list-comprehensions). Reusable generator type syntax, escaping generator lifetimes, and filtering remain open.
 
-See [Valid Anagram](/docs/examples/valid-anagram) for a strict zipped traversal followed by a lazy zero-count check.
+See [Valid Anagram](/examples/valid-anagram) for a strict zipped traversal followed by a lazy zero-count check.

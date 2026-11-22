@@ -1,0 +1,113 @@
+---
+import type { InferGetStaticPropsType } from 'astro';
+import SiteLayout from '../../layouts/site-layout.astro';
+import CodeComparison from '../../components/examples/code-comparison.astro';
+import TestCases from '../../components/examples/test-cases.astro';
+import CodeBlock from '../../components/docs/code-block.astro';
+import CopyCode from '../../components/docs/copy-code.astro';
+import { examples } from '../../data/examples';
+import '../../styles/docs.css';
+
+export function getStaticPaths() {
+  return examples.map((example) => ({ params: { slug: example.slug }, props: { example } }));
+}
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+const { example } = Astro.props;
+const notes = [example.note, ...(example.notes ?? [])].filter((note) => note !== undefined);
+const metadata = [
+  example.neetcode150?.category,
+  example.difficulty,
+  ...(example.blind75 ? ['Blind 75'] : []),
+].filter((value) => value !== undefined);
+
+const description = example.description ?? `Birdie and Python solutions to ${example.title}.`;
+---
+
+<SiteLayout title={`${example.title} · Birdie`} description={description}>
+  <article class="solution-page wrap">
+    <header class="solution-heading">
+      <nav class="example-breadcrumb" aria-label="Breadcrumb">
+        <a href="/examples"><span aria-hidden="true">←</span> All examples</a>
+      </nav>
+      <h1>{example.title}</h1>
+      <div class="example-metadata">
+        <ul class="example-facts" aria-label="Problem details">
+          {metadata.map((value, index) => (
+            <li>{index > 0 && <span aria-hidden="true">·</span>}{value}</li>
+          ))}
+        </ul>
+        <a class="example-source" href={example.leetcode.url} aria-label={`View ${example.title} on LeetCode`} title={`LeetCode ${example.leetcode.id}`}>
+          LeetCode <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </header>
+
+    <div class:list={['solution-workspace', { 'solution-with-tests': example.fixture }]}>
+      <section id="solution" class="solution-code docs-prose" aria-label="Solution">
+        <CodeComparison example={example} />
+      </section>
+
+      {example.fixture && <TestCases fixture={example.fixture} />}
+    </div>
+
+    {example.providedTypes && (
+      <details id="provided-types" class="provided-types docs-prose">
+        <summary>Provided types</summary>
+        <p>The problem supplies these types. A standalone Birdie program would declare them explicitly.</p>
+        <CodeBlock code={example.providedTypes} lang="birdie" filename="provided-types.bd" />
+      </details>
+    )}
+
+    {(example.description || notes.length > 0) && (
+      <section id="notes" class="solution-notes" aria-labelledby="notes-title">
+        <h2 id="notes-title">Solution notes</h2>
+        {example.description && <p class="solution-approach">{example.description}</p>}
+        {notes.length > 0 && (
+          <div class="solution-note-details">
+            {notes.map((note) => <p>{note}</p>)}
+          </div>
+        )}
+      </section>
+    )}
+  </article>
+  <CopyCode />
+</SiteLayout>
+
+<style>
+  .solution-page { padding-block: 36px 80px; }
+  .solution-heading { margin-bottom: 28px; }
+  .solution-heading h1 { margin-bottom: 12px; font-size: clamp(2rem, 4vw, 3.25rem); font-weight: 640; line-height: 1.08; letter-spacing: -0.055em; overflow-wrap: break-word; }
+  .example-breadcrumb { margin-bottom: 18px; color: var(--muted); font-size: 0.75rem; line-height: 1.5; }
+  .example-breadcrumb a { color: inherit; text-decoration: none; }
+  .example-metadata { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 18px; color: var(--muted); font-size: 0.75rem; line-height: 1.6; }
+  .example-facts { display: flex; flex-wrap: wrap; gap: 4px 9px; margin: 0; padding: 0; list-style: none; }
+  .example-facts li { display: inline-flex; align-items: baseline; gap: 9px; }
+  .example-source { display: inline-flex; gap: 4px; color: inherit; text-decoration: none; white-space: nowrap; }
+  .example-breadcrumb a:hover,
+  .example-source:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 4px; }
+  .solution-workspace { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 16px; }
+  .solution-code, .solution-notes, .provided-types { scroll-margin-top: 24px; }
+  .solution-notes { margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--line); overflow-wrap: break-word; }
+  .solution-notes h2 { margin-bottom: 16px; font-size: 1.25rem; font-weight: 620; letter-spacing: -0.03em; }
+  .solution-notes p { margin-bottom: 14px; color: var(--muted); font-size: 0.9375rem; line-height: 1.75; }
+  .solution-notes .solution-approach { color: var(--ink); }
+  .solution-notes > p:last-child, .solution-note-details p:last-child { margin-bottom: 0; }
+  .provided-types { margin-top: 20px; padding: 12px 0; border-block: 1px solid var(--line); }
+  .provided-types summary { cursor: pointer; font-size: 0.875rem; font-weight: 550; }
+  .provided-types summary:hover { color: var(--accent); }
+  .provided-types p { margin: 12px 0 0; color: var(--muted); font-size: 0.8125rem; }
+
+  @media (min-width: 1120px) {
+    .solution-with-tests { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 24px; }
+    .solution-with-tests .solution-code { position: sticky; top: 24px; }
+    .solution-note-details { columns: 2; column-gap: 48px; }
+    .solution-note-details p { break-inside: avoid; }
+  }
+
+  @media (max-width: 767px) {
+    .solution-page { padding-block: 24px 48px; }
+    .solution-heading { margin-bottom: 22px; }
+    .solution-notes { margin-top: 28px; padding-top: 20px; }
+  }
+</style>

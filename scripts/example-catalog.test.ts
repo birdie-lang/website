@@ -88,6 +88,33 @@ test('accepts metadata-only pending problems and a later translation without edi
   assert.equal(translated.python, 'def solve():\n    return 1');
 });
 
+test('preserves exact test case values and comparison rules in the snapshot', async (t) => {
+  const root = await fixture();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const directory = await writeExample(root, 'tree-problem', metadata(1, 1));
+  await writeFile(join(directory, 'tests.json'), `{
+    "entry": "solve",
+    "check": "unordered",
+    "argAdapters": ["tree"],
+    "cases": [
+      { "name": "large-values", "args": [[9007199254740993, null, -10000000000000000000000000000000000000001]], "expected": [9007199254740993] },
+      { "name": "missing-tree", "args": [null], "expected": null }
+    ]
+  }`);
+
+  const example = (await readExampleCatalog(root)).examples[0];
+  assert(example && 'birdie' in example);
+  assert.deepEqual(example.fixture, {
+    entry: 'solve',
+    check: 'unordered',
+    argAdapters: ['tree'],
+    cases: [
+      { name: 'large-values', args: ['[9007199254740993,null,-10000000000000000000000000000000000000001]'], expected: '[9007199254740993]' },
+      { name: 'missing-tree', args: ['null'], expected: 'null' },
+    ],
+  });
+});
+
 for (const missing of ['solution.bd', 'solution.py']) {
   test(`rejects a missing paired ${missing} with the problem name in the error`, async (t) => {
     const root = await fixture();

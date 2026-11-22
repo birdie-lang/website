@@ -12,6 +12,8 @@ export default defineConfig({
     '/play': '/playground',
     '/docs/syntax': '/docs/specification',
     '/docs/collections': '/docs/specification/collections',
+    '/docs/examples': { destination: '/examples', status: 301 },
+    '/docs/examples/[slug]': { destination: '/examples/[slug]', status: 301 },
   },
   integrations: [mdx()],
   markdown: {

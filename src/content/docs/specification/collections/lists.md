@@ -33,7 +33,7 @@ rows: list[list[int]] = list(3, list)
 
 The one-argument `list(source)` conversion form and index-aware factories remain open. `list(count)` does not imply a default element value.
 
-See [Valid Anagram](/docs/examples/valid-anagram) for a fixed-alphabet frequency table constructed with `list(26, 0)`.
+See [Valid Anagram](/examples/valid-anagram) for a fixed-alphabet frequency table constructed with `list(26, 0)`.
 
 ## Comprehension construction
 
@@ -83,7 +83,7 @@ missing = items.index(9) # none
 - A found index of zero is a present result. Use `position != none` to test for a match. A valid-input guarantee can also justify using the result directly where `int` is required, through the ordinary checked optional-use rules.
 - Lookup performs at most one equality comparison per element. It uses O(1) auxiliary space; the cost of each comparison follows the element type's equality rules.
 
-See [Construct Binary Tree from Preorder and Inorder Traversal](/docs/examples/construct-binary-tree-from-preorder-and-inorder-traversal) for locating each subtree's root value.
+See [Construct Binary Tree from Preorder and Inorder Traversal](/examples/construct-binary-tree-from-preorder-and-inorder-traversal) for locating each subtree's root value.
 
 ## Bulk insertion
 
@@ -110,7 +110,7 @@ packed = parts.join("")   # "birdsong"
 - Empty lists produce `""`; one-element lists produce that element's text. Separators appear only between elements, with empty strings still counting as elements.
 - The intended implementation constructs the result in O(n + L) work and O(L) result storage for n elements and L output scalar values, including separators. It must avoid repeatedly copying an increasingly long accumulated string.
 
-See [Encode and Decode Strings](/docs/examples/encode-and-decode-strings) for collecting fragments and joining once.
+See [Encode and Decode Strings](/examples/encode-and-decode-strings) for collecting fragments and joining once.
 
 <a id="prefix-slicing"></a>
 
@@ -135,9 +135,9 @@ empty = items[2:2] # []
 
 For example, `items[-1:]`, `items[3:1]`, and `items[:5]` all fail for the four-element list above. Slice steps and slice assignment remain open. [String slicing](/docs/specification/values-and-operators#string-slicing) uses the same omitted-bound and strict exclusive-end conventions, with Unicode scalar positions.
 
-See [Top K Frequent Elements](/docs/examples/top-k-frequent-elements) for bulk insertion followed by a bounded prefix copy.
+See [Top K Frequent Elements](/examples/top-k-frequent-elements) for bulk insertion followed by a bounded prefix copy.
 
-See [Construct Binary Tree from Preorder and Inorder Traversal](/docs/examples/construct-binary-tree-from-preorder-and-inorder-traversal) for middle and suffix copies.
+See [Construct Binary Tree from Preorder and Inorder Traversal](/examples/construct-binary-tree-from-preorder-and-inorder-traversal) for middle and suffix copies.
 
 ## Size and indexing
 

@@ -54,9 +54,54 @@ const pendingExampleSchema = exampleMetadataSchema.extend({
   providedTypes: text.optional(),
 });
 
+const adapterSchema = z.enum(['', 'json', 'tree', 'node']);
+const exampleCaseSchema = z.object({
+  name: text,
+  args: z.array(text),
+  expected: text,
+}).strict();
+
+const exampleFixtureSchema = z.object({
+  entry: text,
+  check: z.enum(['', 'exact', 'unordered', 'unordered-groups', 'codec-round-trip']).optional(),
+  argAdapters: z.array(adapterSchema).optional(),
+  resultAdapter: adapterSchema.optional(),
+  cases: z.array(exampleCaseSchema).min(1),
+}).strict();
+
+export type ExampleFixture = z.infer<typeof exampleFixtureSchema>;
+
+const sourceFixtureSchema = exampleFixtureSchema.extend({
+  cases: z.array(exampleCaseSchema.extend({
+    args: z.array(z.unknown()),
+    expected: z.unknown(),
+  })).min(1),
+});
+
+export function parseExampleFixture(source: string): ExampleFixture {
+  // Keep values as JSON text in the snapshot so large Birdie integers survive JavaScript's number parsing.
+  const decoded: unknown = JSON.parse(source, (_key: string, value: unknown, context?: { source?: string }) => {
+    if (typeof value !== 'number' || Number.isSafeInteger(value)) return value;
+    if (!context?.source || !('rawJSON' in JSON) || typeof JSON.rawJSON !== 'function') {
+      throw new Error('The JavaScript runtime cannot preserve this fixture number.');
+    }
+    return JSON.rawJSON(context.source);
+  });
+  const fixture = sourceFixtureSchema.parse(decoded);
+  return exampleFixtureSchema.parse({
+    ...fixture,
+    cases: fixture.cases.map(({ name, args, expected }) => ({
+      name,
+      args: args.map((arg) => JSON.stringify(arg)),
+      expected: JSON.stringify(expected),
+    })),
+  });
+}
+
 const translatedExampleSchema = pendingExampleSchema.extend({
   birdie: text,
   python: text,
+  fixture: exampleFixtureSchema.optional(),
 });
 
 export const exampleSchema = z.union([translatedExampleSchema, pendingExampleSchema]);

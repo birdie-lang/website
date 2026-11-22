@@ -8,7 +8,7 @@ export const catalog = validated.catalog;
 export const problems = validated.examples
   .map((problem) => ({
     ...problem,
-    href: 'birdie' in problem ? `/docs/examples/${problem.slug}` : problem.leetcode.url,
+    href: 'birdie' in problem ? `/examples/${problem.slug}` : problem.leetcode.url,
   }))
   .sort((a, b) => (a.neetcode150?.position ?? Infinity) - (b.neetcode150?.position ?? Infinity) || a.title.localeCompare(b.title));
 

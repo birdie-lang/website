@@ -26,6 +26,6 @@ Static types describe the data and catch mistakes. Inference keeps annotations f
 
 Every feature adds something to learn. We prefer a few rules that work across many problems, and familiar syntax where it fits. A new feature should be useful beyond the example that first suggested it.
 
-We develop Birdie through [example problems](/docs/examples), often comparing the same algorithm in Python and Birdie. That gives us something concrete to judge each design choice against and helps us spot where the language gets in the way.
+We develop Birdie through [example problems](/examples), often comparing the same algorithm in Python and Birdie. That gives us something concrete to judge each design choice against and helps us spot where the language gets in the way.
 
 The [specification](/docs/specification) records the proposed syntax and behavior.

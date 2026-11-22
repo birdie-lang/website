@@ -40,7 +40,7 @@ Types describe the algorithm's data and valid operations. Birdie checks incompat
 - Function parameter types are explicit. Return annotations are optional when the body determines the type unambiguously. A function with no result annotation and no value-returning statements is a [procedure](/docs/specification#procedures); its calls produce no value, rather than `none`.
 - Require an annotation when inference is ambiguous. Do not fall back to a dynamic type.
 - Conflicting underlying type constraints are type errors. An annotation does not resolve incompatible uses. Integers and `number` values have the common numeric type `number`; an initializer or direct assignment containing infinity contributes that wider type. Nullable-to-present and `number`-to-`int` uses follow their runtime checks rather than requiring a proof of presence or finiteness.
-- The current [algorithm examples](/docs/examples) must require no local type annotations.
+- The current [algorithm examples](/examples) must require no local type annotations.
 
 An initially empty collection can get its type from a later operation:
 
@@ -85,7 +85,7 @@ fn chosenValue(ready: bool) int:
 - Captures retain lexical bindings and use the same initialization checks. Registering a nested helper does not initialize its captured locals. Calling it before a captured value is assigned fails if that value is read; calling it after assignment observes the stored value.
 - Compound assignments, increments, and in-place operations read their targets using the same rules. They cannot initialize an uninitialized binding by reading a default value.
 
-See [Binary Tree Right Side View](/docs/examples/binary-tree-right-side-view) for using the last node assigned inside `repeat` after that loop finishes.
+See [Binary Tree Right Side View](/examples/binary-tree-right-side-view) for using the last node assigned inside `repeat` after that loop finishes.
 
 ### Outer variables
 
@@ -106,7 +106,7 @@ For this header, calls pass only the node, as in `dfs(root)`. The enclosing `dia
 - Without `outer`, an assignment introduces or updates a local binding even when an enclosing function has a variable with the same name. Reading the new local before initialization is a runtime error; `diameter = max(diameter, candidate)` cannot implicitly read the outer `diameter`.
 - Reading an enclosing variable, or mutating a field or collection through its reference, needs no `outer` entry because it does not rebind that name.
 
-This keeps recursive helper locals separate while allowing an explicitly shared accumulator. See [Diameter of Binary Tree](/docs/examples/diameter-of-binary-tree).
+This keeps recursive helper locals separate while allowing an explicitly shared accumulator. See [Diameter of Binary Tree](/examples/diameter-of-binary-tree).
 
 ### Compound assignment
 
@@ -129,7 +129,7 @@ quotient //= divisor
 - Errors do not undo side effects from target evaluation, reading a map default, or evaluating the right-hand side.
 - Reading an uninitialized target fails at runtime before evaluating the right-hand side. Undefined names, nonwritable targets, incompatible types, and use inside an expression are compile-time errors. Rebinding an enclosing function's variable still requires an `outer` capture in the function header.
 
-See [Product of Array Except Self](/docs/examples/product-of-array-except-self) for multiplication assignments in two indexed passes.
+See [Product of Array Except Self](/examples/product-of-array-except-self) for multiplication assignments in two indexed passes.
 
 ### Increment and decrement
 
@@ -187,7 +187,7 @@ min!(distances[node], candidate)
 
 `max(a, b)` and `min(a, b)` remain ordinary value-returning function calls. Only the first argument of `max!` or `min!` is a writable argument; the candidate is evaluated as an ordinary value.
 
-See [Longest Consecutive Sequence](/docs/examples/longest-consecutive-sequence) for a running maximum update.
+See [Longest Consecutive Sequence](/examples/longest-consecutive-sequence) for a running maximum update.
 
 ## Tuples
 

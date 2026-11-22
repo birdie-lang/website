@@ -74,7 +74,85 @@
       "slug": "balanced-binary-tree",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
       "birdie": "fn isBalanced(root: TreeNode?) bool:\n    return height(root) != none\n\nfn height(node: TreeNode?) int?:\n    if node == none:\n        return 0\n\n    left = height(node.left)?\n    right = height(node.right)?\n\n    if abs(right - left) > 1:\n        return none\n\n    return 1 + max(left, right)",
-      "python": "class Solution:\n    def isBalanced(self, root: TreeNode | None) -> bool:\n        return height(root) is not None\n\n\ndef height(node: TreeNode | None) -> int | None:\n    if node is None:\n        return 0\n\n    left = height(node.left)\n    if left is None:\n        return None\n\n    right = height(node.right)\n    if right is None:\n        return None\n\n    if abs(right - left) > 1:\n        return None\n\n    return 1 + max(left, right)"
+      "python": "class Solution:\n    def isBalanced(self, root: TreeNode | None) -> bool:\n        return height(root) is not None\n\n\ndef height(node: TreeNode | None) -> int | None:\n    if node is None:\n        return 0\n\n    left = height(node.left)\n    if left is None:\n        return None\n\n    right = height(node.right)\n    if right is None:\n        return None\n\n    if abs(right - left) > 1:\n        return None\n\n    return 1 + max(left, right)",
+      "fixture": {
+        "entry": "isBalanced",
+        "argAdapters": [
+          "tree"
+        ],
+        "cases": [
+          {
+            "name": "balanced",
+            "args": [
+              "[3,9,20,null,null,15,7]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "unbalanced",
+            "args": [
+              "[1,2,2,3,3,null,null,4,4]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "empty",
+            "args": [
+              "[]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "single",
+            "args": [
+              "[1]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "one-child",
+            "args": [
+              "[1,2]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "left-chain",
+            "args": [
+              "[1,2,null,3]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "right-chain",
+            "args": [
+              "[1,null,2,null,3]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "unequal-balanced-heights",
+            "args": [
+              "[1,2,3,4]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "imbalance-in-left-subtree",
+            "args": [
+              "[1,2,3,4,null,5,7,6]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "imbalance-in-right-subtree",
+            "args": [
+              "[1,2,3,4,5,null,6,null,null,null,null,null,7]"
+            ],
+            "expected": "false"
+          }
+        ]
+      }
     },
     {
       "title": "Best Time to Buy And Sell Stock",
@@ -126,7 +204,68 @@
       ],
       "slug": "binary-search",
       "birdie": "fn search(nums: list[int], target: int) int:\n    left = 0\n    right = nums.size - 1\n\n    while left <= right:\n        mid = (left + right) // 2\n\n        if nums[mid] == target:\n            return mid\n\n        if nums[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n\n    return -1",
-      "python": "class Solution:\n    def search(self, nums: list[int], target: int) -> int:\n        left = 0\n        right = len(nums) - 1\n\n        while left <= right:\n            mid = left + (right - left) // 2\n\n            if nums[mid] == target:\n                return mid\n\n            if nums[mid] < target:\n                left = mid + 1\n            else:\n                right = mid - 1\n\n        return -1"
+      "python": "class Solution:\n    def search(self, nums: list[int], target: int) -> int:\n        left = 0\n        right = len(nums) - 1\n\n        while left <= right:\n            mid = left + (right - left) // 2\n\n            if nums[mid] == target:\n                return mid\n\n            if nums[mid] < target:\n                left = mid + 1\n            else:\n                right = mid - 1\n\n        return -1",
+      "fixture": {
+        "entry": "search",
+        "cases": [
+          {
+            "name": "found",
+            "args": [
+              "[-1,0,3,5,9,12]",
+              "9"
+            ],
+            "expected": "4"
+          },
+          {
+            "name": "absent",
+            "args": [
+              "[-1,0,3,5,9,12]",
+              "2"
+            ],
+            "expected": "-1"
+          },
+          {
+            "name": "first",
+            "args": [
+              "[1,3,5]",
+              "1"
+            ],
+            "expected": "0"
+          },
+          {
+            "name": "last",
+            "args": [
+              "[1,3,5]",
+              "5"
+            ],
+            "expected": "2"
+          },
+          {
+            "name": "single-found",
+            "args": [
+              "[7]",
+              "7"
+            ],
+            "expected": "0"
+          },
+          {
+            "name": "single-absent",
+            "args": [
+              "[7]",
+              "8"
+            ],
+            "expected": "-1"
+          },
+          {
+            "name": "empty",
+            "args": [
+              "[]",
+              "1"
+            ],
+            "expected": "-1"
+          }
+        ]
+      }
     },
     {
       "title": "Binary Tree Level Order Traversal",
@@ -152,7 +291,85 @@
       "slug": "binary-tree-level-order-traversal",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
       "birdie": "fn levelOrder(root: TreeNode?) list[list[int]]:\n    if root == none:\n        return []\n\n    res = []\n    pending = queue([root])\n\n    while pending:\n        level_res = []\n\n        repeat pending.size:\n            node = pending.pop()\n            level_res.push(node.val)\n\n            if node.left != none:\n                pending.push(node.left)\n\n            if node.right != none:\n                pending.push(node.right)\n\n        res.push(level_res)\n\n    return res",
-      "python": "from collections import deque\n\n\nclass Solution:\n    def levelOrder(self, root: TreeNode | None) -> list[list[int]]:\n        if root is None:\n            return []\n\n        res = []\n        pending = deque([root])\n\n        while pending:\n            level_res = []\n\n            for _ in range(len(pending)):\n                node = pending.popleft()\n                level_res.append(node.val)\n\n                if node.left is not None:\n                    pending.append(node.left)\n\n                if node.right is not None:\n                    pending.append(node.right)\n\n            res.append(level_res)\n\n        return res"
+      "python": "from collections import deque\n\n\nclass Solution:\n    def levelOrder(self, root: TreeNode | None) -> list[list[int]]:\n        if root is None:\n            return []\n\n        res = []\n        pending = deque([root])\n\n        while pending:\n            level_res = []\n\n            for _ in range(len(pending)):\n                node = pending.popleft()\n                level_res.append(node.val)\n\n                if node.left is not None:\n                    pending.append(node.left)\n\n                if node.right is not None:\n                    pending.append(node.right)\n\n            res.append(level_res)\n\n        return res",
+      "fixture": {
+        "entry": "levelOrder",
+        "argAdapters": [
+          "tree"
+        ],
+        "cases": [
+          {
+            "name": "standard-levels",
+            "args": [
+              "[3,9,20,null,null,15,7]"
+            ],
+            "expected": "[[3],[9,20],[15,7]]"
+          },
+          {
+            "name": "empty",
+            "args": [
+              "[]"
+            ],
+            "expected": "[]"
+          },
+          {
+            "name": "single-zero",
+            "args": [
+              "[0]"
+            ],
+            "expected": "[[0]]"
+          },
+          {
+            "name": "left-to-right-order",
+            "args": [
+              "[1,2,3]"
+            ],
+            "expected": "[[1],[2,3]]"
+          },
+          {
+            "name": "left-chain",
+            "args": [
+              "[1,2,null,3,null,4]"
+            ],
+            "expected": "[[1],[2],[3],[4]]"
+          },
+          {
+            "name": "right-chain",
+            "args": [
+              "[1,null,2,null,3,null,4]"
+            ],
+            "expected": "[[1],[2],[3],[4]]"
+          },
+          {
+            "name": "growing-levels",
+            "args": [
+              "[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]"
+            ],
+            "expected": "[[1],[2,3],[4,5,6,7],[8,9,10,11,12,13,14,15]]"
+          },
+          {
+            "name": "sparse-levels",
+            "args": [
+              "[1,2,3,null,4,5,null,6,null,null,7]"
+            ],
+            "expected": "[[1],[2,3],[4,5],[6,7]]"
+          },
+          {
+            "name": "duplicate-values",
+            "args": [
+              "[1,1,1,1,null,null,1]"
+            ],
+            "expected": "[[1],[1,1],[1,1]]"
+          },
+          {
+            "name": "negative-and-zero-values",
+            "args": [
+              "[0,-2,3,-4,-1,0,5]"
+            ],
+            "expected": "[[0],[-2,3],[-4,-1,0,5]]"
+          }
+        ]
+      }
     },
     {
       "title": "Binary Tree Maximum Path Sum",
@@ -179,7 +396,99 @@
       "slug": "binary-tree-maximum-path-sum",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
       "birdie": "fn maxPathSum(root: TreeNode?) int:\n    res = root.val\n\n    fn dfs(node: TreeNode?, outer res) int:\n        if node == none:\n            return 0\n\n        left = max(0, dfs(node.left))\n        right = max(0, dfs(node.right))\n\n        max!(res, node.val + left + right)\n        return node.val + max(left, right)\n\n    dfs(root)\n    return res",
-      "python": "class Solution:\n    def maxPathSum(self, root: TreeNode | None) -> int:\n        res = root.val\n\n        def dfs(node: TreeNode | None) -> int:\n            nonlocal res\n\n            if node is None:\n                return 0\n\n            left = max(0, dfs(node.left))\n            right = max(0, dfs(node.right))\n\n            res = max(res, node.val + left + right)\n            return node.val + max(left, right)\n\n        dfs(root)\n        return res"
+      "python": "class Solution:\n    def maxPathSum(self, root: TreeNode | None) -> int:\n        res = root.val\n\n        def dfs(node: TreeNode | None) -> int:\n            nonlocal res\n\n            if node is None:\n                return 0\n\n            left = max(0, dfs(node.left))\n            right = max(0, dfs(node.right))\n\n            res = max(res, node.val + left + right)\n            return node.val + max(left, right)\n\n        dfs(root)\n        return res",
+      "fixture": {
+        "entry": "maxPathSum",
+        "argAdapters": [
+          "tree"
+        ],
+        "cases": [
+          {
+            "name": "standard",
+            "args": [
+              "[1,2,3]"
+            ],
+            "expected": "6"
+          },
+          {
+            "name": "best-path-below-root",
+            "args": [
+              "[-10,9,20,null,null,15,7]"
+            ],
+            "expected": "42"
+          },
+          {
+            "name": "single-negative",
+            "args": [
+              "[-3]"
+            ],
+            "expected": "-3"
+          },
+          {
+            "name": "all-negative",
+            "args": [
+              "[-10,-20,-3,-40,-5]"
+            ],
+            "expected": "-3"
+          },
+          {
+            "name": "single-zero",
+            "args": [
+              "[0]"
+            ],
+            "expected": "0"
+          },
+          {
+            "name": "zero-below-negative-root",
+            "args": [
+              "[-1,0,0]"
+            ],
+            "expected": "0"
+          },
+          {
+            "name": "left-chain",
+            "args": [
+              "[1,2,null,3,null,4]"
+            ],
+            "expected": "10"
+          },
+          {
+            "name": "right-chain-excludes-root",
+            "args": [
+              "[-2,null,3,null,4]"
+            ],
+            "expected": "7"
+          },
+          {
+            "name": "discard-negative-branch",
+            "args": [
+              "[2,-1,3]"
+            ],
+            "expected": "5"
+          },
+          {
+            "name": "negative-root-connects-positive-branches",
+            "args": [
+              "[-1,5,4]"
+            ],
+            "expected": "8"
+          },
+          {
+            "name": "parent-uses-single-branch-gains",
+            "args": [
+              "[1,2,3,4,5,6,7]"
+            ],
+            "expected": "18"
+          },
+          {
+            "name": "exact-sum-above-float-precision",
+            "args": [
+              "[9007199254740993,9007199254740992,9007199254740994]"
+            ],
+            "expected": "27021597764222979"
+          }
+        ]
+      }
     },
     {
       "title": "Binary Tree Right Side View",
@@ -206,7 +515,85 @@
       "slug": "binary-tree-right-side-view",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
       "birdie": "fn rightSideView(root: TreeNode?) list[int]:\n    if root == none:\n        return []\n\n    res = []\n    pending = queue([root])\n\n    while pending:\n        repeat pending.size:\n            node = pending.pop()\n\n            if node.left != none:\n                pending.push(node.left)\n            if node.right != none:\n                pending.push(node.right)\n\n        res.push(node.val)\n\n    return res",
-      "python": "from collections import deque\n\n\nclass Solution:\n    def rightSideView(self, root: TreeNode | None) -> list[int]:\n        if root is None:\n            return []\n\n        res = []\n        pending = deque([root])\n\n        while pending:\n            for _ in range(len(pending)):\n                node = pending.popleft()\n\n                if node.left is not None:\n                    pending.append(node.left)\n                if node.right is not None:\n                    pending.append(node.right)\n\n            res.append(node.val)\n\n        return res"
+      "python": "from collections import deque\n\n\nclass Solution:\n    def rightSideView(self, root: TreeNode | None) -> list[int]:\n        if root is None:\n            return []\n\n        res = []\n        pending = deque([root])\n\n        while pending:\n            for _ in range(len(pending)):\n                node = pending.popleft()\n\n                if node.left is not None:\n                    pending.append(node.left)\n                if node.right is not None:\n                    pending.append(node.right)\n\n            res.append(node.val)\n\n        return res",
+      "fixture": {
+        "entry": "rightSideView",
+        "argAdapters": [
+          "tree"
+        ],
+        "cases": [
+          {
+            "name": "standard-view",
+            "args": [
+              "[1,2,3,null,5,null,4]"
+            ],
+            "expected": "[1,3,4]"
+          },
+          {
+            "name": "empty",
+            "args": [
+              "[]"
+            ],
+            "expected": "[]"
+          },
+          {
+            "name": "single-zero",
+            "args": [
+              "[0]"
+            ],
+            "expected": "[0]"
+          },
+          {
+            "name": "left-chain",
+            "args": [
+              "[1,2,null,3,null,4]"
+            ],
+            "expected": "[1,2,3,4]"
+          },
+          {
+            "name": "right-chain",
+            "args": [
+              "[1,null,2,null,3,null,4]"
+            ],
+            "expected": "[1,2,3,4]"
+          },
+          {
+            "name": "left-subtree-extends-below-right",
+            "args": [
+              "[1,2,3,4,null,null,null,5]"
+            ],
+            "expected": "[1,3,4,5]"
+          },
+          {
+            "name": "sparse-levels",
+            "args": [
+              "[1,2,3,null,4,5,null,6,null,null,7]"
+            ],
+            "expected": "[1,3,5,7]"
+          },
+          {
+            "name": "growing-levels",
+            "args": [
+              "[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]"
+            ],
+            "expected": "[1,3,7,15]"
+          },
+          {
+            "name": "duplicate-values",
+            "args": [
+              "[1,1,1,1,null,null,1]"
+            ],
+            "expected": "[1,1,1]"
+          },
+          {
+            "name": "negative-and-zero-values",
+            "args": [
+              "[0,-2,3,-4,-1,-5,0]"
+            ],
+            "expected": "[0,3,0]"
+          }
+        ]
+      }
     },
     {
       "title": "Burst Balloons",
@@ -359,7 +746,97 @@
       "slug": "construct-binary-tree-from-preorder-and-inorder-traversal",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
       "birdie": "fn buildTree(preorder: list[int], inorder: list[int]) TreeNode?:\n    if not preorder or not inorder:\n        return none\n\n    value = preorder[0]\n    mid = inorder.index(value)\n\n    return TreeNode(\n        value,\n        buildTree(preorder[1:mid + 1], inorder[:mid]),\n        buildTree(preorder[mid + 1:], inorder[mid + 1:]),\n    )",
-      "python": "class Solution:\n    def buildTree(self, preorder: list[int], inorder: list[int]) -> TreeNode | None:\n        if not preorder or not inorder:\n            return None\n\n        value = preorder[0]\n        mid = inorder.index(value)\n\n        return TreeNode(\n            value,\n            self.buildTree(preorder[1:mid + 1], inorder[:mid]),\n            self.buildTree(preorder[mid + 1:], inorder[mid + 1:]),\n        )"
+      "python": "class Solution:\n    def buildTree(self, preorder: list[int], inorder: list[int]) -> TreeNode | None:\n        if not preorder or not inorder:\n            return None\n\n        value = preorder[0]\n        mid = inorder.index(value)\n\n        return TreeNode(\n            value,\n            self.buildTree(preorder[1:mid + 1], inorder[:mid]),\n            self.buildTree(preorder[mid + 1:], inorder[mid + 1:]),\n        )",
+      "fixture": {
+        "entry": "buildTree",
+        "argAdapters": [
+          "json",
+          "json"
+        ],
+        "resultAdapter": "tree",
+        "cases": [
+          {
+            "name": "standard",
+            "args": [
+              "[3,9,20,15,7]",
+              "[9,3,15,20,7]"
+            ],
+            "expected": "[3,9,20,null,null,15,7]"
+          },
+          {
+            "name": "empty",
+            "args": [
+              "[]",
+              "[]"
+            ],
+            "expected": "[]"
+          },
+          {
+            "name": "single-zero",
+            "args": [
+              "[0]",
+              "[0]"
+            ],
+            "expected": "[0]"
+          },
+          {
+            "name": "left-chain",
+            "args": [
+              "[4,3,2,1]",
+              "[1,2,3,4]"
+            ],
+            "expected": "[4,3,null,2,null,1]"
+          },
+          {
+            "name": "right-chain-with-zero-split",
+            "args": [
+              "[-3,-2,-1,0]",
+              "[-3,-2,-1,0]"
+            ],
+            "expected": "[-3,null,-2,null,-1,null,0]"
+          },
+          {
+            "name": "complete-tree",
+            "args": [
+              "[1,2,4,5,3,6,7]",
+              "[4,2,5,1,6,3,7]"
+            ],
+            "expected": "[1,2,3,4,5,6,7]"
+          },
+          {
+            "name": "sparse-subtrees",
+            "args": [
+              "[1,2,4,6,3,5,7]",
+              "[2,6,4,1,5,7,3]"
+            ],
+            "expected": "[1,2,3,null,4,5,null,6,null,null,7]"
+          },
+          {
+            "name": "negative-and-zero-values",
+            "args": [
+              "[0,-1,-2,2,1,3]",
+              "[-2,-1,0,1,2,3]"
+            ],
+            "expected": "[0,-1,2,-2,null,1,3]"
+          },
+          {
+            "name": "non-bst-value-order",
+            "args": [
+              "[8,10,1,9,4,3]",
+              "[1,10,9,8,3,4]"
+            ],
+            "expected": "[8,10,4,1,9,3]"
+          },
+          {
+            "name": "exact-large-values",
+            "args": [
+              "[9007199254740993,9007199254740992,9007199254740994]",
+              "[9007199254740992,9007199254740993,9007199254740994]"
+            ],
+            "expected": "[9007199254740993,9007199254740992,9007199254740994]"
+          }
+        ]
+      }
     },
     {
       "title": "Container With Most Water",
@@ -396,7 +873,54 @@
       ],
       "slug": "contains-duplicate",
       "birdie": "fn containsDuplicate(nums: list[int]) bool:\n    seen = set()\n\n    for num in nums:\n        if num in seen:\n            return true\n\n        seen.add(num)\n\n    return false",
-      "python": "class Solution:\n    def containsDuplicate(self, nums: list[int]) -> bool:\n        seen = set()\n\n        for num in nums:\n            if num in seen:\n                return True\n\n            seen.add(num)\n\n        return False"
+      "python": "class Solution:\n    def containsDuplicate(self, nums: list[int]) -> bool:\n        seen = set()\n\n        for num in nums:\n            if num in seen:\n                return True\n\n            seen.add(num)\n\n        return False",
+      "fixture": {
+        "entry": "containsDuplicate",
+        "cases": [
+          {
+            "name": "repeated-value",
+            "args": [
+              "[1,2,3,1]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "distinct-values",
+            "args": [
+              "[1,2,3,4]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "empty",
+            "args": [
+              "[]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "single",
+            "args": [
+              "[7]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "negative-duplicate",
+            "args": [
+              "[-2,0,-2]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "duplicate-at-end",
+            "args": [
+              "[1,2,3,4,4]"
+            ],
+            "expected": "true"
+          }
+        ]
+      }
     },
     {
       "title": "Copy List With Random Pointer",
@@ -437,7 +961,85 @@
       "slug": "count-good-nodes-in-binary-tree",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
       "birdie": "fn goodNodes(root: TreeNode) int:\n    return dfs(root, root.val)\n\nfn dfs(node: TreeNode?, max_val: int) int:\n    if node == none:\n        return 0\n\n    count = 0\n    if node.val >= max_val:\n        count = 1\n        max_val = node.val\n\n    return count + dfs(node.left, max_val) + dfs(node.right, max_val)",
-      "python": "class Solution:\n    def goodNodes(self, root: TreeNode) -> int:\n        return dfs(root, root.val)\n\n\ndef dfs(node: TreeNode | None, max_val: int) -> int:\n    if node is None:\n        return 0\n\n    count = 0\n    if node.val >= max_val:\n        count = 1\n        max_val = node.val\n\n    return count + dfs(node.left, max_val) + dfs(node.right, max_val)"
+      "python": "class Solution:\n    def goodNodes(self, root: TreeNode) -> int:\n        return dfs(root, root.val)\n\n\ndef dfs(node: TreeNode | None, max_val: int) -> int:\n    if node is None:\n        return 0\n\n    count = 0\n    if node.val >= max_val:\n        count = 1\n        max_val = node.val\n\n    return count + dfs(node.left, max_val) + dfs(node.right, max_val)",
+      "fixture": {
+        "entry": "goodNodes",
+        "argAdapters": [
+          "tree"
+        ],
+        "cases": [
+          {
+            "name": "standard-branches",
+            "args": [
+              "[3,1,4,3,null,1,5]"
+            ],
+            "expected": "4"
+          },
+          {
+            "name": "equal-root-then-larger-child",
+            "args": [
+              "[3,3,null,4,2]"
+            ],
+            "expected": "3"
+          },
+          {
+            "name": "single",
+            "args": [
+              "[1]"
+            ],
+            "expected": "1"
+          },
+          {
+            "name": "zero-values",
+            "args": [
+              "[0,0,0]"
+            ],
+            "expected": "3"
+          },
+          {
+            "name": "increasing-chain",
+            "args": [
+              "[1,null,2,null,3,null,4]"
+            ],
+            "expected": "4"
+          },
+          {
+            "name": "decreasing-chain",
+            "args": [
+              "[4,3,null,2,null,1]"
+            ],
+            "expected": "1"
+          },
+          {
+            "name": "equal-values",
+            "args": [
+              "[2,2,2,2,2]"
+            ],
+            "expected": "5"
+          },
+          {
+            "name": "negative-path-maxima",
+            "args": [
+              "[-3,-4,-2,-5,-3,-2,-1]"
+            ],
+            "expected": "5"
+          },
+          {
+            "name": "independent-sibling-maxima",
+            "args": [
+              "[5,10,6]"
+            ],
+            "expected": "3"
+          },
+          {
+            "name": "maximum-from-earlier-ancestor",
+            "args": [
+              "[5,1,4,3,6,2,7]"
+            ],
+            "expected": "3"
+          }
+        ]
+      }
     },
     {
       "title": "Counting Bits",
@@ -575,7 +1177,57 @@
       "slug": "diameter-of-binary-tree",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
       "birdie": "fn diameterOfBinaryTree(root: TreeNode?) int:\n    diameter = 0\n\n    fn dfs(node: TreeNode?, outer diameter) int:\n        if node == none:\n            return 0\n\n        left = dfs(node.left)\n        right = dfs(node.right)\n\n        max!(diameter, left + right)\n\n        return 1 + max(left, right)\n\n    dfs(root)\n    return diameter",
-      "python": "class Solution:\n    def diameterOfBinaryTree(self, root: TreeNode | None) -> int:\n        diameter = 0\n\n        def dfs(node: TreeNode | None) -> int:\n            nonlocal diameter\n\n            if node is None:\n                return 0\n\n            left = dfs(node.left)\n            right = dfs(node.right)\n\n            diameter = max(diameter, left + right)\n\n            return 1 + max(left, right)\n\n        dfs(root)\n        return diameter"
+      "python": "class Solution:\n    def diameterOfBinaryTree(self, root: TreeNode | None) -> int:\n        diameter = 0\n\n        def dfs(node: TreeNode | None) -> int:\n            nonlocal diameter\n\n            if node is None:\n                return 0\n\n            left = dfs(node.left)\n            right = dfs(node.right)\n\n            diameter = max(diameter, left + right)\n\n            return 1 + max(left, right)\n\n        dfs(root)\n        return diameter",
+      "fixture": {
+        "entry": "diameterOfBinaryTree",
+        "argAdapters": [
+          "tree"
+        ],
+        "cases": [
+          {
+            "name": "standard",
+            "args": [
+              "[1,2,3,4,5]"
+            ],
+            "expected": "3"
+          },
+          {
+            "name": "empty",
+            "args": [
+              "[]"
+            ],
+            "expected": "0"
+          },
+          {
+            "name": "single",
+            "args": [
+              "[1]"
+            ],
+            "expected": "0"
+          },
+          {
+            "name": "two-nodes",
+            "args": [
+              "[1,2]"
+            ],
+            "expected": "1"
+          },
+          {
+            "name": "chain",
+            "args": [
+              "[1,2,null,3,null,4]"
+            ],
+            "expected": "3"
+          },
+          {
+            "name": "diameter-below-root",
+            "args": [
+              "[0,1,null,2,3,4,null,null,5,6,null,null,7]"
+            ],
+            "expected": "6"
+          }
+        ]
+      }
     },
     {
       "title": "Distinct Subsequences",
@@ -629,7 +1281,69 @@
       ],
       "slug": "encode-and-decode-strings",
       "birdie": "fn encode(words: list[str]) str:\n    parts = []\n    for word in words:\n        parts.extend([str(word.size), \"#\", word])\n    return parts.join(\"\")\n\nfn decode(data: str) list[str]:\n    words = []\n    cursor = 0\n\n    while cursor < data.size:\n        separator = cursor\n        while data[separator] != '#':\n            separator++\n\n        size = int(data[cursor:separator])\n        start = separator + 1\n        cursor = start + size\n        words.push(data[start:cursor])\n\n    return words",
-      "python": "class Solution:\n    def encode(self, words: list[str]) -> str:\n        parts = []\n        for word in words:\n            parts.extend([str(len(word)), \"#\", word])\n        return \"\".join(parts)\n\n    def decode(self, data: str) -> list[str]:\n        words = []\n        cursor = 0\n\n        while cursor < len(data):\n            separator = cursor\n            while data[separator] != \"#\":\n                separator += 1\n\n            size = int(data[cursor:separator])\n            start = separator + 1\n            cursor = start + size\n            words.append(data[start:cursor])\n\n        return words"
+      "python": "class Solution:\n    def encode(self, words: list[str]) -> str:\n        parts = []\n        for word in words:\n            parts.extend([str(len(word)), \"#\", word])\n        return \"\".join(parts)\n\n    def decode(self, data: str) -> list[str]:\n        words = []\n        cursor = 0\n\n        while cursor < len(data):\n            separator = cursor\n            while data[separator] != \"#\":\n                separator += 1\n\n            size = int(data[cursor:separator])\n            start = separator + 1\n            cursor = start + size\n            words.append(data[start:cursor])\n\n        return words",
+      "fixture": {
+        "entry": "encode",
+        "check": "codec-round-trip",
+        "cases": [
+          {
+            "name": "empty-list",
+            "args": [
+              "[]"
+            ],
+            "expected": "[]"
+          },
+          {
+            "name": "empty-string",
+            "args": [
+              "[\"\"]"
+            ],
+            "expected": "[\"\"]"
+          },
+          {
+            "name": "adjacent-empty-strings",
+            "args": [
+              "[\"\",\"\"]"
+            ],
+            "expected": "[\"\",\"\"]"
+          },
+          {
+            "name": "embedded-separator",
+            "args": [
+              "[\"bird\",\"\",\"a#b\"]"
+            ],
+            "expected": "[\"bird\",\"\",\"a#b\"]"
+          },
+          {
+            "name": "digits-and-separators",
+            "args": [
+              "[\"0#\",\"123\",\"###\"]"
+            ],
+            "expected": "[\"0#\",\"123\",\"###\"]"
+          },
+          {
+            "name": "unicode-scalars",
+            "args": [
+              "[\"é\",\"🙂\",\"é\"]"
+            ],
+            "expected": "[\"é\",\"🙂\",\"é\"]"
+          },
+          {
+            "name": "control-characters",
+            "args": [
+              "[\"line\\nbreak\",\"\\t\",\"\\u0000\",\"\\\\\",\"\\\"\"]"
+            ],
+            "expected": "[\"line\\nbreak\",\"\\t\",\"\\u0000\",\"\\\\\",\"\\\"\"]"
+          },
+          {
+            "name": "all-byte-valued-characters",
+            "args": [
+              "[\"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f !\\\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ\"]"
+            ],
+            "expected": "[\"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f !\\\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ\"]"
+          }
+        ]
+      }
     },
     {
       "title": "Evaluate Reverse Polish Notation",
@@ -752,7 +1466,55 @@
       ],
       "slug": "group-anagrams",
       "birdie": "fn groupAnagrams(words: list[str]) list[list[str]]:\n    groups = map(list)\n\n    for word in words:\n        key = word.sorted()\n        groups[key].push(word)\n\n    return groups.values()",
-      "python": "from collections import defaultdict\n\n\nclass Solution:\n    def groupAnagrams(self, strs: list[str]) -> list[list[str]]:\n        groups = defaultdict(list)\n\n        for word in strs:\n            key = \"\".join(sorted(word))\n\n            groups[key].append(word)\n\n        return list(groups.values())"
+      "python": "from collections import defaultdict\n\n\nclass Solution:\n    def groupAnagrams(self, strs: list[str]) -> list[list[str]]:\n        groups = defaultdict(list)\n\n        for word in strs:\n            key = \"\".join(sorted(word))\n\n            groups[key].append(word)\n\n        return list(groups.values())",
+      "fixture": {
+        "entry": "groupAnagrams",
+        "check": "unordered-groups",
+        "cases": [
+          {
+            "name": "standard",
+            "args": [
+              "[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]"
+            ],
+            "expected": "[[\"eat\",\"tea\",\"ate\"],[\"tan\",\"nat\"],[\"bat\"]]"
+          },
+          {
+            "name": "empty",
+            "args": [
+              "[]"
+            ],
+            "expected": "[]"
+          },
+          {
+            "name": "empty-string",
+            "args": [
+              "[\"\"]"
+            ],
+            "expected": "[[\"\"]]"
+          },
+          {
+            "name": "duplicate-words",
+            "args": [
+              "[\"a\",\"a\",\"b\"]"
+            ],
+            "expected": "[[\"a\",\"a\"],[\"b\"]]"
+          },
+          {
+            "name": "repeated-letters",
+            "args": [
+              "[\"abb\",\"bab\",\"aab\"]"
+            ],
+            "expected": "[[\"abb\",\"bab\"],[\"aab\"]]"
+          },
+          {
+            "name": "unicode",
+            "args": [
+              "[\"é\",\"e\",\"🙂\",\"🙂\",\"e\"]"
+            ],
+            "expected": "[[\"é\"],[\"e\",\"e\"],[\"🙂\",\"🙂\"]]"
+          }
+        ]
+      }
     },
     {
       "title": "Hand of Straights",
@@ -877,7 +1639,51 @@
       "slug": "invert-binary-tree",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
       "birdie": "fn invertTree(root: TreeNode?) TreeNode?:\n    if root == none:\n        return none\n\n    swap!(root.left, root.right)\n    invertTree(root.left)\n    invertTree(root.right)\n\n    return root",
-      "python": "class Solution:\n    def invertTree(self, root: TreeNode | None) -> TreeNode | None:\n        if root is None:\n            return None\n\n        root.left, root.right = root.right, root.left\n        self.invertTree(root.left)\n        self.invertTree(root.right)\n\n        return root"
+      "python": "class Solution:\n    def invertTree(self, root: TreeNode | None) -> TreeNode | None:\n        if root is None:\n            return None\n\n        root.left, root.right = root.right, root.left\n        self.invertTree(root.left)\n        self.invertTree(root.right)\n\n        return root",
+      "fixture": {
+        "entry": "invertTree",
+        "argAdapters": [
+          "tree"
+        ],
+        "resultAdapter": "tree",
+        "cases": [
+          {
+            "name": "balanced",
+            "args": [
+              "[4,2,7,1,3,6,9]"
+            ],
+            "expected": "[4,7,2,9,6,3,1]"
+          },
+          {
+            "name": "empty",
+            "args": [
+              "[]"
+            ],
+            "expected": "[]"
+          },
+          {
+            "name": "single",
+            "args": [
+              "[1]"
+            ],
+            "expected": "[1]"
+          },
+          {
+            "name": "left-chain",
+            "args": [
+              "[1,2,null,3]"
+            ],
+            "expected": "[1,null,2,null,3]"
+          },
+          {
+            "name": "sparse",
+            "args": [
+              "[1,2,3,null,4,5]"
+            ],
+            "expected": "[1,3,2,null,5,4]"
+          }
+        ]
+      }
     },
     {
       "title": "Jump Game",
@@ -990,7 +1796,104 @@
       "slug": "kth-smallest-element-in-a-bst",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
       "birdie": "fn kthSmallest(root: TreeNode?, k: int) int:\n    fn dfs(node: TreeNode?, outer k) int?:\n        if node == none:\n            return none\n\n        return? dfs(node.left)\n\n        k--\n        if k == 0:\n            return node.val\n\n        return dfs(node.right)\n\n    return dfs(root)",
-      "python": "class Solution:\n    def kthSmallest(self, root: TreeNode | None, k: int) -> int:\n        def dfs(node: TreeNode | None) -> int | None:\n            nonlocal k\n\n            if node is None:\n                return None\n\n            left = dfs(node.left)\n            if left is not None:\n                return left\n\n            k -= 1\n            if k == 0:\n                return node.val\n\n            return dfs(node.right)\n\n        return dfs(root)"
+      "python": "class Solution:\n    def kthSmallest(self, root: TreeNode | None, k: int) -> int:\n        def dfs(node: TreeNode | None) -> int | None:\n            nonlocal k\n\n            if node is None:\n                return None\n\n            left = dfs(node.left)\n            if left is not None:\n                return left\n\n            k -= 1\n            if k == 0:\n                return node.val\n\n            return dfs(node.right)\n\n        return dfs(root)",
+      "fixture": {
+        "entry": "kthSmallest",
+        "argAdapters": [
+          "tree",
+          "json"
+        ],
+        "cases": [
+          {
+            "name": "standard-first",
+            "args": [
+              "[3,1,4,null,2]",
+              "1"
+            ],
+            "expected": "1"
+          },
+          {
+            "name": "standard-third",
+            "args": [
+              "[5,3,6,2,4,null,null,1]",
+              "3"
+            ],
+            "expected": "3"
+          },
+          {
+            "name": "single-zero",
+            "args": [
+              "[0]",
+              "1"
+            ],
+            "expected": "0"
+          },
+          {
+            "name": "zero-returned-from-left",
+            "args": [
+              "[1,0,2]",
+              "1"
+            ],
+            "expected": "0"
+          },
+          {
+            "name": "zero-returned-from-right",
+            "args": [
+              "[-1,-2,0]",
+              "3"
+            ],
+            "expected": "0"
+          },
+          {
+            "name": "zero-after-negative-subtree",
+            "args": [
+              "[0,-3,4,-5,-1,2,6]",
+              "4"
+            ],
+            "expected": "0"
+          },
+          {
+            "name": "largest-rank",
+            "args": [
+              "[4,2,6,1,3,5,7]",
+              "7"
+            ],
+            "expected": "7"
+          },
+          {
+            "name": "internal-rank-in-right-subtree",
+            "args": [
+              "[4,2,6,1,3,5,7]",
+              "5"
+            ],
+            "expected": "5"
+          },
+          {
+            "name": "left-chain",
+            "args": [
+              "[4,3,null,2,null,1]",
+              "2"
+            ],
+            "expected": "2"
+          },
+          {
+            "name": "right-chain",
+            "args": [
+              "[-3,null,-2,null,-1,null,0]",
+              "2"
+            ],
+            "expected": "-2"
+          },
+          {
+            "name": "exact-result-above-float-precision",
+            "args": [
+              "[9007199254740993,9007199254740992,9007199254740994]",
+              "2"
+            ],
+            "expected": "9007199254740993"
+          }
+        ]
+      }
     },
     {
       "title": "Largest Rectangle In Histogram",
@@ -1085,7 +1988,54 @@
       ],
       "slug": "longest-consecutive-sequence",
       "birdie": "fn longestConsecutive(nums: list[int]) int:\n    longestSeq = 0\n    numsSet = set(nums)\n\n    for num in numsSet:\n        if num - 1 in numsSet:\n            continue\n\n        currSeq = 1\n        while num + currSeq in numsSet:\n            currSeq++\n\n        max!(longestSeq, currSeq)\n\n    return longestSeq",
-      "python": "class Solution:\n    def longestConsecutive(self, nums: list[int]) -> int:\n        longest_seq = 0\n        nums_set = set(nums)\n\n        for num in nums_set:\n            if num - 1 in nums_set:\n                continue\n\n            curr_seq = 1\n            while num + curr_seq in nums_set:\n                curr_seq += 1\n\n            longest_seq = max(longest_seq, curr_seq)\n\n        return longest_seq"
+      "python": "class Solution:\n    def longestConsecutive(self, nums: list[int]) -> int:\n        longest_seq = 0\n        nums_set = set(nums)\n\n        for num in nums_set:\n            if num - 1 in nums_set:\n                continue\n\n            curr_seq = 1\n            while num + curr_seq in nums_set:\n                curr_seq += 1\n\n            longest_seq = max(longest_seq, curr_seq)\n\n        return longest_seq",
+      "fixture": {
+        "entry": "longestConsecutive",
+        "cases": [
+          {
+            "name": "unordered-run",
+            "args": [
+              "[100,4,200,1,3,2]"
+            ],
+            "expected": "4"
+          },
+          {
+            "name": "empty",
+            "args": [
+              "[]"
+            ],
+            "expected": "0"
+          },
+          {
+            "name": "duplicates",
+            "args": [
+              "[1,0,1,2]"
+            ],
+            "expected": "3"
+          },
+          {
+            "name": "negative-run",
+            "args": [
+              "[-3,-2,-1,5]"
+            ],
+            "expected": "3"
+          },
+          {
+            "name": "single",
+            "args": [
+              "[5]"
+            ],
+            "expected": "1"
+          },
+          {
+            "name": "long-run",
+            "args": [
+              "[0,3,7,2,5,8,4,6,0,1]"
+            ],
+            "expected": "9"
+          }
+        ]
+      }
     },
     {
       "title": "Longest Increasing Path In a Matrix",
@@ -1182,7 +2132,108 @@
       "slug": "lowest-common-ancestor-of-a-binary-search-tree",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
       "birdie": "fn lowestCommonAncestor(root: TreeNode, p: TreeNode, q: TreeNode) TreeNode:\n    if p.val < root.val and q.val < root.val:\n        return lowestCommonAncestor(root.left, p, q)\n\n    if p.val > root.val and q.val > root.val:\n        return lowestCommonAncestor(root.right, p, q)\n\n    return root",
-      "python": "class Solution:\n    def lowestCommonAncestor(self, root: TreeNode, p: TreeNode, q: TreeNode) -> TreeNode:\n        if p.val < root.val and q.val < root.val:\n            return self.lowestCommonAncestor(root.left, p, q)\n\n        if p.val > root.val and q.val > root.val:\n            return self.lowestCommonAncestor(root.right, p, q)\n\n        return root"
+      "python": "class Solution:\n    def lowestCommonAncestor(self, root: TreeNode, p: TreeNode, q: TreeNode) -> TreeNode:\n        if p.val < root.val and q.val < root.val:\n            return self.lowestCommonAncestor(root.left, p, q)\n\n        if p.val > root.val and q.val > root.val:\n            return self.lowestCommonAncestor(root.right, p, q)\n\n        return root",
+      "fixture": {
+        "entry": "lowestCommonAncestor",
+        "argAdapters": [
+          "tree",
+          "node",
+          "node"
+        ],
+        "resultAdapter": "node",
+        "cases": [
+          {
+            "name": "opposite-sides",
+            "args": [
+              "[6,2,8,0,4,7,9,null,null,3,5]",
+              "2",
+              "8"
+            ],
+            "expected": "6"
+          },
+          {
+            "name": "target-is-ancestor",
+            "args": [
+              "[6,2,8,0,4,7,9,null,null,3,5]",
+              "2",
+              "4"
+            ],
+            "expected": "2"
+          },
+          {
+            "name": "two-nodes",
+            "args": [
+              "[2,1]",
+              "2",
+              "1"
+            ],
+            "expected": "2"
+          },
+          {
+            "name": "both-in-left-subtree",
+            "args": [
+              "[6,2,8,0,4,7,9,null,null,3,5]",
+              "0",
+              "5"
+            ],
+            "expected": "2"
+          },
+          {
+            "name": "deeper-split",
+            "args": [
+              "[6,2,8,0,4,7,9,null,null,3,5]",
+              "3",
+              "5"
+            ],
+            "expected": "4"
+          },
+          {
+            "name": "both-in-right-subtree",
+            "args": [
+              "[6,2,8,0,4,7,9,null,null,3,5]",
+              "7",
+              "9"
+            ],
+            "expected": "8"
+          },
+          {
+            "name": "reversed-target-order",
+            "args": [
+              "[6,2,8,0,4,7,9,null,null,3,5]",
+              "8",
+              "2"
+            ],
+            "expected": "6"
+          },
+          {
+            "name": "negative-values",
+            "args": [
+              "[0,-3,4,-5,-1,2,6]",
+              "-5",
+              "-1"
+            ],
+            "expected": "-3"
+          },
+          {
+            "name": "right-chain",
+            "args": [
+              "[1,null,2,null,3,null,4]",
+              "3",
+              "4"
+            ],
+            "expected": "3"
+          },
+          {
+            "name": "left-chain",
+            "args": [
+              "[4,3,null,2,null,1]",
+              "1",
+              "2"
+            ],
+            "expected": "2"
+          }
+        ]
+      }
     },
     {
       "title": "LRU Cache",
@@ -1235,7 +2286,50 @@
       "slug": "maximum-depth-of-binary-tree",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
       "birdie": "fn maxDepth(root: TreeNode?) int:\n    if root == none:\n        return 0\n\n    return 1 + max(\n        maxDepth(root.left),\n        maxDepth(root.right),\n    )",
-      "python": "class Solution:\n    def maxDepth(self, root: TreeNode | None) -> int:\n        if root is None:\n            return 0\n\n        return 1 + max(\n            self.maxDepth(root.left),\n            self.maxDepth(root.right),\n        )"
+      "python": "class Solution:\n    def maxDepth(self, root: TreeNode | None) -> int:\n        if root is None:\n            return 0\n\n        return 1 + max(\n            self.maxDepth(root.left),\n            self.maxDepth(root.right),\n        )",
+      "fixture": {
+        "entry": "maxDepth",
+        "argAdapters": [
+          "tree"
+        ],
+        "cases": [
+          {
+            "name": "balanced",
+            "args": [
+              "[3,9,20,null,null,15,7]"
+            ],
+            "expected": "3"
+          },
+          {
+            "name": "empty",
+            "args": [
+              "[]"
+            ],
+            "expected": "0"
+          },
+          {
+            "name": "single",
+            "args": [
+              "[1]"
+            ],
+            "expected": "1"
+          },
+          {
+            "name": "left-chain",
+            "args": [
+              "[1,2,null,3,null,4]"
+            ],
+            "expected": "4"
+          },
+          {
+            "name": "right-chain",
+            "args": [
+              "[1,null,2,null,3]"
+            ],
+            "expected": "3"
+          }
+        ]
+      }
     },
     {
       "title": "Maximum Product Subarray",
@@ -1695,7 +2789,54 @@
       ],
       "slug": "product-of-array-except-self",
       "birdie": "fn productExceptSelf(nums: list[int]) list[int]:\n    res = list(nums.size, 1)\n\n    prod = 1\n    for i, num in nums:\n        res[i] = prod\n        prod *= num\n\n    prod = 1\n    for i, num in reverse nums:\n        res[i] *= prod\n        prod *= num\n\n    return res",
-      "python": "class Solution:\n    def productExceptSelf(self, nums: list[int]) -> list[int]:\n        res = [1] * len(nums)\n\n        prod = 1\n        for i, num in enumerate(nums):\n            res[i] = prod\n            prod *= num\n\n        prod = 1\n        for i in reversed(range(len(nums))):\n            res[i] *= prod\n            prod *= nums[i]\n\n        return res"
+      "python": "class Solution:\n    def productExceptSelf(self, nums: list[int]) -> list[int]:\n        res = [1] * len(nums)\n\n        prod = 1\n        for i, num in enumerate(nums):\n            res[i] = prod\n            prod *= num\n\n        prod = 1\n        for i in reversed(range(len(nums))):\n            res[i] *= prod\n            prod *= nums[i]\n\n        return res",
+      "fixture": {
+        "entry": "productExceptSelf",
+        "cases": [
+          {
+            "name": "standard",
+            "args": [
+              "[1,2,3,4]"
+            ],
+            "expected": "[24,12,8,6]"
+          },
+          {
+            "name": "one-zero",
+            "args": [
+              "[-1,1,0,-3,3]"
+            ],
+            "expected": "[0,0,9,0,0]"
+          },
+          {
+            "name": "two-zeros",
+            "args": [
+              "[0,2,0]"
+            ],
+            "expected": "[0,0,0]"
+          },
+          {
+            "name": "negative-values",
+            "args": [
+              "[-1,-2,-3]"
+            ],
+            "expected": "[6,3,2]"
+          },
+          {
+            "name": "two-values",
+            "args": [
+              "[2,3]"
+            ],
+            "expected": "[3,2]"
+          },
+          {
+            "name": "all-ones",
+            "args": [
+              "[1,1,1]"
+            ],
+            "expected": "[1,1,1]"
+          }
+        ]
+      }
     },
     {
       "title": "Reconstruct Itinerary",
@@ -1876,7 +3017,112 @@
       "slug": "same-tree",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
       "birdie": "fn isSameTree(p: TreeNode?, q: TreeNode?) bool:\n    if p == none and q == none:\n        return true\n\n    if p == none or q == none or p.val != q.val:\n        return false\n\n    return isSameTree(p.left, q.left) and isSameTree(p.right, q.right)",
-      "python": "class Solution:\n    def isSameTree(self, p: TreeNode | None, q: TreeNode | None) -> bool:\n        if not p and not q:\n            return True\n\n        if not p or not q or p.val != q.val:\n            return False\n\n        return self.isSameTree(p.left, q.left) and self.isSameTree(p.right, q.right)"
+      "python": "class Solution:\n    def isSameTree(self, p: TreeNode | None, q: TreeNode | None) -> bool:\n        if not p and not q:\n            return True\n\n        if not p or not q or p.val != q.val:\n            return False\n\n        return self.isSameTree(p.left, q.left) and self.isSameTree(p.right, q.right)",
+      "fixture": {
+        "entry": "isSameTree",
+        "argAdapters": [
+          "tree",
+          "tree"
+        ],
+        "cases": [
+          {
+            "name": "equal-trees",
+            "args": [
+              "[1,2,3]",
+              "[1,2,3]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "both-empty",
+            "args": [
+              "[]",
+              "[]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "first-empty",
+            "args": [
+              "[]",
+              "[1]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "second-empty",
+            "args": [
+              "[1]",
+              "[]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "equal-leaves",
+            "args": [
+              "[5]",
+              "[5]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "different-root-values",
+            "args": [
+              "[1]",
+              "[2]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "different-shapes",
+            "args": [
+              "[1,2]",
+              "[1,null,2]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "left-value-mismatch",
+            "args": [
+              "[1,2,3]",
+              "[1,4,3]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "right-value-mismatch",
+            "args": [
+              "[1,2,3]",
+              "[1,2,4]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "equal-values-different-shapes",
+            "args": [
+              "[1,1,1,1]",
+              "[1,1,1,null,1]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "equal-sparse-trees",
+            "args": [
+              "[1,null,2,3]",
+              "[1,null,2,3]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "zero-and-negative-values",
+            "args": [
+              "[0,-1,2]",
+              "[0,-1,2]"
+            ],
+            "expected": "true"
+          }
+        ]
+      }
     },
     {
       "title": "Search a 2D Matrix",
@@ -1933,7 +3179,115 @@
       "slug": "serialize-and-deserialize-binary-tree",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
       "birdie": "fn serialize(root: TreeNode?) str:\n    parts = []\n\n    fn write(node: TreeNode?):\n        if node == none:\n            parts.push(\"|\")\n            return\n\n        parts.push(str(node.val))\n        write(node.left)\n        write(node.right)\n\n    write(root)\n    return parts.join(\",\")\n\n\nfn deserialize(data: str) TreeNode?:\n    return readTree(data.split(\",\").iter())\n\n\nfn readTree(tokens: iterator[str]) TreeNode?:\n    value = tokens.next()\n\n    if value == \"|\":\n        return none\n\n    node = TreeNode(int(value))\n    node.left = readTree(tokens)\n    node.right = readTree(tokens)\n    return node",
-      "python": "from collections.abc import Iterator\n\n\nclass Codec:\n    def serialize(self, root: TreeNode | None) -> str:\n        parts = []\n\n        def write(node: TreeNode | None) -> None:\n            if node is None:\n                parts.append(\"|\")\n                return\n\n            parts.append(str(node.val))\n            write(node.left)\n            write(node.right)\n\n        write(root)\n        return \",\".join(parts)\n\n    def deserialize(self, data: str) -> TreeNode | None:\n        return self.readTree(iter(data.split(\",\")))\n\n    def readTree(self, tokens: Iterator[str]) -> TreeNode | None:\n        value = next(tokens)\n\n        if value == \"|\":\n            return None\n\n        node = TreeNode(int(value))\n        node.left = self.readTree(tokens)\n        node.right = self.readTree(tokens)\n        return node"
+      "python": "from collections.abc import Iterator\n\n\nclass Codec:\n    def serialize(self, root: TreeNode | None) -> str:\n        parts = []\n\n        def write(node: TreeNode | None) -> None:\n            if node is None:\n                parts.append(\"|\")\n                return\n\n            parts.append(str(node.val))\n            write(node.left)\n            write(node.right)\n\n        write(root)\n        return \",\".join(parts)\n\n    def deserialize(self, data: str) -> TreeNode | None:\n        return self.readTree(iter(data.split(\",\")))\n\n    def readTree(self, tokens: Iterator[str]) -> TreeNode | None:\n        value = next(tokens)\n\n        if value == \"|\":\n            return None\n\n        node = TreeNode(int(value))\n        node.left = self.readTree(tokens)\n        node.right = self.readTree(tokens)\n        return node",
+      "fixture": {
+        "entry": "serialize",
+        "check": "codec-round-trip",
+        "argAdapters": [
+          "tree"
+        ],
+        "resultAdapter": "tree",
+        "cases": [
+          {
+            "name": "empty",
+            "args": [
+              "[]"
+            ],
+            "expected": "[]"
+          },
+          {
+            "name": "single-zero",
+            "args": [
+              "[0]"
+            ],
+            "expected": "[0]"
+          },
+          {
+            "name": "single-negative",
+            "args": [
+              "[-7]"
+            ],
+            "expected": "[-7]"
+          },
+          {
+            "name": "standard",
+            "args": [
+              "[1,2,3,null,null,4,5]"
+            ],
+            "expected": "[1,2,3,null,null,4,5]"
+          },
+          {
+            "name": "left-child-only",
+            "args": [
+              "[1,2]"
+            ],
+            "expected": "[1,2]"
+          },
+          {
+            "name": "right-child-only",
+            "args": [
+              "[1,null,2]"
+            ],
+            "expected": "[1,null,2]"
+          },
+          {
+            "name": "left-chain",
+            "args": [
+              "[4,3,null,2,null,1]"
+            ],
+            "expected": "[4,3,null,2,null,1]"
+          },
+          {
+            "name": "right-chain",
+            "args": [
+              "[1,null,2,null,3,null,4]"
+            ],
+            "expected": "[1,null,2,null,3,null,4]"
+          },
+          {
+            "name": "complete-tree",
+            "args": [
+              "[1,2,3,4,5,6,7]"
+            ],
+            "expected": "[1,2,3,4,5,6,7]"
+          },
+          {
+            "name": "sparse-subtrees",
+            "args": [
+              "[1,2,3,null,4,5,null,6,null,null,7]"
+            ],
+            "expected": "[1,2,3,null,4,5,null,6,null,null,7]"
+          },
+          {
+            "name": "duplicate-values",
+            "args": [
+              "[2,2,2,null,2,2]"
+            ],
+            "expected": "[2,2,2,null,2,2]"
+          },
+          {
+            "name": "repeated-zero-values",
+            "args": [
+              "[0,0,0,null,0]"
+            ],
+            "expected": "[0,0,0,null,0]"
+          },
+          {
+            "name": "negative-and-positive-values",
+            "args": [
+              "[0,-10,20,-30,null,15,7]"
+            ],
+            "expected": "[0,-10,20,-30,null,15,7]"
+          },
+          {
+            "name": "exact-large-values",
+            "args": [
+              "[9007199254740993,-10000000000000000000000000000000000000001,9007199254740994]"
+            ],
+            "expected": "[9007199254740993,-10000000000000000000000000000000000000001,9007199254740994]"
+          }
+        ]
+      }
     },
     {
       "title": "Set Matrix Zeroes",
@@ -2044,7 +3398,96 @@
       "slug": "subtree-of-another-tree",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
       "birdie": "fn isSubtree(root: TreeNode?, subRoot: TreeNode?) bool:\n    if root == none:\n        return false\n\n    return (\n        sameTree(root, subRoot) or\n        isSubtree(root.left, subRoot) or\n        isSubtree(root.right, subRoot)\n    )\n\nfn sameTree(p: TreeNode?, q: TreeNode?) bool:\n    if p == none and q == none:\n        return true\n\n    if p == none or q == none or p.val != q.val:\n        return false\n\n    return sameTree(p.left, q.left) and sameTree(p.right, q.right)",
-      "python": "class Solution:\n    def isSubtree(self, root: TreeNode | None, subRoot: TreeNode | None) -> bool:\n        if not root:\n            return False\n\n        return (\n            sameTree(root, subRoot) or\n            self.isSubtree(root.left, subRoot) or\n            self.isSubtree(root.right, subRoot)\n        )\n\n\ndef sameTree(p: TreeNode | None, q: TreeNode | None) -> bool:\n    if not p and not q:\n        return True\n\n    if not p or not q or p.val != q.val:\n        return False\n\n    return sameTree(p.left, q.left) and sameTree(p.right, q.right)"
+      "python": "class Solution:\n    def isSubtree(self, root: TreeNode | None, subRoot: TreeNode | None) -> bool:\n        if not root:\n            return False\n\n        return (\n            sameTree(root, subRoot) or\n            self.isSubtree(root.left, subRoot) or\n            self.isSubtree(root.right, subRoot)\n        )\n\n\ndef sameTree(p: TreeNode | None, q: TreeNode | None) -> bool:\n    if not p and not q:\n        return True\n\n    if not p or not q or p.val != q.val:\n        return False\n\n    return sameTree(p.left, q.left) and sameTree(p.right, q.right)",
+      "fixture": {
+        "entry": "isSubtree",
+        "argAdapters": [
+          "tree",
+          "tree"
+        ],
+        "cases": [
+          {
+            "name": "standard-match",
+            "args": [
+              "[3,4,5,1,2]",
+              "[4,1,2]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "extra-descendant",
+            "args": [
+              "[3,4,5,1,2,null,null,null,null,0]",
+              "[4,1,2]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "whole-tree",
+            "args": [
+              "[1,2,3]",
+              "[1,2,3]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "right-subtree",
+            "args": [
+              "[1,2,3,null,null,4,5]",
+              "[3,4,5]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "leaf-match",
+            "args": [
+              "[1,2,3]",
+              "[3]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "absent-value",
+            "args": [
+              "[1,2,3]",
+              "[4]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "different-shape",
+            "args": [
+              "[1,2,null,3]",
+              "[2,null,3]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "match-after-repeated-values",
+            "args": [
+              "[1,1,null,1,null,2]",
+              "[1,2]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "empty-search-root",
+            "args": [
+              "[]",
+              "[1]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "negative-leaf",
+            "args": [
+              "[0,-1,2]",
+              "[-1]"
+            ],
+            "expected": "true"
+          }
+        ]
+      }
     },
     {
       "title": "Sum of Two Integers",
@@ -2154,7 +3597,61 @@
       ],
       "slug": "top-k-frequent-elements",
       "birdie": "fn topKFrequent(nums: list[int], k: int) list[int]:\n    buckets = list(nums.size + 1, list)\n    freqs = counter(nums)\n\n    for num, freq in freqs:\n        buckets[freq].push(num)\n\n    res = []\n    for bucket in reverse buckets:\n        res.extend(bucket)\n\n        if res.size >= k:\n            return res[:k]\n\n    return res",
-      "python": "from collections import Counter\n\n\nclass Solution:\n    def topKFrequent(self, nums: list[int], k: int) -> list[int]:\n        buckets = [[] for _ in range(len(nums) + 1)]\n        freqs = Counter(nums)\n\n        for num, freq in freqs.items():\n            buckets[freq].append(num)\n\n        res = []\n        for bucket in reversed(buckets):\n            res.extend(bucket)\n\n            if len(res) >= k:\n                return res[:k]\n\n        return res"
+      "python": "from collections import Counter\n\n\nclass Solution:\n    def topKFrequent(self, nums: list[int], k: int) -> list[int]:\n        buckets = [[] for _ in range(len(nums) + 1)]\n        freqs = Counter(nums)\n\n        for num, freq in freqs.items():\n            buckets[freq].append(num)\n\n        res = []\n        for bucket in reversed(buckets):\n            res.extend(bucket)\n\n            if len(res) >= k:\n                return res[:k]\n\n        return res",
+      "fixture": {
+        "entry": "topKFrequent",
+        "check": "unordered",
+        "cases": [
+          {
+            "name": "standard",
+            "args": [
+              "[1,1,1,2,2,3]",
+              "2"
+            ],
+            "expected": "[1,2]"
+          },
+          {
+            "name": "single",
+            "args": [
+              "[1]",
+              "1"
+            ],
+            "expected": "[1]"
+          },
+          {
+            "name": "all-distinct-values-requested",
+            "args": [
+              "[3,1,2]",
+              "3"
+            ],
+            "expected": "[1,2,3]"
+          },
+          {
+            "name": "negative-values",
+            "args": [
+              "[-1,-1,2,2,2,0]",
+              "2"
+            ],
+            "expected": "[-1,2]"
+          },
+          {
+            "name": "tied-selected-frequencies",
+            "args": [
+              "[1,1,2,2,3]",
+              "2"
+            ],
+            "expected": "[1,2]"
+          },
+          {
+            "name": "one-distinct-value",
+            "args": [
+              "[9,9,9]",
+              "1"
+            ],
+            "expected": "[9]"
+          }
+        ]
+      }
     },
     {
       "title": "Trapping Rain Water",
@@ -2192,7 +3689,61 @@
       ],
       "slug": "two-sum",
       "birdie": "fn twoSum(nums: list[int], target: int) list[int]:\n    seen = map()\n\n    for i, num in nums:\n        diff = target - num\n\n        if diff in seen:\n            return [seen[diff], i]\n\n        seen[num] = i\n\n    return []",
-      "python": "class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        seen = {}\n\n        for i, num in enumerate(nums):\n            diff = target - num\n\n            if diff in seen:\n                return [seen[diff], i]\n\n            seen[num] = i\n\n        return []"
+      "python": "class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        seen = {}\n\n        for i, num in enumerate(nums):\n            diff = target - num\n\n            if diff in seen:\n                return [seen[diff], i]\n\n            seen[num] = i\n\n        return []",
+      "fixture": {
+        "entry": "twoSum",
+        "check": "unordered",
+        "cases": [
+          {
+            "name": "standard",
+            "args": [
+              "[2,7,11,15]",
+              "9"
+            ],
+            "expected": "[0,1]"
+          },
+          {
+            "name": "later-pair",
+            "args": [
+              "[3,2,4]",
+              "6"
+            ],
+            "expected": "[1,2]"
+          },
+          {
+            "name": "equal-values",
+            "args": [
+              "[3,3]",
+              "6"
+            ],
+            "expected": "[0,1]"
+          },
+          {
+            "name": "negative-values",
+            "args": [
+              "[-3,4,3,90]",
+              "0"
+            ],
+            "expected": "[0,2]"
+          },
+          {
+            "name": "zero-values",
+            "args": [
+              "[0,4,3,0]",
+              "0"
+            ],
+            "expected": "[0,3]"
+          },
+          {
+            "name": "no-pair-fallback",
+            "args": [
+              "[1,2]",
+              "8"
+            ],
+            "expected": "[]"
+          }
+        ]
+      }
     },
     {
       "title": "Two Sum II Input Array Is Sorted",
@@ -2246,7 +3797,68 @@
       ],
       "slug": "valid-anagram",
       "birdie": "fn isAnagram(s: str, t: str) bool:\n    if s.size != t.size:\n        return false\n\n    freqs = list(26, 0)\n\n    for (c1, c2) in zip(s, t):\n        freqs[c1 - 'a']++\n        freqs[c2 - 'a']--\n\n    return all(v == 0 for v in freqs)",
-      "python": "class Solution:\n    def isAnagram(self, s: str, t: str) -> bool:\n        if len(s) != len(t):\n            return False\n\n        freqs = [0] * 26\n        a = ord('a')\n\n        for c1, c2 in zip(s, t):\n            freqs[ord(c1) - a] += 1\n            freqs[ord(c2) - a] -= 1\n\n        return all(v == 0 for v in freqs)"
+      "python": "class Solution:\n    def isAnagram(self, s: str, t: str) -> bool:\n        if len(s) != len(t):\n            return False\n\n        freqs = [0] * 26\n        a = ord('a')\n\n        for c1, c2 in zip(s, t):\n            freqs[ord(c1) - a] += 1\n            freqs[ord(c2) - a] -= 1\n\n        return all(v == 0 for v in freqs)",
+      "fixture": {
+        "entry": "isAnagram",
+        "cases": [
+          {
+            "name": "anagram",
+            "args": [
+              "\"anagram\"",
+              "\"nagaram\""
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "different-counts",
+            "args": [
+              "\"rat\"",
+              "\"car\""
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "different-lengths",
+            "args": [
+              "\"a\"",
+              "\"aa\""
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "repeated-letters",
+            "args": [
+              "\"aabb\"",
+              "\"baba\""
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "unequal-repeated-letters",
+            "args": [
+              "\"aabb\"",
+              "\"abbb\""
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "empty",
+            "args": [
+              "\"\"",
+              "\"\""
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "alphabet-ends",
+            "args": [
+              "\"az\"",
+              "\"za\""
+            ],
+            "expected": "true"
+          }
+        ]
+      }
     },
     {
       "title": "Valid Palindrome",
@@ -2284,7 +3896,61 @@
       ],
       "slug": "valid-parentheses",
       "birdie": "fn isValid(s: str) bool:\n    matching = {')': '(', ']': '[', '}': '{'}\n    opened = stack()\n\n    for char in s:\n        if char in matching:\n            if not opened or opened.pop() != matching[char]:\n                return false\n        else:\n            opened.push(char)\n\n    return not opened",
-      "python": "class Solution:\n    def isValid(self, s: str) -> bool:\n        matching = {')': '(', ']': '[', '}': '{'}\n        stack = []\n\n        for char in s:\n            if char in matching:\n                if not stack or stack.pop() != matching[char]:\n                    return False\n            else:\n                stack.append(char)\n\n        return not stack"
+      "python": "class Solution:\n    def isValid(self, s: str) -> bool:\n        matching = {')': '(', ']': '[', '}': '{'}\n        stack = []\n\n        for char in s:\n            if char in matching:\n                if not stack or stack.pop() != matching[char]:\n                    return False\n            else:\n                stack.append(char)\n\n        return not stack",
+      "fixture": {
+        "entry": "isValid",
+        "cases": [
+          {
+            "name": "pairs",
+            "args": [
+              "\"()[]{}\""
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "nested",
+            "args": [
+              "\"{[()]}\""
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "crossed",
+            "args": [
+              "\"([)]\""
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "unclosed",
+            "args": [
+              "\"((\""
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "unexpected-closer",
+            "args": [
+              "\"]\""
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "empty",
+            "args": [
+              "\"\""
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "mismatched",
+            "args": [
+              "\"(]\""
+            ],
+            "expected": "false"
+          }
+        ]
+      }
     },
     {
       "title": "Valid Parenthesis String",
@@ -2324,7 +3990,54 @@
       ],
       "slug": "valid-sudoku",
       "birdie": "fn isValidSudoku(board: list[list[char]]) bool:\n    for i until 9:\n        if not validGroup(board[i]):\n            return false\n\n        column = [board[r][i] for r until 9]\n        if not validGroup(column):\n            return false\n\n    for sr until 9 step 3:\n        for sc until 9 step 3:\n            square = [\n                board[r][c]\n                for r in sr until sr + 3\n                for c in sc until sc + 3\n            ]\n\n            if not validGroup(square):\n                return false\n\n    return true\n\nfn validGroup(cells: list[char]) bool:\n    seen = set()\n\n    for cell in cells:\n        if cell == '.':\n            continue\n\n        if cell in seen:\n            return false\n\n        seen.add(cell)\n\n    return true",
-      "python": "class Solution:\n    def isValidSudoku(self, board: list[list[str]]) -> bool:\n        for i in range(9):\n            if not validGroup(board[i]):\n                return False\n\n            column = [board[r][i] for r in range(9)]\n            if not validGroup(column):\n                return False\n\n        for sr in range(0, 9, 3):\n            for sc in range(0, 9, 3):\n                square = [\n                    board[r][c]\n                    for r in range(sr, sr + 3)\n                    for c in range(sc, sc + 3)\n                ]\n\n                if not validGroup(square):\n                    return False\n\n        return True\n\n\ndef validGroup(cells: list[str]) -> bool:\n    seen = set()\n\n    for cell in cells:\n        if cell == '.':\n            continue\n\n        if cell in seen:\n            return False\n\n        seen.add(cell)\n\n    return True"
+      "python": "class Solution:\n    def isValidSudoku(self, board: list[list[str]]) -> bool:\n        for i in range(9):\n            if not validGroup(board[i]):\n                return False\n\n            column = [board[r][i] for r in range(9)]\n            if not validGroup(column):\n                return False\n\n        for sr in range(0, 9, 3):\n            for sc in range(0, 9, 3):\n                square = [\n                    board[r][c]\n                    for r in range(sr, sr + 3)\n                    for c in range(sc, sc + 3)\n                ]\n\n                if not validGroup(square):\n                    return False\n\n        return True\n\n\ndef validGroup(cells: list[str]) -> bool:\n    seen = set()\n\n    for cell in cells:\n        if cell == '.':\n            continue\n\n        if cell in seen:\n            return False\n\n        seen.add(cell)\n\n    return True",
+      "fixture": {
+        "entry": "isValidSudoku",
+        "cases": [
+          {
+            "name": "standard-valid",
+            "args": [
+              "[[\"5\",\"3\",\".\",\".\",\"7\",\".\",\".\",\".\",\".\"],[\"6\",\".\",\".\",\"1\",\"9\",\"5\",\".\",\".\",\".\"],[\".\",\"9\",\"8\",\".\",\".\",\".\",\".\",\"6\",\".\"],[\"8\",\".\",\".\",\".\",\"6\",\".\",\".\",\".\",\"3\"],[\"4\",\".\",\".\",\"8\",\".\",\"3\",\".\",\".\",\"1\"],[\"7\",\".\",\".\",\".\",\"2\",\".\",\".\",\".\",\"6\"],[\".\",\"6\",\".\",\".\",\".\",\".\",\"2\",\"8\",\".\"],[\".\",\".\",\".\",\"4\",\"1\",\"9\",\".\",\".\",\"5\"],[\".\",\".\",\".\",\".\",\"8\",\".\",\".\",\"7\",\"9\"]]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "empty-board",
+            "args": [
+              "[[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"]]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "row-conflict",
+            "args": [
+              "[[\"5\",\".\",\".\",\".\",\"5\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"]]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "column-conflict",
+            "args": [
+              "[[\"7\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\"7\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"]]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "square-conflict",
+            "args": [
+              "[[\"3\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\"3\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"],[\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\",\".\"]]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "completed-board",
+            "args": [
+              "[[\"5\",\"3\",\"4\",\"6\",\"7\",\"8\",\"9\",\"1\",\"2\"],[\"6\",\"7\",\"2\",\"1\",\"9\",\"5\",\"3\",\"4\",\"8\"],[\"1\",\"9\",\"8\",\"3\",\"4\",\"2\",\"5\",\"6\",\"7\"],[\"8\",\"5\",\"9\",\"7\",\"6\",\"1\",\"4\",\"2\",\"3\"],[\"4\",\"2\",\"6\",\"8\",\"5\",\"3\",\"7\",\"9\",\"1\"],[\"7\",\"1\",\"3\",\"9\",\"2\",\"4\",\"8\",\"5\",\"6\"],[\"9\",\"6\",\"1\",\"5\",\"3\",\"7\",\"2\",\"8\",\"4\"],[\"2\",\"8\",\"7\",\"4\",\"1\",\"9\",\"6\",\"3\",\"5\"],[\"3\",\"4\",\"5\",\"2\",\"8\",\"6\",\"1\",\"7\",\"9\"]]"
+            ],
+            "expected": "true"
+          }
+        ]
+      }
     },
     {
       "title": "Validate Binary Search Tree",
@@ -2352,7 +4065,127 @@
       "slug": "validate-binary-search-tree",
       "providedTypes": "type TreeNode:\n    val: int\n    left: TreeNode? = none\n    right: TreeNode? = none",
       "birdie": "fn isValidBST(root: TreeNode?) bool:\n    return dfs(root, -inf, inf)\n\nfn dfs(node: TreeNode?, min_val: number, max_val: number) bool:\n    if node == none:\n        return true\n\n    if not min_val < node.val < max_val:\n        return false\n\n    return (\n        dfs(node.right, node.val, max_val)\n        and dfs(node.left, min_val, node.val)\n    )",
-      "python": "from math import inf\n\n\nclass Solution:\n    def isValidBST(self, root: TreeNode | None) -> bool:\n        return dfs(root, -inf, inf)\n\n\ndef dfs(node: TreeNode | None, min_val: int | float, max_val: int | float) -> bool:\n    if node is None:\n        return True\n\n    if not min_val < node.val < max_val:\n        return False\n\n    return (\n        dfs(node.right, node.val, max_val)\n        and dfs(node.left, min_val, node.val)\n    )"
+      "python": "from math import inf\n\n\nclass Solution:\n    def isValidBST(self, root: TreeNode | None) -> bool:\n        return dfs(root, -inf, inf)\n\n\ndef dfs(node: TreeNode | None, min_val: int | float, max_val: int | float) -> bool:\n    if node is None:\n        return True\n\n    if not min_val < node.val < max_val:\n        return False\n\n    return (\n        dfs(node.right, node.val, max_val)\n        and dfs(node.left, min_val, node.val)\n    )",
+      "fixture": {
+        "entry": "isValidBST",
+        "argAdapters": [
+          "tree"
+        ],
+        "cases": [
+          {
+            "name": "standard-valid",
+            "args": [
+              "[2,1,3]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "standard-invalid",
+            "args": [
+              "[5,1,4,null,null,3,6]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "empty",
+            "args": [
+              "[]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "single-zero",
+            "args": [
+              "[0]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "duplicate-left",
+            "args": [
+              "[2,2,3]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "duplicate-right",
+            "args": [
+              "[2,1,2]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "violates-ancestor-upper-bound",
+            "args": [
+              "[10,5,15,null,12]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "violates-ancestor-lower-bound",
+            "args": [
+              "[10,5,15,null,null,6,20]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "negative-and-positive-values",
+            "args": [
+              "[0,-3,4,-5,-1,2,6]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "left-chain",
+            "args": [
+              "[4,3,null,2,null,1]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "right-chain",
+            "args": [
+              "[-3,null,-2,null,-1,null,0]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "signed-32-bit-boundaries",
+            "args": [
+              "[0,-2147483648,2147483647]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "distinct-above-float-precision",
+            "args": [
+              "[9007199254740993,9007199254740992,9007199254740994]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "decreasing-above-float-precision",
+            "args": [
+              "[9007199254740993,null,9007199254740992]"
+            ],
+            "expected": "false"
+          },
+          {
+            "name": "arbitrary-precision-positive-boundaries",
+            "args": [
+              "[10000000000000000000000000000000000000000,9999999999999999999999999999999999999999,10000000000000000000000000000000000000001]"
+            ],
+            "expected": "true"
+          },
+          {
+            "name": "arbitrary-precision-negative-boundaries",
+            "args": [
+              "[-10000000000000000000000000000000000000000,-10000000000000000000000000000000000000001,-9999999999999999999999999999999999999999]"
+            ],
+            "expected": "true"
+          }
+        ]
+      }
     },
     {
       "title": "Walls And Gates",

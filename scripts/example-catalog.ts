@@ -1,6 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { catalogMetadataSchema, exampleMetadataSchema, exampleSnapshotSchema } from '../src/lib/example-schema';
+import { catalogMetadataSchema, exampleMetadataSchema, exampleSnapshotSchema, parseExampleFixture } from '../src/lib/example-schema';
 
 async function readOptionalSource(path: string) {
   try {
@@ -32,12 +32,14 @@ export async function readExampleCatalog(sourceDirectory: string) {
       if ((birdie === undefined) !== (python === undefined)) {
         throw new Error('solution.bd and solution.py must either both exist or both be absent.');
       }
+      const tests = birdie === undefined ? undefined : await readOptionalSource(join(directory, 'tests.json'));
 
       return {
         ...exampleMetadataSchema.parse(JSON.parse(metadata)),
         slug,
         ...(birdie === undefined || python === undefined ? {} : { birdie, python }),
         ...(providedTypes === undefined ? {} : { providedTypes }),
+        ...(tests === undefined ? {} : { fixture: parseExampleFixture(tests) }),
       };
     } catch (error: unknown) {
       throw new Error(`Invalid example ${slug}: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
