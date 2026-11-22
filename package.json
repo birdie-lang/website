@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "sync:examples": "bun scripts/sync-examples.ts",
+    "sync:wasm": "bun scripts/sync-wasm.ts",
     "check:examples": "bun run sync:examples --check",
     "test": "bun test scripts",
     "typecheck": "astro check",
