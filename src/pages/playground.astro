@@ -1,5 +1,6 @@
 ---
 import SiteLayout from '../layouts/site-layout.astro';
+import factorial from '../assets/factorial.bd?raw';
 import { highlightBirdie } from '../lib/birdie-editor';
 
 const examples = [
@@ -22,12 +23,7 @@ larger(7, 12)`,
   {
     id: 'factorial',
     label: 'Recursive factorial',
-    source: `fn factorial(n: int) int:
-    if n == 0:
-        return 1
-    return n * factorial(n - 1)
-
-factorial(5)`,
+    source: `${factorial.trimEnd()}\n\nfactorial(5)`,
   },
   {
     id: 'diagnostic',
