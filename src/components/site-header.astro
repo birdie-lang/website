@@ -1,15 +1,15 @@
 ---
 import Brand from './brand.astro';
 
-const isPlayground = Astro.url.pathname === '/playground/';
-const isDocs = Astro.url.pathname.startsWith('/docs');
+const isPlayground = Astro.url.pathname === '/playground';
+const isDocs = Astro.url.pathname === '/docs' ? 'page' : Astro.url.pathname.startsWith('/docs/') ? 'true' : undefined;
 ---
 
 <header class="site-header wrap" transition:persist="site-header">
   <Brand />
   <nav aria-label="Main navigation" class="main-nav">
-    <a href="/docs/" aria-current={isDocs ? 'true' : undefined}><span class="nav-label">Docs</span></a>
-    <a href="/playground/" aria-current={isPlayground ? 'page' : undefined}><span class="nav-label">Playground</span></a>
+    <a href="/docs" aria-current={isDocs}><span class="nav-label">Docs</span></a>
+    <a href="/playground" aria-current={isPlayground ? 'page' : undefined}><span class="nav-label">Playground</span></a>
     <a class="github-link" href="https://github.com/birdie-lang/birdie">GitHub <span aria-hidden="true">↗</span></a>
   </nav>
   <button class="theme-toggle" type="button" aria-label="Switch color theme" data-theme-toggle>
@@ -35,12 +35,13 @@ const isDocs = Astro.url.pathname.startsWith('/docs');
   document.addEventListener('astro:before-swap', (event) => {
     event.newDocument.documentElement.dataset.theme = document.documentElement.dataset.theme;
     event.newDocument.documentElement.dataset.themeReady = '';
+    event.newDocument.documentElement.dataset.shortcutModifier = document.documentElement.dataset.shortcutModifier;
   });
 
   // The header is persisted, so its active links must follow the new route.
   document.addEventListener('astro:after-swap', () => {
     document.querySelectorAll<HTMLAnchorElement>('.main-nav a[href^="/"]').forEach((link) => {
-      if (location.pathname.startsWith(link.pathname)) {
+      if (location.pathname === link.pathname || location.pathname.startsWith(`${link.pathname}/`)) {
         link.setAttribute('aria-current', location.pathname === link.pathname ? 'page' : 'true');
       } else {
         link.removeAttribute('aria-current');

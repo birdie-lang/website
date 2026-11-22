@@ -1,10 +1,46 @@
 ---
 import SiteLayout from '../layouts/site-layout.astro';
+import { highlightBirdie } from '../lib/birdie-editor';
 
-const example = 'fn add(a: int, b: int) int:\n    return a + b\n\nadd(20, 22)';
+const examples = [
+  {
+    id: 'addition',
+    label: 'Add two numbers',
+    source: 'fn add(a: int, b: int) int:\n    return a + b\n\nadd(20, 22)',
+  },
+  {
+    id: 'larger',
+    label: 'Larger of two numbers',
+    source: `fn larger(a: int, b: int) int:
+    if a > b:
+        return a
+    else:
+        return b
+
+larger(7, 12)`,
+  },
+  {
+    id: 'factorial',
+    label: 'Recursive factorial',
+    source: `fn factorial(n: int) int:
+    if n == 0:
+        return 1
+    return n * factorial(n - 1)
+
+factorial(5)`,
+  },
+  {
+    id: 'diagnostic',
+    label: 'Unknown variable',
+    source: 'fn answer() int:\n    return missing\n\nanswer()',
+  },
+] as const;
+
+const starter = examples[0].source;
+const previewTokens = highlightBirdie(starter);
 ---
 
-<SiteLayout title="Playground · Birdie" description="Try the Birdie playground interface with sample results.">
+<SiteLayout title="Playground · Birdie" description="Write and run Birdie code in your browser.">
   <birdie-playground class="playground wrap">
     <header class="intro">
       <h1>Playground<span class="red-period">.</span></h1>
@@ -14,38 +50,38 @@ const example = 'fn add(a: int, b: int) int:\n    return a + b\n\nadd(20, 22)';
       <div class="toolbar">
         <select name="example" aria-label="Examples" disabled>
           <option value="" disabled selected>Choose example</option>
-          <option value="addition">Add two numbers</option>
-          <option value="diagnostic">Unknown variable</option>
+          {examples.map(({ id, label, source }) => <option value={id} data-source={source}>{label}</option>)}
         </select>
-        <button class="button button-primary" type="button" data-run disabled
-          aria-keyshortcuts="Control+Enter Meta+Enter">Run <kbd aria-hidden="true" data-shortcut>Ctrl ↵</kbd></button>
+        <button class="button button-primary" type="button" data-run disabled aria-keyshortcuts="Control+Enter Meta+Enter">
+          Run <kbd aria-hidden="true" class="shortcut-meta">⌘ ↵</kbd><kbd aria-hidden="true" class="shortcut-control">Ctrl ↵</kbd>
+        </button>
       </div>
 
       <div class="panes">
         <div class="editor-pane">
           <h2 class="pane-heading filename" id="editor-title">main.bd</h2>
-          <div data-editor>
-            <textarea spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"
-              wrap="off" aria-labelledby="editor-title">{example}</textarea>
+          <div data-editor data-source={starter}>
+            <div class="editor-preview" data-editor-preview>
+              <div class="preview-gutter" aria-hidden="true">
+                {starter.split('\n').map((_, index) => <div>{index + 1}</div>)}
+              </div>
+              <pre><code>{previewTokens.map(({ text, className }) => className ? <span class={className}>{text}</span> : text)}</code></pre>
+            </div>
           </div>
         </div>
         <section class="output-pane" aria-labelledby="output-title">
           <h2 class="pane-heading" id="output-title">Result</h2>
           <div class="result" aria-live="polite">
-            <p data-status>Run an example to see a sample result.</p>
+            <p data-status>Run your code to see the result.</p>
             <pre data-value hidden></pre>
-            <button class="diagnostic" type="button" data-diagnostic hidden>
-              <span class="filename" data-position></span>
-              <span class="diagnostic-message">Unknown variable <code>missing</code></span>
-              <span aria-hidden="true">↖</span>
-            </button>
+            <div class="diagnostics" data-diagnostics></div>
           </div>
           <noscript><p class="no-script">Enable JavaScript to use the playground controls.</p></noscript>
         </section>
       </div>
 
       <div class="code-sheet-footer">
-        <span id="playground-mode">Preview mode · Sample results</span>
+        <span>Runs in your browser</span>
         <span id="editor-help">Press <kbd>Esc</kbd> then <kbd>Tab</kbd> to leave the editor</span>
       </div>
     </div>
@@ -58,61 +94,114 @@ const example = 'fn add(a: int, b: int) int:\n    return a + b\n\nadd(20, 22)';
   import { EditorState } from '@codemirror/state';
   import { drawSelection, EditorView, keymap, lineNumbers } from '@codemirror/view';
   import { birdieEditorLanguage } from '../lib/birdie-editor';
+  import { BirdieRuntime, editorDiagnostics } from '../lib/birdie-runtime';
 
-  const invalid = 'fn answer() int:\n    return missing\n\nanswer()';
-  const missing = invalid.indexOf('missing');
-  const sampleDiagnostic = { from: missing, to: missing + 'missing'.length, severity: 'error', message: 'Unknown variable “missing”' } as const;
-  const idleMessage = 'Run an example to see a sample result.';
+  const idleMessage = 'Run your code to see the result.';
+  const feedbackDelay = 250;
 
   class BirdiePlayground extends HTMLElement {
     #editor?: EditorView;
+    #runtime = new BirdieRuntime();
 
     connectedCallback() {
       if (this.#editor) return;
       const editorHost = this.querySelector<HTMLElement>('[data-editor]');
-      const fallback = this.querySelector('textarea');
+      const preview = this.querySelector<HTMLElement>('[data-editor-preview]');
+      const starter = editorHost?.dataset.source;
       const examples = this.querySelector('select');
       const runButton = this.querySelector<HTMLButtonElement>('[data-run]');
-      const shortcut = this.querySelector('[data-shortcut]');
       const status = this.querySelector('[data-status]');
       const value = this.querySelector<HTMLPreElement>('[data-value]');
-      const diagnostic = this.querySelector<HTMLButtonElement>('[data-diagnostic]');
-      const position = this.querySelector('[data-position]');
-      if (!editorHost || !fallback || !examples || !runButton || !shortcut || !status || !value || !diagnostic || !position) return;
+      const diagnosticList = this.querySelector('[data-diagnostics]');
+      if (!editorHost || !preview || starter === undefined || !examples || !runButton || !status || !value || !diagnosticList) return;
 
-      const addition = fallback.defaultValue;
-      shortcut.textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘ ↵' : 'Ctrl ↵';
+      this.#runtime.warmUp();
+      let running = false;
 
       const showStatus = (message: string) => {
         if (status.textContent !== message) status.textContent = message;
         value.hidden = true;
-        diagnostic.hidden = true;
+        diagnosticList.replaceChildren();
       };
 
-      const run = (editor: EditorView) => {
-        const { state } = editor;
-        const source = state.doc.toString().trimEnd();
+      const run = async (editor: EditorView) => {
+        if (running) return;
+        const { doc } = editor.state;
+        const source = doc.toString();
         if (!source.trim()) {
           showStatus('Enter Birdie code or pick an example.');
-        } else if (source === addition.trimEnd()) {
-          showStatus('Sample output');
-          value.textContent = '42';
-          value.hidden = false;
-        } else if (source === invalid) {
-          const line = state.doc.lineAt(sampleDiagnostic.from);
-          position.textContent = `${line.number}:${sampleDiagnostic.from - line.from + 1}`;
-          showStatus('Sample diagnostic');
-          diagnostic.hidden = false;
-          editor.dispatch(setDiagnostics(state, [sampleDiagnostic]));
-        } else {
-          showStatus('Sample results are available for the original examples. Choose an example to try one.');
+          return;
         }
+
+        running = true;
+        runButton.setAttribute('aria-disabled', 'true');
+        const isCurrent = () => this.#editor === editor && editor.state.doc === doc;
+        const showFeedback = (message: string) => {
+          if (!isCurrent()) return;
+          showStatus(message);
+          if (diagnosticCount(editor.state)) editor.dispatch(setDiagnostics(editor.state, []));
+        };
+        let feedback = setTimeout(() => showFeedback('Starting Birdie…'), feedbackDelay);
+
+        try {
+          const result = await this.#runtime.run(source, () => {
+            clearTimeout(feedback);
+            feedback = setTimeout(() => showFeedback('Running…'), feedbackDelay);
+          });
+          if (!isCurrent()) return;
+
+          const diagnostics = editorDiagnostics(source, result.diagnostics);
+          if (diagnostics.length || diagnosticCount(editor.state)) {
+            editor.dispatch(setDiagnostics(editor.state, diagnostics));
+          }
+          if (diagnostics.length) {
+            showStatus(diagnostics.length === 1 ? '1 error' : `${diagnostics.length} errors`);
+            for (const { from, to, message } of diagnostics) {
+              const line = doc.lineAt(from);
+              const column = Array.from(line.text.slice(0, from - line.from)).length + 1;
+              const button = document.createElement('button');
+              button.type = 'button';
+              button.className = 'diagnostic';
+              const location = document.createElement('span');
+              location.className = 'filename';
+              location.textContent = `${line.number}:${column}`;
+              const description = document.createElement('span');
+              description.className = 'diagnostic-message';
+              description.textContent = message;
+              const jump = document.createElement('span');
+              jump.setAttribute('aria-hidden', 'true');
+              jump.textContent = '↖';
+              button.append(location, description, jump);
+              button.onclick = () => {
+                editor.dispatch({ selection: { anchor: from, head: to }, scrollIntoView: true });
+                editor.focus();
+              };
+              diagnosticList.append(button);
+            }
+          } else if (result.value === null) {
+            showStatus('Finished with no value.');
+          } else {
+            showStatus('Output');
+            value.textContent = result.value;
+            value.hidden = false;
+          }
+        } catch (error) {
+          showFeedback(error instanceof Error ? error.message : 'Could not run Birdie.');
+        } finally {
+          clearTimeout(feedback);
+          running = false;
+          if (this.#editor === editor) runButton.removeAttribute('aria-disabled');
+        }
+      };
+
+      const runShortcut = (editor: EditorView) => {
+        void run(editor);
         return true;
       };
 
       const editor = new EditorView({
         parent: editorHost,
-        doc: fallback.value,
+        doc: starter,
         extensions: [
           birdieEditorLanguage,
           lineNumbers(),
@@ -125,8 +214,8 @@ const example = 'fn add(a: int, b: int) int:\n    return a + b\n\nadd(20, 22)';
             autocapitalize: 'off',
           }),
           keymap.of([
-            { key: 'Ctrl-Enter', run },
-            { key: 'Meta-Enter', run },
+            { key: 'Ctrl-Enter', run: runShortcut },
+            { key: 'Meta-Enter', run: runShortcut },
             indentWithTab,
             ...defaultKeymap,
             ...historyKeymap,
@@ -141,15 +230,16 @@ const example = 'fn add(a: int, b: int) int:\n    return a + b\n\nadd(20, 22)';
         ],
       });
       this.#editor = editor;
-      fallback.hidden = true;
+      preview.hidden = true;
       showStatus(idleMessage);
       examples.disabled = false;
       runButton.disabled = false;
+      runButton.removeAttribute('aria-disabled');
 
       runButton.onclick = () => run(editor);
       examples.onchange = () => {
-        const source = examples.value === 'diagnostic' ? invalid : addition;
-        if (source !== editor.state.doc.toString()) {
+        const source = examples.selectedOptions[0]?.dataset.source;
+        if (source !== undefined && source !== editor.state.doc.toString()) {
           editor.dispatch({
             changes: { from: 0, to: editor.state.doc.length, insert: source },
             selection: { anchor: 0 },
@@ -159,18 +249,14 @@ const example = 'fn add(a: int, b: int) int:\n    return a + b\n\nadd(20, 22)';
         }
         examples.value = '';
       };
-      diagnostic.onclick = () => {
-        editor.dispatch({
-          selection: { anchor: sampleDiagnostic.from, head: sampleDiagnostic.to },
-          scrollIntoView: true,
-        });
-        editor.focus();
-      };
     }
 
     disconnectedCallback() {
       this.#editor?.destroy();
       this.#editor = undefined;
+      const preview = this.querySelector<HTMLElement>('[data-editor-preview]');
+      if (preview) preview.hidden = false;
+      this.#runtime.dispose();
     }
   }
 
@@ -196,15 +282,28 @@ const example = 'fn add(a: int, b: int) int:\n    return a + b\n\nadd(20, 22)';
   .toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
   select { min-width: 0; max-width: 100%; min-height: 40px; padding-inline: 10px; border: 1px solid var(--line); border-radius: 4px; color: var(--ink); background: var(--paper); font-size: 0.8125rem; cursor: pointer; }
   .toolbar .button { min-height: 40px; padding: 8px 14px; gap: 14px; }
-  .toolbar :disabled { opacity: 0.6; cursor: not-allowed; }
+  .toolbar :disabled { cursor: not-allowed; }
   .toolbar .button:disabled:hover { background: var(--ink); }
   kbd { font-size: 0.6875rem; }
+  .toolbar kbd { display: none; }
+  @media (pointer: fine) {
+    :global([data-shortcut-modifier='meta']) .toolbar .shortcut-meta,
+    :global([data-shortcut-modifier='control']) .toolbar .shortcut-control { display: inline; }
+  }
   .panes { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
   .output-pane { border-inline-start: 1px solid var(--line); background: var(--soft); }
   .pane-heading { margin: 0; padding: 12px 18px; border-bottom: 1px solid var(--line); font-size: 0.75rem; font-weight: 550; line-height: 1.5; }
   [data-editor] { font: 0.9375rem/1.8 var(--font-mono); }
-  textarea { display: block; width: 100%; height: var(--editor-height); padding: 14px 18px; resize: none; border: 0; background: var(--paper); color: var(--ink); font: inherit; }
-  textarea:focus-visible { outline-offset: -2px; }
+  [data-editor] :global(.birdie-keyword) { color: var(--accent); }
+  [data-editor] :global(.birdie-literal) { color: var(--syntax-literal); }
+  [data-editor] :global(.birdie-string) { color: var(--syntax-string); }
+  [data-editor] :global(.birdie-function) { color: var(--syntax-function); }
+  [data-editor] :global(.birdie-comment) { color: var(--muted); }
+
+  .editor-preview { display: flex; height: var(--editor-height); overflow: auto; }
+  .preview-gutter { position: sticky; inset-inline-start: 0; flex: none; padding-block: 14px; text-align: end; }
+  .editor-preview pre { margin: 0; padding: 14px 18px 14px 12px; font: inherit; white-space: pre; }
+  .editor-preview code { font: inherit; }
 
   .editor-pane :global(.cm-editor) { height: var(--editor-height); }
   .editor-pane :global(.cm-editor.cm-focused) { outline: none; }
@@ -212,8 +311,8 @@ const example = 'fn add(a: int, b: int) int:\n    return a + b\n\nadd(20, 22)';
   .editor-pane :global(.cm-scroller) { font: inherit; }
   .editor-pane :global(.cm-content) { padding-block: 14px; }
   .editor-pane :global(.cm-line) { padding-inline: 12px 18px; }
-  .editor-pane :global(.cm-gutters) { background: var(--paper); border-right: 1px solid var(--line); color: var(--muted); }
-  .editor-pane :global(.cm-lineNumbers .cm-gutterElement) { min-width: 3ch; padding-inline: 8px; }
+  .preview-gutter, .editor-pane :global(.cm-gutters) { background: var(--paper); border-right: 1px solid var(--line); color: var(--muted); }
+  .preview-gutter > div, .editor-pane :global(.cm-lineNumbers .cm-gutterElement) { min-width: 3ch; padding-inline: 8px; }
   .editor-pane :global(.cm-cursor) { border-left-color: var(--ink); }
   .editor-pane :global(.cm-editor .cm-selectionBackground),
   .editor-pane :global(.cm-editor.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground) {
@@ -231,13 +330,13 @@ const example = 'fn add(a: int, b: int) int:\n    return a + b\n\nadd(20, 22)';
   .result p, .no-script { margin: 0; color: var(--muted); font-size: 0.8125rem; line-height: 1.6; }
   .no-script { margin: 0 18px 16px; }
   .result pre { margin: 8px 0 0; padding: 0; font-size: 1.25rem; white-space: pre-wrap; }
-  .diagnostic {
+  .diagnostics:not(:empty) { display: grid; gap: 8px; margin-top: 12px; }
+  .diagnostics :global(.diagnostic) {
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr) max-content;
     align-items: baseline;
     gap: 6px;
     width: 100%;
-    margin-top: 12px;
     padding: 10px;
     border-inline-start: 2px solid var(--accent);
     border-radius: 0 4px 4px 0;
@@ -247,7 +346,7 @@ const example = 'fn add(a: int, b: int) int:\n    return a + b\n\nadd(20, 22)';
     line-height: 1.6;
     text-align: left;
   }
-  .diagnostic:hover .diagnostic-message { text-decoration: underline; text-underline-offset: 3px; }
+  .diagnostics :global(.diagnostic:hover .diagnostic-message) { text-decoration: underline; text-underline-offset: 3px; }
   .code-sheet-footer { padding-inline: 18px; }
   @media (max-width: 680px) {
     .playground { --editor-height: clamp(15rem, 38vh, 21rem); padding-block: 38px 56px; }
@@ -260,6 +359,6 @@ const example = 'fn add(a: int, b: int) int:\n    return a + b\n\nadd(20, 22)';
     select, .toolbar .button { min-height: 44px; }
   }
   @media (pointer: coarse) {
-    [data-shortcut], #editor-help { display: none; }
+    #editor-help { display: none; }
   }
 </style>

@@ -6,12 +6,12 @@ import { birdieGrammar } from './src/lib/birdie-grammar';
 export default defineConfig({
   site: 'https://birdie.jakmaz.com',
   output: 'static',
-  trailingSlash: 'always',
+  trailingSlash: 'never',
   devToolbar: { enabled: false },
   redirects: {
-    '/play/': '/playground/',
-    '/docs/syntax/': '/docs/specification/',
-    '/docs/collections/': '/docs/specification/collections/',
+    '/play': '/playground',
+    '/docs/syntax': '/docs/specification',
+    '/docs/collections': '/docs/specification/collections',
   },
   integrations: [mdx()],
   markdown: {

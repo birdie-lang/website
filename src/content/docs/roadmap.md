@@ -1,12 +1,12 @@
 ---
 title: Roadmap
-description: Birdie features that work today, what’s in development, and what’s planned.
+description: What works in the Birdie interpreter and playground, and what’s planned next.
 navTitle: Roadmap
 section: project
 order: 1
 ---
 
-Checked features are available on `main` in the [language repository](https://github.com/birdie-lang/birdie).
+The [Go interpreter](https://github.com/birdie-lang/birdie) powers both the terminal REPL and the browser playground.
 
 ## Available
 
@@ -16,11 +16,9 @@ Checked features are available on `main` in the [language repository](https://gi
 - [x] Integer arithmetic, floor division, and comparisons
 - [x] Boolean literals and equality
 - [x] Variable assignment and lookup
-
-## In progress
-
-- [ ] Conditional branches
-- [ ] Function declarations, calls, and returns
+- [x] Conditional branches
+- [x] Function declarations, calls, returns, and recursion
+- [x] [Browser playground](/playground) with WebAssembly and clickable source diagnostics
 
 ## Next
 
@@ -40,7 +38,6 @@ Checked features are available on `main` in the [language repository](https://gi
 - [ ] Counters
 - [ ] Records
 - [ ] Optional values
-- [ ] [Browser playground](/playground/) with WebAssembly
 - [ ] Deterministic operation counts
 - [ ] Bytecode compiler and VM
 - [ ] Language server and editor integration

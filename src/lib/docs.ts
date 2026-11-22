@@ -5,5 +5,5 @@ export const docSections = {
 } as const;
 
 export function docHref(id: string) {
-  return id === 'index' ? '/docs/' : `/docs/${id}/`;
+  return id === 'index' ? '/docs' : `/docs/${id}`;
 }

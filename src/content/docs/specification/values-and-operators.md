@@ -30,7 +30,7 @@ min!(best, 3)  # best now holds 3, with static type number
 - Numeric equality and hashing agree across integer and `number` uses. A finite numeric key hashes like the same integer key; each infinity has stable equality and hashing. This permits `number` keys in maps, sets, and counters, using their existing order rules.
 - `number?` adds ordinary absence to this numeric domain. `none` is distinct from both infinities and has no numeric ordering. Neither integers nor `number` values have implicit truthiness.
 
-See [Validate Binary Search Tree](/docs/examples/validate-binary-search-tree/) for bounds that start at `-inf` and `inf` and become integer node values in recursive calls.
+See [Validate Binary Search Tree](/docs/examples/validate-binary-search-tree) for bounds that start at `-inf` and `inf` and become integer node values in recursive calls.
 
 ### Arithmetic
 
@@ -76,7 +76,7 @@ signed = int("-7")    # -7
 - These conversions preserve arbitrary-precision integer values, subject to available resources. Conversion work depends on the number of digits and the integer's size.
 - `str(value)` requires one `int` or `number`; `int(text)` requires one `str`. `int(value)` also accepts a numeric value, returning its finite integer unchanged or raising a runtime error for an infinity. Incompatible argument types and unsupported argument counts are type errors. The zero-argument `int()` form still returns zero. Parsing `"inf"` or `"-inf"` as an integer is an error.
 
-See [Encode and Decode Strings](/docs/examples/encode-and-decode-strings/) for decimal length headers.
+See [Encode and Decode Strings](/docs/examples/encode-and-decode-strings) for decimal length headers.
 
 ### Minimum and maximum
 
@@ -86,10 +86,10 @@ See [Encode and Decode Strings](/docs/examples/encode-and-decode-strings/) for d
 - Evaluate each argument once, from left to right, before comparing the values.
 - The result has type `int` when both arguments have type `int`, or `number` otherwise. Equal arguments return the first value. Integer and infinity comparisons use the exact ordering above.
 - Calls return a value and do not rebind either argument. A discarded `max(a, b)` or `min(a, b)` result does not update `a` or `b`.
-- Use [`max!(target, candidate)` or `min!(target, candidate)`](/docs/specification/types/#minimum-and-maximum-updates) to update an initialized writable location instead.
+- Use [`max!(target, candidate)` or `min!(target, candidate)`](/docs/specification/types#minimum-and-maximum-updates) to update an initialized writable location instead.
 - Variadic and collection forms remain undecided.
 
-See [Maximum Depth of Binary Tree](/docs/examples/maximum-depth-of-binary-tree/) for a recursive use of `max`.
+See [Maximum Depth of Binary Tree](/docs/examples/maximum-depth-of-binary-tree) for a recursive use of `max`.
 
 ### Absolute value
 
@@ -105,7 +105,7 @@ abs(4)   # 4
 - An `int` argument returns `int`; a `number` argument returns `number`. `abs(inf)` and `abs(-inf)` both return `inf`. Finite values preserve arbitrary precision; work and storage depend on operand size.
 - The built-in requires no imports or floating-point conversions.
 
-See [Balanced Binary Tree](/docs/examples/balanced-binary-tree/) for comparing child heights with `abs(right - left)`.
+See [Balanced Binary Tree](/docs/examples/balanced-binary-tree) for comparing child heights with `abs(right - left)`.
 
 ## Chained comparisons
 
@@ -151,7 +151,7 @@ disabled = not ready  # true: the present boolean is false
 enabled = ready != none and ready  # false, also false if ready is absent
 ```
 
-See [Same Tree](/docs/examples/same-tree/) for an `or` guard that checks two optional nodes before reading their fields, followed by a short-circuit recursive `and`.
+See [Same Tree](/docs/examples/same-tree) for an `or` guard that checks two optional nodes before reading their fields, followed by a short-circuit recursive `and`.
 
 ## Strings and characters
 
@@ -181,7 +181,7 @@ See [Same Tree](/docs/examples/same-tree/) for an `or` guard that checks two opt
 - Splitting is eager. It leaves the source unchanged and constructs every piece before returning. The intended cost is O(n + s) work for n source scalars and s separator scalars, with O(n + k) result storage for k pieces; repeated rescanning must not make a split quadratic.
 - The result is a mutable list of immutable strings. `text.split(separator).iter()` creates a cursor over that list; it does not make splitting lazy. Lazy splitting remains open.
 
-See [Serialize and Deserialize Binary Tree](/docs/examples/serialize-and-deserialize-binary-tree/) for splitting a preorder encoding into tokens.
+See [Serialize and Deserialize Binary Tree](/docs/examples/serialize-and-deserialize-binary-tree) for splitting a preorder encoding into tokens.
 
 ### String slicing
 
@@ -197,10 +197,10 @@ suffix = text[2:]   # "rd"
 - Both bounds must be finite integers under the ordinary checked-use rules and satisfy `0 <= start <= end <= text.size`. Incompatible bound types are compile-time errors; negative, reversed, or out-of-bounds ranges cause a runtime error. Bounds are not clamped.
 - Evaluate and retain the source, then each explicit bound once, from left to right, applying required presence and finite-value checks before evaluating the next operand. Supply omitted bounds after those evaluations and validate the range against the retained string.
 - Equal bounds produce an empty string, including when both equal `text.size`. Indexing a single position still returns a `char`; slicing returns a `str`.
-- Slicing preserves the exact scalar sequence without normalization or mutation. It uses the same inclusive-start, exclusive-end convention as [list slicing](/docs/specification/collections/lists/#slicing).
+- Slicing preserves the exact scalar sequence without normalization or mutation. It uses the same inclusive-start, exclusive-end convention as [list slicing](/docs/specification/collections/lists#slicing).
 - The intended cost model permits one linear preprocessing pass per string for scalar indexing. After that preparation, size and indexed access should take constant time and copying a slice of length k should take O(k) work. The representation remains undecided; repeatedly scanning a UTF-8 prefix for each access would violate this cost target.
 
-Slice steps and slice assignment remain open. See [Encode and Decode Strings](/docs/examples/encode-and-decode-strings/) for header and payload slices.
+Slice steps and slice assignment remain open. See [Encode and Decode Strings](/docs/examples/encode-and-decode-strings) for header and payload slices.
 
 ### Character codes
 
@@ -231,7 +231,7 @@ Subtracting two `char` values returns an `int` equal to the difference of their 
 - No normalization or locale-dependent alphabet ordering is applied. Code-point distance does not generally describe alphabet positions.
 - Other character arithmetic remains open. Use `.code` when the raw scalar value is needed.
 
-See [Valid Anagram](/docs/examples/valid-anagram/) for indexing a lowercase English frequency table with `c1 - 'a'`.
+See [Valid Anagram](/docs/examples/valid-anagram) for indexing a lowercase English frequency table with `c1 - 'a'`.
 
 ### Escapes
 

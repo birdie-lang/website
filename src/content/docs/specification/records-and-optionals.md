@@ -85,7 +85,7 @@ Calling `requiredValue(none)` fails at the field access. In contrast, the `nodeV
 - Explicit guards still narrow local types and can establish that a later presence check is unnecessary. Possible absence alone is not a compile-time rejection or a requirement to add suppression syntax. Tooling can display the inferred optional types.
 - A missing value is never silently converted to zero, `false`, an empty collection, or another fallback. Checked use also does not return `none` from the current function; that behavior requires explicit control flow or postfix `?`.
 
-See [Lowest Common Ancestor of a Binary Search Tree](/docs/examples/lowest-common-ancestor-of-a-binary-search-tree/) for passing optional child references to a function requiring a present node. The BST input guarantees justify that algorithmic assumption; violating it causes a runtime error.
+See [Lowest Common Ancestor of a Binary Search Tree](/docs/examples/lowest-common-ancestor-of-a-binary-search-tree) for passing optional child references to a function requiring a present node. The BST input guarantees justify that algorithmic assumption; violating it causes a runtime error.
 
 ### Optional propagation
 
@@ -110,7 +110,7 @@ if left == none:
 - `?` is postfix and binds more tightly than arithmetic and comparisons. In a type annotation, `T?` keeps its existing optional-type meaning.
 - The initial form applies to eagerly evaluated function-body expressions. Top-level propagation is a type error; propagation inside deferred generator expressions or field defaults remains open.
 
-See [Balanced Binary Tree](/docs/examples/balanced-binary-tree/) for propagating an absent height. Its empty-node guard still returns zero: an absent node is a valid empty subtree, while an absent height signals imbalance.
+See [Balanced Binary Tree](/docs/examples/balanced-binary-tree) for propagating an absent height. Its empty-node guard still returns zero: an absent node is a valid empty subtree, while an absent height signals imbalance.
 
 ### Conditional return
 
@@ -145,7 +145,7 @@ value = find()?  # Present: unwrap. Absent: return none from this function.
 
 The second form still requires an optional-returning function. `return find()?` also retains ordinary postfix propagation: it returns the found payload or returns `none`, so it does not fall through on absence.
 
-See [Kth Smallest Element in a BST](/docs/examples/kth-smallest-element-in-a-bst/) for propagating a found value, including zero, while continuing the traversal when a subtree contains no result.
+See [Kth Smallest Element in a BST](/docs/examples/kth-smallest-element-in-a-bst) for propagating a found value, including zero, while continuing the traversal when a subtree contains no result.
 
 ## Open questions
 

@@ -1,5 +1,6 @@
-import { HighlightStyle, indentUnit, StreamLanguage, syntaxHighlighting } from '@codemirror/language';
-import { tags } from '@lezer/highlight';
+import { HighlightStyle, indentUnit, StreamLanguage, syntaxHighlighting, syntaxTree } from '@codemirror/language';
+import { EditorState } from '@codemirror/state';
+import { highlightTree, tags } from '@lezer/highlight';
 
 const indentation = '    ';
 
@@ -35,11 +36,25 @@ const birdie = StreamLanguage.define({
 });
 
 const highlighting = HighlightStyle.define([
-  { tag: [tags.keyword, tags.operator], color: 'var(--accent)' },
-  { tag: [tags.atom, tags.number, tags.typeName], color: 'var(--syntax-literal)' },
-  { tag: tags.string, color: 'var(--syntax-string)' },
-  { tag: tags.function(tags.variableName), color: 'var(--syntax-function)' },
-  { tag: tags.comment, color: 'var(--muted)' },
+  { tag: [tags.keyword, tags.operator], class: 'birdie-keyword' },
+  { tag: [tags.atom, tags.number, tags.typeName], class: 'birdie-literal' },
+  { tag: tags.string, class: 'birdie-string' },
+  { tag: tags.function(tags.variableName), class: 'birdie-function' },
+  { tag: tags.comment, class: 'birdie-comment' },
 ]);
 
 export const birdieEditorLanguage = [birdie, indentUnit.of(indentation), syntaxHighlighting(highlighting)];
+
+// The initial preview uses the same tokens and styles as the live editor.
+export function highlightBirdie(source: string) {
+  const state = EditorState.create({ doc: source, extensions: birdie });
+  const tokens: { text: string; className?: string }[] = [];
+  let cursor = 0;
+  highlightTree(syntaxTree(state), highlighting, (from, to, className) => {
+    if (cursor < from) tokens.push({ text: source.slice(cursor, from) });
+    tokens.push({ text: source.slice(from, to), className });
+    cursor = to;
+  });
+  if (cursor < source.length) tokens.push({ text: source.slice(cursor) });
+  return tokens;
+}

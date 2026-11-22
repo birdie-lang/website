@@ -12,7 +12,7 @@ interface Props {
 
 const {
   title = 'Birdie · A language for algorithms',
-  description = 'Birdie is a statically typed language for algorithm problems, with indentation-based syntax and built-in maps and stacks.',
+  description = 'Birdie is an experimental language for algorithm problems, designed around indentation-based syntax, static typing, and built-in collections.',
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
@@ -40,6 +40,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
           ? theme
           : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         document.documentElement.dataset.themeReady = '';
+        document.documentElement.dataset.shortcutModifier = /Mac|iPhone|iPad/.test(navigator.platform) ? 'meta' : 'control';
       })();
     </script>
     <ClientRouter fallback="swap" />

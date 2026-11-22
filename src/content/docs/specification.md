@@ -6,7 +6,7 @@ section: specification
 order: 0
 ---
 
-This specification records the agreed language design. The other chapters cover [types and variables](/docs/specification/types/) and [collections](/docs/specification/collections/).
+This specification records the agreed language design. The other chapters cover [types and variables](/docs/specification/types) and [collections](/docs/specification/collections).
 
 ## Naming conventions
 
@@ -66,12 +66,12 @@ fn name(param: Type) ReturnType:
 - Nested functions can list writable captures after their parameters, as in `fn dfs(node: TreeNode?, outer res) int:`. Captures use the enclosing binding's type and are not call arguments.
 - The optional return type follows `)`, without an arrow.
 - The colon and indentation define the function body.
-- Return type inference follows the [typing rules](/docs/specification/types/#inference).
+- Return type inference follows the [typing rules](/docs/specification/types#inference).
 - Functions can call themselves recursively. Value-returning recursive functions use an explicit result annotation; recursive procedures need none. Broader recursive return inference remains open.
-- [Optional propagation](/docs/specification/records-and-optionals/#optional-propagation) with postfix `?` can return `none` early from a function with an optional result type.
-- [Conditional return](/docs/specification/records-and-optionals/#conditional-return) with `return? expression` returns a present optional payload, or runs the next statement when absent. It can be used in functions with nonoptional or optional results.
+- [Optional propagation](/docs/specification/records-and-optionals#optional-propagation) with postfix `?` can return `none` early from a function with an optional result type.
+- [Conditional return](/docs/specification/records-and-optionals#conditional-return) with `return? expression` returns a present optional payload, or runs the next statement when absent. It can be used in functions with nonoptional or optional results.
 
-[`swap!`, `min!`, and `max!`](/docs/specification/types/#in-place-operations) are built-in in-place operations with parentheses. Their specified writable arguments identify caller locations; they are standalone statements rather than ordinary function values.
+[`swap!`, `min!`, and `max!`](/docs/specification/types#in-place-operations) are built-in in-place operations with parentheses. Their specified writable arguments identify caller locations; they are standalone statements rather than ordinary function values.
 
 ### Procedures
 
@@ -94,7 +94,7 @@ fn writeTree(node: TreeNode?, parts: list[str]):
 - A function with a declared or inferred result type uses `return expression`, including explicit `return none` for an absent optional result. Bare `return` is a compile-time error in a value-returning function. `return? expression` contributes a possible value return and follows its existing typing rules.
 - Calling a value-returning function as a statement can discard its result. Bare `return` outside a function is an error.
 
-See [Serialize and Deserialize Binary Tree](/docs/examples/serialize-and-deserialize-binary-tree/) for a nested procedure that collects tokens in a captured list.
+See [Serialize and Deserialize Binary Tree](/docs/examples/serialize-and-deserialize-binary-tree) for a nested procedure that collects tokens in a captured list.
 
 ### Definition visibility
 
@@ -104,7 +104,7 @@ See [Serialize and Deserialize Binary Tree](/docs/examples/serialize-and-deseria
 - A nested helper can capture an enclosing binding before its initializer executes. Reading that binding before assignment raises a runtime initialization error. Forward function references do not initialize captured variables early.
 - Duplicate function declarations with the same name in one scope are errors.
 
-These are language semantics shared by the planned interpreter and VM. Function declarations inside conditional or loop blocks remain open.
+These rules describe the intended behavior for the interpreter and future VM. Function declarations inside conditional or loop blocks remain open.
 
 ### Nested functions
 
@@ -129,20 +129,20 @@ fn countNodes(root: TreeNode?) int:
 
 - Each invocation has its own parameters and local variables, including during recursion.
 - Reading an enclosing variable needs no declaration. Check captured values using the enclosing binding's static type, without assuming a caller's temporary narrowing.
-- Rebinding an enclosing variable requires an [`outer name` entry in the function header](/docs/specification/types/#outer-variables). Calls supply only ordinary parameters; `visit(root)` does not pass `count`. Ordinary assignments to names without a writable capture create or update the nested function's own locals.
+- Rebinding an enclosing variable requires an [`outer name` entry in the function header](/docs/specification/types#outer-variables). Calls supply only ordinary parameters; `visit(root)` does not pass `count`. Ordinary assignments to names without a writable capture create or update the nested function's own locals.
 - Captures refer to bindings rather than copying their values. All calls to the same nested helper see updates to its captured bindings.
 - A separate call to the enclosing function creates fresh local bindings and a new helper capturing those bindings.
 - Nested functions follow the same parameter and return typing rules as other functions; their enclosing types are available during checking.
 
-See [Diameter of Binary Tree](/docs/examples/diameter-of-binary-tree/) for a recursive helper that updates an outer accumulator.
+See [Diameter of Binary Tree](/docs/examples/diameter-of-binary-tree) for a recursive helper that updates an outer accumulator.
 
 ## Branches
 
 Branches use `if condition:`, `else if condition:`, and `else:`. Branch headers share an indentation level; each body is one level deeper.
 
-Conditions follow the [truthiness rules](/docs/specification/values-and-operators/#booleans-and-truthiness).
+Conditions follow the [truthiness rules](/docs/specification/values-and-operators#booleans-and-truthiness).
 
-[Chained comparisons](/docs/specification/values-and-operators/#chained-comparisons) such as `0 <= index < items.size` test adjacent pairs, evaluating each operand at most once and stopping at the first false comparison.
+[Chained comparisons](/docs/specification/values-and-operators#chained-comparisons) such as `0 <= index < items.size` test adjacent pairs, evaluating each operand at most once and stopping at the first false comparison.
 
 ## Loops
 
@@ -159,17 +159,17 @@ For lists and strings:
 
 String iteration yields `char` values. Parentheses distinguish tuple unpacking from an index-and-value loop.
 
-Ordinary `for` bindings and assignments inside loop bodies belong to the enclosing function or file, following [scope and initialization](/docs/specification/types/#scope-and-initialization). They remain visible after the loop. A loop that runs zero times does not assign its bindings or clear any earlier values. Comprehension and generator bindings have their own expression-local scopes.
+Ordinary `for` bindings and assignments inside loop bodies belong to the enclosing function or file, following [scope and initialization](/docs/specification/types#scope-and-initialization). They remain visible after the loop. A loop that runs zero times does not assign its bindings or clear any earlier values. Comprehension and generator bindings have their own expression-local scopes.
 
-For sets, `for value in values:` visits each distinct element in insertion order. See [set iteration](/docs/specification/collections/maps-sets-counters/#set-iteration-and-order). Indexed and reverse set forms remain open.
+For sets, `for value in values:` visits each distinct element in insertion order. See [set iteration](/docs/specification/collections/maps-sets-counters#set-iteration-and-order). Indexed and reverse set forms remain open.
 
-For counters, `for key, count in counts:` binds each stored key and its integer count in insertion order. See [counter iteration](/docs/specification/collections/maps-sets-counters/#iteration-and-order). Single-binding and indexed counter forms remain open.
+For counters, `for key, count in counts:` binds each stored key and its integer count in insertion order. See [counter iteration](/docs/specification/collections/maps-sets-counters#iteration-and-order). Single-binding and indexed counter forms remain open.
 
-For an [explicit iterator](/docs/specification/collections/iterators/#explicit-iterators), `for value in cursor:` consumes its remaining elements from the current position. Reusing the iterator continues from that position rather than restarting it. Exhaustion ends the loop normally; other errors propagate. A single binding or parenthesized tuple unpacking is supported; indexed and reverse forms remain open.
+For an [explicit iterator](/docs/specification/collections/iterators#explicit-iterators), `for value in cursor:` consumes its remaining elements from the current position. Reusing the iterator continues from that position rather than restarting it. Exhaustion ends the loop normally; other errors propagate. A single binding or parenthesized tuple unpacking is supported; indexed and reverse forms remain open.
 
 For maps, `for key, value in counts:` is a proposal. Single-binding and indexed forms, along with map iteration order, remain open.
 
-Lists and strings can be traversed together using [`zip`](/docs/specification/collections/iterators/#parallel-iteration):
+Lists and strings can be traversed together using [`zip`](/docs/specification/collections/iterators#parallel-iteration):
 
 ```birdie
 for (c1, c2) in zip(s, t):
@@ -189,16 +189,16 @@ repeat pending.size:
     # Process this node and enqueue its children.
 ```
 
-- The count must be an `int`; incompatible types are type errors. An optional integer follows [checked optional use](/docs/specification/records-and-optionals/#checked-optional-use).
+- The count must be an `int`; incompatible types are type errors. An optional integer follows [checked optional use](/docs/specification/records-and-optionals#checked-optional-use).
 - Evaluate the count once when entering the loop. Changing a variable or collection used in that expression does not change the active repetition count.
 - Zero or negative counts run the body zero times, matching `for _ until count:`.
 - Each completed iteration consumes one repetition. `continue` also consumes the current repetition before starting the next one; it does not reevaluate the count. `return` exits the enclosing function normally.
-- The header introduces no bindings. Assignments in the body follow the ordinary [scope and initialization rules](/docs/specification/types/#scope-and-initialization), so a value assigned in the body can be read after the loop. If no assignment has executed, reading it raises a runtime error.
+- The header introduces no bindings. Assignments in the body follow the ordinary [scope and initialization rules](/docs/specification/types#scope-and-initialization), so a value assigned in the body can be read after the loop. If no assignment has executed, reading it raises a runtime error.
 - This is a statement form. It cannot be used as an expression or a comprehension clause.
 
-See [Binary Tree Level Order Traversal](/docs/examples/binary-tree-level-order-traversal/) for a queue whose size is captured at the start of each level.
+See [Binary Tree Level Order Traversal](/docs/examples/binary-tree-level-order-traversal) for a queue whose size is captured at the start of each level.
 
-See [Binary Tree Right Side View](/docs/examples/binary-tree-right-side-view/) for reading the last node assigned by a nonempty repetition after it finishes.
+See [Binary Tree Right Side View](/docs/examples/binary-tree-right-side-view) for reading the last node assigned by a nonempty repetition after it finishes.
 
 ### Continue
 
@@ -211,7 +211,7 @@ See [Binary Tree Right Side View](/docs/examples/binary-tree-right-side-view/) f
 
 ### Generator expressions
 
-An expression followed by one or more `for` clauses describes a lazy traversal. Clauses reuse ordinary loop bindings and traversal forms, including ranges, counter key/count bindings, and `zip`. Bindings are local to the expression. The first use is the [`all` predicate check](/docs/specification/collections/iterators/#predicate-expressions-and-all):
+An expression followed by one or more `for` clauses describes a lazy traversal. Clauses reuse ordinary loop bindings and traversal forms, including ranges, counter key/count bindings, and `zip`. Bindings are local to the expression. The first use is the [`all` predicate check](/docs/specification/collections/iterators#predicate-expressions-and-all):
 
 ```birdie
 return all(value == 0 for value in freqs)
@@ -242,7 +242,7 @@ square = [
 - Store element values using normal assignment semantics. Mutable results remain references; comprehension construction does not deep-copy them.
 - Filters, dictionary/set comprehensions, and asynchronous forms remain open.
 
-See [Valid Sudoku](/docs/examples/valid-sudoku/) for eager column and square construction with a separate validation helper.
+See [Valid Sudoku](/docs/examples/valid-sudoku) for eager column and square construction with a separate validation helper.
 
 ### Ranges
 

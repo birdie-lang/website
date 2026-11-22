@@ -26,14 +26,14 @@ rows: list[list[int]] = list(3, list)
 - A non-callable initializer is an immutable fill value, stored in every position. Infer the element type from that value.
 - A callable initializer is a zero-argument factory. Call it once per position, in index order, and store each result without copying. Infer the element type from its return type. A zero count makes no factory calls.
 - Insufficient or conflicting type constraints are errors, including when the count is zero. An annotation can resolve an otherwise ambiguous factory return type.
-- Mutable fill values are type errors, even for a zero count. Use a factory to create mutable elements independently, following the [map-default convention](/docs/specification/collections/maps-sets-counters/#default-values-and-factories).
+- Mutable fill values are type errors, even for a zero count. Use a factory to create mutable elements independently, following the [map-default convention](/docs/specification/collections/maps-sets-counters#default-values-and-factories).
 - `list(3, list)` constructs three independent empty lists. `list(3, list())` is an error because it would reuse one mutable list. A custom factory can deliberately return shared values; sharing is controlled by that factory.
 - Callable arguments always mean factories. To fill a list with a function value, use a factory that returns that function.
 - Construction writes `count` elements and allocates storage proportional to the count. Factory evaluation adds its own work. No uninitialized elements are exposed.
 
 The one-argument `list(source)` conversion form and index-aware factories remain open. `list(count)` does not imply a default element value.
 
-See [Valid Anagram](/docs/examples/valid-anagram/) for a fixed-alphabet frequency table constructed with `list(26, 0)`.
+See [Valid Anagram](/docs/examples/valid-anagram) for a fixed-alphabet frequency table constructed with `list(26, 0)`.
 
 ## Comprehension construction
 
@@ -43,7 +43,7 @@ See [Valid Anagram](/docs/examples/valid-anagram/) for a fixed-alphabet frequenc
 column = [board[r][i] for r until 9]
 ```
 
-The expression determines the element type; each result is stored using normal assignment semantics. Bindings stay local to the comprehension. See [list comprehensions](/docs/specification/#list-comprehensions) for evaluation order, scope, and nested clauses.
+The expression determines the element type; each result is stored using normal assignment semantics. Bindings stay local to the comprehension. See [list comprehensions](/docs/specification#list-comprehensions) for evaluation order, scope, and nested clauses.
 
 ## Operations
 
@@ -83,7 +83,7 @@ missing = items.index(9) # none
 - A found index of zero is a present result. Use `position != none` to test for a match. A valid-input guarantee can also justify using the result directly where `int` is required, through the ordinary checked optional-use rules.
 - Lookup performs at most one equality comparison per element. It uses O(1) auxiliary space; the cost of each comparison follows the element type's equality rules.
 
-See [Construct Binary Tree from Preorder and Inorder Traversal](/docs/examples/construct-binary-tree-from-preorder-and-inorder-traversal/) for locating each subtree's root value.
+See [Construct Binary Tree from Preorder and Inorder Traversal](/docs/examples/construct-binary-tree-from-preorder-and-inorder-traversal) for locating each subtree's root value.
 
 ## Bulk insertion
 
@@ -110,7 +110,7 @@ packed = parts.join("")   # "birdsong"
 - Empty lists produce `""`; one-element lists produce that element's text. Separators appear only between elements, with empty strings still counting as elements.
 - The intended implementation constructs the result in O(n + L) work and O(L) result storage for n elements and L output scalar values, including separators. It must avoid repeatedly copying an increasingly long accumulated string.
 
-See [Encode and Decode Strings](/docs/examples/encode-and-decode-strings/) for collecting fragments and joining once.
+See [Encode and Decode Strings](/docs/examples/encode-and-decode-strings) for collecting fragments and joining once.
 
 <a id="prefix-slicing"></a>
 
@@ -133,11 +133,11 @@ empty = items[2:2] # []
 - Every slice creates a separate outer list, even `items[:]` and empty slices. Replacing entries in the result does not change the source. Nested records and collections remain shared through ordinary assignment semantics; there is no deep copy or mutable view.
 - Copying `k` elements takes O(k) work and storage, plus constant overhead. Bounds checks complete before elements are copied; a failing slice does not undo side effects from evaluating its source or bounds.
 
-For example, `items[-1:]`, `items[3:1]`, and `items[:5]` all fail for the four-element list above. Slice steps and slice assignment remain open. [String slicing](/docs/specification/values-and-operators/#string-slicing) uses the same omitted-bound and strict exclusive-end conventions, with Unicode scalar positions.
+For example, `items[-1:]`, `items[3:1]`, and `items[:5]` all fail for the four-element list above. Slice steps and slice assignment remain open. [String slicing](/docs/specification/values-and-operators#string-slicing) uses the same omitted-bound and strict exclusive-end conventions, with Unicode scalar positions.
 
-See [Top K Frequent Elements](/docs/examples/top-k-frequent-elements/) for bulk insertion followed by a bounded prefix copy.
+See [Top K Frequent Elements](/docs/examples/top-k-frequent-elements) for bulk insertion followed by a bounded prefix copy.
 
-See [Construct Binary Tree from Preorder and Inorder Traversal](/docs/examples/construct-binary-tree-from-preorder-and-inorder-traversal/) for middle and suffix copies.
+See [Construct Binary Tree from Preorder and Inorder Traversal](/docs/examples/construct-binary-tree-from-preorder-and-inorder-traversal) for middle and suffix copies.
 
 ## Size and indexing
 

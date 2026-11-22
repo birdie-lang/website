@@ -68,7 +68,7 @@ Callable arguments always mean factories. To use a function as a stored default 
 
 Map iteration order and single-binding map iteration remain undecided, so no particular ordering of `values()` is specified yet.
 
-See [Group Anagrams](/docs/examples/#group-anagrams) for a map with a list factory and a values snapshot.
+See [Group Anagrams](/docs/examples#group-anagrams) for a map with a list factory and a values snapshot.
 
 ## Counters
 
@@ -141,7 +141,7 @@ for num, freq in freqs:
 
 Single-binding, indexed, tuple-pattern, and reverse counter traversal remain open. Mutation of the counter during traversal follows the existing open question about collection iteration.
 
-See [Top K Frequent Elements](/docs/examples/top-k-frequent-elements/) for reproducible bucket contents using this order.
+See [Top K Frequent Elements](/docs/examples/top-k-frequent-elements) for reproducible bucket contents using this order.
 
 ### Equality
 
@@ -158,7 +158,7 @@ The intended hash-table costs are expected constant-time count lookups and amort
 
 Membership syntax, bulk updates, count arithmetic between counters, and additional convenience methods remain open.
 
-See the notes on [Valid Anagram](/docs/examples/valid-anagram/#notes) for a frequency-based alternative. Its primary solution keeps the fixed 26-slot list.
+See the notes on [Valid Anagram](/docs/examples/valid-anagram#notes) for a frequency-based alternative. Its primary solution keeps the fixed 26-slot list.
 
 ## Sets
 
@@ -221,5 +221,5 @@ for num in numsSet:
 
 Set literals, additional source types, removal, indexed/reverse traversal, and set algebra remain open. Mutation during iteration follows the existing open question about collection traversal.
 
-See [Contains Duplicate](/docs/examples/contains-duplicate/) for an early-return scan using a set.
-See [Longest Consecutive Sequence](/docs/examples/longest-consecutive-sequence/) for construction from a list and ordered set traversal.
+See [Contains Duplicate](/docs/examples/contains-duplicate) for an early-return scan using a set.
+See [Longest Consecutive Sequence](/docs/examples/longest-consecutive-sequence) for construction from a list and ordered set traversal.

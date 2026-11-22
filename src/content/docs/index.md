@@ -12,28 +12,28 @@ The code should make the algorithm easy to read, explain, and write. The design 
 
 The syntax borrows from Python, with built-in collections such as maps and stacks.
 
-The [philosophy](/docs/philosophy/) explains why Birdie exists and how we choose between language designs.
+The [philosophy](/docs/philosophy) explains why Birdie exists and how we choose between language designs.
 
 > **Language status**
 >
-> Birdie is in early development. The REPL supports basic expressions and variables. The guide and specification also cover planned features.
+> The REPL and [browser playground](/playground) run integer and boolean expressions, variable assignments, conditional branches, and functions. The guide and specification also describe planned features.
 
 ## Guide
 
-Start with [your first program](/docs/guide/first-program/), then learn the [language basics](/docs/guide/basics/): variables, collections, conditions, and loops.
+Start with [your first program](/docs/guide/first-program), then learn the [language basics](/docs/guide/basics): variables, collections, conditions, and loops.
 
-The [algorithm examples](/docs/examples/) show complete solutions alongside Python versions.
+The [algorithm examples](/docs/examples) show complete solutions alongside Python versions.
 
 ## Specification
 
 The specification records the current design. Unresolved behavior is listed as an open question.
 
-- [Syntax & execution](/docs/specification/) covers indentation, functions, branches, loops, and ranges.
-- [Types & variables](/docs/specification/types/) covers inference, assignment, and tuples, with links to records, optional values, and operators.
-- [Collections](/docs/specification/collections/) covers shared rules and links to the individual collection and iterator APIs.
+- [Syntax & execution](/docs/specification) covers indentation, functions, branches, loops, and ranges.
+- [Types & variables](/docs/specification/types) covers inference, assignment, and tuples, with links to records, optional values, and operators.
+- [Collections](/docs/specification/collections) covers shared rules and links to the individual collection and iterator APIs.
 
 These pages are the authoritative language specification. The guide explains the same design through examples.
 
 ## Implementation
 
-The Go interpreter and example programs live in the [Birdie repository](https://github.com/birdie-lang/birdie). See the [roadmap](/docs/roadmap/) for implemented and planned features.
+The Go interpreter and example programs live in the [Birdie repository](https://github.com/birdie-lang/birdie). See the [roadmap](/docs/roadmap) for implemented and planned features.

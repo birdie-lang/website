@@ -44,7 +44,7 @@ const hasSections = headings.some(({ depth }) => depth === 2 || depth === 3);
           <h1>{title}</h1>
           <slot name="metadata" />
           {entry.data.section === 'specification' && (
-            <p class="docs-status-note">See the <a href="/docs/roadmap/">roadmap</a> for implementation status.</p>
+            <p class="docs-status-note">See the <a href="/docs/roadmap">roadmap</a> for implementation status.</p>
           )}
         </header>
         {hasSections && (
