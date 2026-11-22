@@ -18,10 +18,11 @@ interface Props {
 
 const { entry, pages, headings, previous, next } = Astro.props;
 const { title, description } = entry.data;
+const pageTitle = entry.id === 'index' ? 'Birdie Programming Language Guide' : `${title} · Birdie`;
 const hasSections = headings.some(({ depth }) => depth === 2 || depth === 3);
 ---
 
-<SiteLayout title={`${title} · Birdie`} description={description}>
+<SiteLayout title={pageTitle} description={description}>
   <div class:list={['docs-page', 'wrap', { 'docs-page-without-toc': !hasSections }]}>
     <aside class="docs-sidebar">
       <div class="docs-sticky">
