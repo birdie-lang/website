@@ -55,9 +55,14 @@ const pendingExampleSchema = exampleMetadataSchema.extend({
 });
 
 const adapterSchema = z.enum(['', 'json', 'tree', 'node']);
+const methodCallSchema = z.object({
+  method: text,
+  args: z.array(text),
+}).strict();
 const exampleCaseSchema = z.object({
   name: text,
   args: z.array(text),
+  calls: z.array(methodCallSchema).optional(),
   expected: text,
 }).strict();
 
@@ -74,6 +79,7 @@ export type ExampleFixture = z.infer<typeof exampleFixtureSchema>;
 const sourceFixtureSchema = exampleFixtureSchema.extend({
   cases: z.array(exampleCaseSchema.extend({
     args: z.array(z.unknown()),
+    calls: z.array(methodCallSchema.extend({ args: z.array(z.unknown()) })).optional(),
     expected: z.unknown(),
   })).min(1),
 });
@@ -90,9 +96,12 @@ export function parseExampleFixture(source: string): ExampleFixture {
   const fixture = sourceFixtureSchema.parse(decoded);
   return exampleFixtureSchema.parse({
     ...fixture,
-    cases: fixture.cases.map(({ name, args, expected }) => ({
+    cases: fixture.cases.map(({ name, args, calls, expected }) => ({
       name,
       args: args.map((arg) => JSON.stringify(arg)),
+      ...(calls === undefined ? {} : {
+        calls: calls.map(({ method, args }) => ({ method, args: args.map((arg) => JSON.stringify(arg)) })),
+      }),
       expected: JSON.stringify(expected),
     })),
   });

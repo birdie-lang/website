@@ -32,13 +32,37 @@ For `m: map[K, V]`, `key` must have type `K`; `value` and `fallback` must have t
 | `m[key]` | `V` | On a miss with a default | Return the stored value, insert a default on a miss, or raise a runtime error if there is no default. |
 | `m[key] = value` | No value | Yes | Insert or replace an entry. |
 | `key in m` | `bool` | No | Check stored keys. |
+| `m.get(key)` | `V?` | No | Return the stored value, or `none` without inserting. |
 | `m.get(key, fallback)` | `V` | No | Return the stored value or the supplied fallback. |
+| `m.remove(key)` | `bool` | On a hit | Remove a stored entry; return whether it existed. |
 | `m.size` | `int` | No | Read the number of stored entries. |
 | `m.values()` | `list[V]` | No | Allocate a snapshot of stored values in map iteration order. |
 
-Only a missing-key lookup with `m[key]` obtains and inserts a configured default. Assignment, membership checks, `get`, and `values` never call the default factory.
+Only a missing-key lookup with `m[key]` obtains and inserts a configured default. Assignment, membership checks, either `get` form, `remove`, and `values` never call the default factory.
 
-`get` always requires an explicit fallback, including on maps with defaults. Stored values such as `0`, `false`, and empty collections are returned unchanged.
+Stored values such as `0`, `false`, and empty collections are returned unchanged by either `get` form.
+
+### Optional lookup and removal
+
+`m.get(key)` distinguishes a missing key from a present nonoptional value using the existing optional type. A map with a configured default still returns `none` on a miss without creating an entry:
+
+```birdie
+child = node.chars.get(char)
+if child == none:
+    return false
+
+removed = node.chars.remove(char)
+```
+
+- `get` takes one key, optionally followed by an explicit fallback. Keys must fit `K`; a supplied fallback must fit `V`. Evaluate the receiver, key, and any fallback expression once, in that order. The fallback is evaluated even when the key exists, following ordinary argument rules.
+- Without a fallback, return `V?`. If `V` is already optional, the result remains that optional type rather than adding another wrapper. Use `key in m` when a missing entry must be distinguished from a stored `none`.
+- With a fallback, preserve the existing `V` result type and leave the map unchanged on a miss. Neither form obtains a configured default or replaces stored values based on truthiness.
+- An optional-returning helper can use `node = node.chars.get(char)?` to stop at a missing path. An enclosing function returning `bool` must handle absence explicitly to return `false`; propagation does not convert `none` into a boolean.
+- `remove` takes exactly one key of type `K`. Evaluate the receiver and key once, in that order. Remove the entry and return `true` if it existed; otherwise return `false` without changing the map. A stored `none` still counts as an existing entry. Wrong arity or incompatible types are compile-time errors.
+- Removal discards the map's entry, not other references to its previous value. It never reads or creates a default value. Map mutation during direct map iteration remains open; removing from a map while iterating an unrelated direction list does not encounter that issue.
+- Both lookup and removal use the ordinary map key equality and hashing rules, with expected O(1) table work plus the key's hashing and equality costs.
+
+See [Implement Trie](/examples/implement-trie-prefix-tree) for optional lookup and [Word Search II](/examples/word-search-ii) for pruning branches with `remove`.
 
 ### Default values and factories
 

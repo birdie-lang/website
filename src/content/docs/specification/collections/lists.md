@@ -61,12 +61,31 @@ For `items: list[T]`, `value` must have type `T` and `i` must have type `int`.
 | `items.sorted()` | `list[T]` | No | Allocate a new list in ascending order. |
 | `items.index(value)` | `int?` | No | Find the first matching index, or return `none`. |
 | `items.iter()` | `iterator[T]` | No | Create an independent forward cursor without copying the list. |
+| `items.copy()` | `list[T]` | No | Allocate a shallow copy of the whole list. |
 | `items[start:end]` | `list[T]` | No | Allocate a shallow copy from `start` up to, excluding, `end`. |
 | `items[:end]` | `list[T]` | No | Allocate a shallow copy of the first `end` elements. |
 | `items[start:]` | `list[T]` | No | Allocate a shallow copy from `start` to the end. |
 | `items[:]` | `list[T]` | No | Allocate a shallow copy of the whole list. |
 
 Use `push` to add an element; there is no `append` alias. `pop()` and `.last` cause a runtime error on an empty list. `sorted()` requires an element type with a defined ordering and leaves the original list unchanged.
+
+## Copying
+
+`items.copy()` creates a fresh `list[T]` with the same elements in the same order. Use it when an algorithm needs an independent list, such as saving the current state during backtracking.
+
+```birdie
+rows = [[1, 2]]
+other = rows.copy()
+other[0].push(3) # rows[0] is also [1, 2, 3]
+other.push([4])  # rows still contains just one row
+```
+
+- Take no arguments and evaluate the receiver once. Use the same element type, including for an empty list; insufficient type constraints follow ordinary inference rules. Arguments to `copy` or an incompatible receiver are compile-time errors.
+- Allocate separate outer storage, even when the list is empty. Adding, removing, or replacing an entry in one outer list does not change the other. The source is not modified.
+- Copy each element using normal assignment semantics. Immutable values retain their values; reference-valued elements, including records, collections, and iterators, remain shared. Nested mutable objects are not recursively cloned.
+- Copying n elements takes O(n) work and storage, plus constant overhead. The copied list has the same shallow-copy behavior as `items[:]`; full-range slicing remains valid.
+
+General deep copying of object graphs remains open. It is not an option on `copy()`. See [Subsets](/examples/subsets) for copying a list of immutable integers at each completed choice path.
 
 ## Index lookup
 
@@ -134,6 +153,8 @@ empty = items[2:2] # []
 - Copying `k` elements takes O(k) work and storage, plus constant overhead. Bounds checks complete before elements are copied; a failing slice does not undo side effects from evaluating its source or bounds.
 
 For example, `items[-1:]`, `items[3:1]`, and `items[:5]` all fail for the four-element list above. Slice steps and slice assignment remain open. [String slicing](/docs/specification/values-and-operators#string-slicing) uses the same omitted-bound and strict exclusive-end conventions, with Unicode scalar positions.
+
+Use [`copy()`](#copying) when copying the whole list is the intent. `items[:]` continues to express a full-range slice with the same shallow result.
 
 See [Top K Frequent Elements](/examples/top-k-frequent-elements) for bulk insertion followed by a bounded prefix copy.
 

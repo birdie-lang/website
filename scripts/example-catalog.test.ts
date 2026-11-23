@@ -115,6 +115,45 @@ test('preserves exact test case values and comparison rules in the snapshot', as
   });
 });
 
+test('preserves method sequences, empty traces, and exact constructor and method arguments', async (t) => {
+  const root = await fixture();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const directory = await writeExample(root, 'stateful-problem', metadata(1, 1));
+  await writeFile(join(directory, 'tests.json'), `{
+    "entry": "Accumulator",
+    "cases": [
+      {
+        "name": "stateful",
+        "args": [9007199254740993],
+        "calls": [
+          { "method": "set", "args": [-10000000000000000000000000000000000000001] },
+          { "method": "get", "args": [] }
+        ],
+        "expected": [null, -10000000000000000000000000000000000000001]
+      },
+      { "name": "constructor-only", "args": [0], "calls": [], "expected": [] }
+    ]
+  }`);
+
+  const example = (await readExampleCatalog(root)).examples[0];
+  assert(example && 'birdie' in example);
+  assert.deepEqual(example.fixture, {
+    entry: 'Accumulator',
+    cases: [
+      {
+        name: 'stateful',
+        args: ['9007199254740993'],
+        calls: [
+          { method: 'set', args: ['-10000000000000000000000000000000000000001'] },
+          { method: 'get', args: [] },
+        ],
+        expected: '[null,-10000000000000000000000000000000000000001]',
+      },
+      { name: 'constructor-only', args: ['0'], calls: [], expected: '[]' },
+    ],
+  });
+});
+
 for (const missing of ['solution.bd', 'solution.py']) {
   test(`rejects a missing paired ${missing} with the problem name in the error`, async (t) => {
     const root = await fixture();

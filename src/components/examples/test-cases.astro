@@ -19,10 +19,12 @@ const checkNotes = {
   'codec-round-trip': 'The encoded value is decoded for comparison.',
 };
 const adapters = [...(fixture.argAdapters ?? []), fixture.resultAdapter];
+const hasMethodCalls = cases.some((testCase) => testCase.calls !== undefined);
 const notes = [
   checkNotes[fixture.check ?? ''],
   adapters.includes('tree') && 'Trees use level-order arrays.',
   adapters.includes('node') && 'Node references are shown by value.',
+  hasMethodCalls && `Each case creates a fresh ${fixture.entry}. Outputs follow method-call order; null marks completion without a result.`,
 ].filter(Boolean).join(' ');
 ---
 
@@ -42,13 +44,23 @@ const notes = [
       </tr>
     </thead>
     <tbody>
-      {cases.map(({ label, args, expected }) => (
+      {cases.map(({ label, args, calls, expected }) => (
         <tr>
           <th scope="row">{label}</th>
           <td>
-            <div class="case-arguments">
-              {args.length === 0 && <span class="empty-arguments">No arguments</span>}
-              {args.map((arg) => <code>{arg}</code>)}
+            <div class:list={['case-arguments', { 'case-methods': calls !== undefined }]}>
+              {calls === undefined ? (
+                <>
+                  {args.length === 0 && <span class="empty-arguments">No arguments</span>}
+                  {args.map((arg) => <code>{arg}</code>)}
+                </>
+              ) : (
+                <>
+                  <code>{`${fixture.entry}(${args.join(', ')})`}</code>
+                  {calls.map(({ method, args }) => <code>{`${method}(${args.join(', ')})`}</code>)}
+                  {calls.length === 0 && <span class="empty-arguments">No method calls</span>}
+                </>
+              )}
             </div>
           </td>
           <td><code>{expected}</code></td>
@@ -70,6 +82,7 @@ const notes = [
   th { font-weight: 500; }
   thead th { color: var(--muted); background: var(--soft); font-size: 0.75rem; }
   .case-arguments { display: flex; flex-wrap: wrap; gap: 4px; }
+  .case-methods { flex-direction: column; align-items: flex-start; }
   code { display: inline-block; max-width: 100%; padding: 1px 5px; border-radius: 3px; background: var(--soft); font-size: 0.75rem; white-space: pre-wrap; overflow-wrap: anywhere; }
   .empty-arguments, .case-note { color: var(--muted); font-size: 0.75rem; line-height: 1.5; }
   .case-note { margin: 0; padding: 10px 14px; border-top: 1px solid var(--line); }

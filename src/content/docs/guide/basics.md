@@ -66,10 +66,12 @@ Slices include the start and exclude the end. Omit the start for zero, or the en
 middle = nums[1:3]
 prefix = nums[:2]
 suffix = nums[2:]
-copy = nums[:]
+whole = nums[:]
 ```
 
 A slice creates a new outer list, sharing any nested records or collections. Equal bounds produce an empty slice. Negative, reversed, and oversized bounds are runtime errors. Strings use the same slicing forms with Unicode scalar positions. See the [slicing rules](/docs/specification/collections/lists#slicing) for details.
+
+Use `copy = nums.copy()` when the goal is to copy the whole list. It creates separate outer storage, with nested mutable elements still shared, and takes O(n) work and storage. See [Subsets](/examples/subsets) for saving independent backtracking results with this shallow copy.
 
 `nums.index(value)` returns the first matching index, or `none` if the value is absent. The result has type `int?`, so use `position != none` to test for a match; zero is a valid position.
 
@@ -82,7 +84,7 @@ seen = map()
 seen["bird"] = 1
 ```
 
-Here, `seen` becomes `map[str, int]`. A missing lookup such as `seen["cat"]` would be an error. Use `seen.get("cat", 0)` to supply a fallback without adding an entry.
+Here, `seen` becomes `map[str, int]`. A missing lookup such as `seen["cat"]` would be an error. Use `seen.get("cat")` to receive `none`, or `seen.get("cat", 0)` to supply a fallback, without adding an entry. `seen.remove("cat")` removes an entry and returns whether it existed.
 
 Use a default when missing keys should be inserted automatically:
 

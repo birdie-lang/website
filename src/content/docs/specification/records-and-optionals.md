@@ -1,6 +1,6 @@
 ---
 title: Records & optional values
-description: Record declarations, constructors, optional values, and conditional returns.
+description: Record declarations, methods, constructors, optional values, and conditional returns.
 navTitle: Records & optional values
 section: specification
 order: 2
@@ -33,6 +33,38 @@ alias.right = TreeNode(7)
 ```
 
 Here, `root` and `alias` refer to the same node. Both observe its updated right child.
+
+### Methods
+
+The same `type` declaration can contain fields and methods. A data-only record and a record with behavior use the same construction and reference semantics:
+
+```birdie
+type TrieNode:
+    chars: map[char, TrieNode] = map(TrieNode)
+    isEnd: bool = false
+
+type Trie:
+    root: TrieNode = TrieNode()
+
+    fn insert(word: str):
+        node = self.root
+        for char in word:
+            node = node.chars[char]
+        node.isEnd = true
+
+trie = Trie()
+trie.insert("bird")
+```
+
+- Declare an instance method with `fn` directly inside its record. Ordinary parameters are explicitly typed; result annotations and procedures follow the normal function rules. Do not write a receiver parameter.
+- Each method call supplies an implicit, initialized `self` binding with the containing record's type. `self` refers to the existing instance; mutations of its fields are visible through aliases. It cannot be rebound, declared as a parameter or local, or listed as an `outer` capture. The receiver name is reserved for methods and their lexical nested helpers.
+- Use `self.field` and `self.method(arguments)` explicitly. Bare names retain ordinary lexical scope and local-assignment rules; there is no implicit field lookup or field assignment. Nested helpers can capture `self` using the existing capture rules.
+- `instance.method(arguments)` evaluates and retains the receiver once, applying any required optional-presence check, then evaluates ordinary arguments from left to right. Check their types against the method's declared parameters. Callers do not pass `self`; an unknown member, incompatible argument, or wrong argument count is a compile-time error.
+- All methods of a record are visible to each other regardless of source order. Fields and methods share a member namespace; duplicate member names are errors. A method's parameters and locals belong to that method invocation, including during recursion.
+- Only fields contribute constructor parameters, in declaration order. Methods do not require a handwritten initializer or change how field defaults work. `Trie()` creates a fresh root, and `TrieNode()` creates a fresh map. Passing `TrieNode` to `map` installs its zero-argument constructor as a lazy factory; it does not recursively construct children upfront.
+- These are instance methods on concrete record types. Inheritance, interfaces, custom initializers, static methods, and extracting bound method values remain open.
+
+See [Implement Trie](/examples/implement-trie-prefix-tree) and [Design Add and Search Words](/examples/design-add-and-search-words-data-structure) for persistent state across method calls. Their `TrieNode` records are part of the solutions, not supplied problem types.
 
 ## Optional values
 
@@ -149,4 +181,4 @@ See [Kth Smallest Element in a BST](/examples/kth-smallest-element-in-a-bst) for
 
 ## Open questions
 
-- Record-to-record equality and hashing, methods, and named constructor arguments.
+- Record-to-record equality and hashing, named constructor arguments, and the additional method features listed above.

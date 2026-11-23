@@ -63,6 +63,7 @@ fn name(param: Type) ReturnType:
 ```
 
 - Declare functions with `fn` and explicit parameter types.
+- Records can contain [instance methods](/docs/specification/records-and-optionals#methods) using the same `fn` syntax, with an implicit `self` receiver and ordinary explicit parameters.
 - Nested functions can list writable captures after their parameters, as in `fn dfs(node: TreeNode?, outer res) int:`. Captures use the enclosing binding's type and are not call arguments.
 - The optional return type follows `)`, without an arrow.
 - The colon and indentation define the function body.
@@ -211,7 +212,7 @@ See [Binary Tree Right Side View](/examples/binary-tree-right-side-view) for rea
 
 ### Generator expressions
 
-An expression followed by one or more `for` clauses describes a lazy traversal. Clauses reuse ordinary loop bindings and traversal forms, including ranges, counter key/count bindings, and `zip`. Bindings are local to the expression. The first use is the [`all` predicate check](/docs/specification/collections/iterators#predicate-expressions-and-all):
+An expression followed by one or more `for` clauses describes a lazy traversal. Clauses reuse ordinary loop bindings and traversal forms, including ranges, counter key/count bindings, and `zip`. Bindings are local to the expression. [`all`](/docs/specification/collections/iterators#predicate-expressions-and-all) and [`any`](/docs/specification/collections/iterators#predicate-expressions-and-any) check boolean predicates without evaluating unnecessary later results:
 
 ```birdie
 return all(value == 0 for value in freqs)

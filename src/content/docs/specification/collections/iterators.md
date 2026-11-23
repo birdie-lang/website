@@ -77,3 +77,21 @@ return all(value == 0 for value in freqs)
 Multiple clauses follow the same nesting and scope rules as [list comprehensions](/docs/specification#list-comprehensions). Reusable generator type syntax, escaping generator lifetimes, and filtering remain open.
 
 See [Valid Anagram](/examples/valid-anagram) for a strict zipped traversal followed by a lazy zero-count check.
+
+### Predicate expressions and `any`
+
+`any(predicate for ...)` is the short-circuit counterpart to `all`:
+
+```birdie
+return any(
+    matches(child, word, i + 1)
+    for child in node.chars.values()
+)
+```
+
+- Accept exactly one lazy predicate expression or ordinary `list[bool]`. Use the same traversal, evaluation order, and expression-local binding rules as `all`.
+- Require boolean elements and return `bool`; numeric or collection truthiness is not substituted for a boolean predicate.
+- Return `true` at the first true result without evaluating later predicates. Return `false` when the source is empty or every reached result is false. Errors from reached expressions propagate; consumed iterator elements are not restored.
+- Do not construct an intermediate list of predicate results. Source expressions retain their own costs: `node.chars.values()` creates its complete snapshot before predicates are consumed, even if the first child matches.
+
+See [Design Add and Search Words](/examples/design-add-and-search-words-data-structure) for recursive wildcard matching. Allocation-free traversal of map values remains a separate open question.

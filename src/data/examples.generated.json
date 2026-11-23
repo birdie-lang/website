@@ -705,7 +705,122 @@
         "category": "Backtracking"
       },
       "blind75": true,
-      "slug": "combination-sum"
+      "description": "Find every combination of distinct positive candidates that sums to the target, allowing repeated use of a candidate.",
+      "note": "Keep candidate indices nondecreasing to avoid permutations, and backtrack only the current combination.",
+      "notes": [
+        "Candidates are distinct positive integers. Each recursive call chooses its next value from start onward. Passing i, rather than i + 1, allows that candidate to be reused while ensuring each combination is generated only once.",
+        "The nested dfs is a procedure and captures candidates, target, res, and subset. push and pop mutate captured lists without rebinding their names, so no outer entries are needed. Each invocation has its own total and start parameters.",
+        "dfs(total + num, i) passes the next sum directly. It avoids updating total and then subtracting num to restore it. Only subset is shared mutable backtracking state. Python uses the same statement order and simplification.",
+        "subset.copy() saves an independent list when the sum matches. Its shallow copy is sufficient because the elements are immutable integers. Without that copy, later push and pop operations would change previously saved combinations.",
+        "An over-target choice is skipped with continue. The input is not sorted, so a later candidate can still fit; stopping that loop at the first oversized candidate would be incorrect. Positive candidates ensure that each recursive choice increases the sum and the search terminates.",
+        "Shared fixtures ignore combination order and element order but preserve duplicates for comparison. They check repeated use, missing solutions, multiple combinations, unsorted input, and exact large-integer sums. Additional empty-input and zero-target cases return no combinations and one empty combination respectively.",
+        "For nonempty input and a nonnegative target, recursion depth is at most floor(target / smallest candidate). Each DFS call scans at most the candidate count; the search can be exponential, with additional work and storage proportional to the total size of returned combinations. Auxiliary space is proportional to recursion depth, plus constant overhead. Neither candidates nor target is modified."
+      ],
+      "slug": "combination-sum",
+      "birdie": "fn combinationSum(candidates: list[int], target: int) list[list[int]]:\n    res = []\n    subset = []\n\n    fn dfs(total: int, start: int):\n        if total >= target:\n            if total == target:\n                res.push(subset.copy())\n            return\n\n        for i in start until candidates.size:\n            num = candidates[i]\n            if total + num > target:\n                continue\n\n            subset.push(num)\n            dfs(total + num, i)\n            subset.pop()\n\n    dfs(0, 0)\n    return res",
+      "python": "class Solution:\n    def combinationSum(self, candidates: list[int], target: int) -> list[list[int]]:\n        res = []\n        subset = []\n\n        def dfs(total: int, start: int) -> None:\n            if total >= target:\n                if total == target:\n                    res.append(subset.copy())\n                return\n\n            for i in range(start, len(candidates)):\n                num = candidates[i]\n                if total + num > target:\n                    continue\n\n                subset.append(num)\n                dfs(total + num, i)\n                subset.pop()\n\n        dfs(0, 0)\n        return res",
+      "fixture": {
+        "entry": "combinationSum",
+        "check": "unordered-groups",
+        "cases": [
+          {
+            "name": "standard",
+            "args": [
+              "[2,3,6,7]",
+              "7"
+            ],
+            "expected": "[[2,2,3],[7]]"
+          },
+          {
+            "name": "multiple-combinations",
+            "args": [
+              "[2,3,5]",
+              "8"
+            ],
+            "expected": "[[2,2,2,2],[2,3,3],[3,5]]"
+          },
+          {
+            "name": "no-solution",
+            "args": [
+              "[2]",
+              "1"
+            ],
+            "expected": "[]"
+          },
+          {
+            "name": "reuse-one-candidate",
+            "args": [
+              "[3]",
+              "9"
+            ],
+            "expected": "[[3,3,3]]"
+          },
+          {
+            "name": "exact-single-candidate",
+            "args": [
+              "[7]",
+              "7"
+            ],
+            "expected": "[[7]]"
+          },
+          {
+            "name": "later-candidate-fits",
+            "args": [
+              "[8,7,3]",
+              "6"
+            ],
+            "expected": "[[3,3]]"
+          },
+          {
+            "name": "unsorted-input",
+            "args": [
+              "[5,2,3]",
+              "8"
+            ],
+            "expected": "[[3,5],[2,2,2,2],[2,3,3]]"
+          },
+          {
+            "name": "different-length-combinations",
+            "args": [
+              "[2,4]",
+              "8"
+            ],
+            "expected": "[[2,2,2,2],[2,2,4],[4,4]]"
+          },
+          {
+            "name": "unit-candidate",
+            "args": [
+              "[1,3]",
+              "4"
+            ],
+            "expected": "[[1,1,1,1],[1,3]]"
+          },
+          {
+            "name": "empty-candidates",
+            "args": [
+              "[]",
+              "7"
+            ],
+            "expected": "[]"
+          },
+          {
+            "name": "zero-target",
+            "args": [
+              "[2,3]",
+              "0"
+            ],
+            "expected": "[[]]"
+          },
+          {
+            "name": "exact-large-integer-sum",
+            "args": [
+              "[9007199254740992,9007199254740993]",
+              "18014398509481985"
+            ],
+            "expected": "[[9007199254740992,9007199254740993]]"
+          }
+        ]
+      }
     },
     {
       "title": "Combination Sum II",
@@ -1123,7 +1238,448 @@
         "category": "Tries"
       },
       "blind75": true,
-      "slug": "design-add-and-search-words-data-structure"
+      "description": "Store words and search patterns where a dot matches any one character.",
+      "note": "Walk literal characters iteratively, branching recursively only at a wildcard.",
+      "notes": [
+        "TrieNode belongs to the solution rather than the problem's provided types. WordDictionary uses methods on a record with a fresh default root; addWord is a procedure, and search returns bool.",
+        "map(TrieNode) creates children only during insertion. Literal search uses get(char), which returns none without inserting or invoking that factory. The bool-returning matcher explicitly returns false on a miss rather than propagating none with ?.",
+        "matches is a separate function because its state arrives through parameters. It iterates literal characters from start, preserving the trie position, and recurses only when a dot chooses among child nodes. A dot consumes exactly one Unicode scalar value.",
+        "any evaluates boolean predicates lazily, stops at the first true result, and returns false for an empty source. node.chars.values() still constructs its complete snapshot first; short-circuiting avoids later recursive searches, not that snapshot allocation. Map value order remains unspecified, but the boolean answer is independent of that order.",
+        "After the pattern is exhausted, node.isEnd distinguishes a full word from an unfinished prefix. Duplicate insertion is harmless, while patterns that are too short or too long fail unless a word with that exact length exists.",
+        "Fixtures run ordered method calls against one fresh object per case, checking literal and wildcard queries before and after insertion, shared prefixes, failed searches, and repeated additions. JSON null represents a procedure call's completion in the fixture protocol.",
+        "Insertion takes expected O(L) work and at most O(L) new nodes for L characters. A search without wildcards takes expected O(L) work. Wildcards may explore every matching trie branch; with maximum branching B and w wildcards, O(L * B^w) is a coarse upper bound for B >= 1. Recursion depth is at most L, and live values snapshots add storage for the children examined at active wildcard levels."
+      ],
+      "slug": "design-add-and-search-words-data-structure",
+      "birdie": "type TrieNode:\n    chars: map[char, TrieNode] = map(TrieNode)\n    isEnd: bool = false\n\n\ntype WordDictionary:\n    root: TrieNode = TrieNode()\n\n    fn addWord(word: str):\n        node = self.root\n        for char in word:\n            node = node.chars[char]\n        node.isEnd = true\n\n    fn search(word: str) bool:\n        return matches(self.root, word, 0)\n\n\nfn matches(node: TrieNode, word: str, start: int) bool:\n    for i in start until word.size:\n        char = word[i]\n\n        if char == '.':\n            return any(\n                matches(child, word, i + 1)\n                for child in node.chars.values()\n            )\n\n        child = node.chars.get(char)\n        if child == none:\n            return false\n        node = child\n\n    return node.isEnd",
+      "python": "from collections import defaultdict\n\n\nclass TrieNode:\n    def __init__(self):\n        self.chars = defaultdict(TrieNode)\n        self.isEnd = False\n\n\nclass WordDictionary:\n    def __init__(self):\n        self.root = TrieNode()\n\n    def addWord(self, word: str) -> None:\n        node = self.root\n        for char in word:\n            node = node.chars[char]\n        node.isEnd = True\n\n    def search(self, word: str) -> bool:\n        return matches(self.root, word, 0)\n\n\ndef matches(node: TrieNode, word: str, start: int) -> bool:\n    for i in range(start, len(word)):\n        char = word[i]\n\n        if char == \".\":\n            return any(\n                matches(child, word, i + 1)\n                for child in node.chars.values()\n            )\n\n        child = node.chars.get(char)\n        if child is None:\n            return False\n        node = child\n\n    return node.isEnd",
+      "fixture": {
+        "entry": "WordDictionary",
+        "cases": [
+          {
+            "name": "constructor-only",
+            "args": [],
+            "calls": [],
+            "expected": "[]"
+          },
+          {
+            "name": "empty-dictionary",
+            "args": [],
+            "calls": [
+              {
+                "method": "search",
+                "args": [
+                  "\".\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"a\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"\""
+                ]
+              }
+            ],
+            "expected": "[false,false,false]"
+          },
+          {
+            "name": "standard",
+            "args": [],
+            "calls": [
+              {
+                "method": "addWord",
+                "args": [
+                  "\"bad\""
+                ]
+              },
+              {
+                "method": "addWord",
+                "args": [
+                  "\"dad\""
+                ]
+              },
+              {
+                "method": "addWord",
+                "args": [
+                  "\"mad\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"pad\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"bad\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\".ad\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"b..\""
+                ]
+              }
+            ],
+            "expected": "[null,null,null,false,true,true,true]"
+          },
+          {
+            "name": "exact-length-required",
+            "args": [],
+            "calls": [
+              {
+                "method": "addWord",
+                "args": [
+                  "\"abc\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"ab\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"abcd\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"..\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"...\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"....\""
+                ]
+              }
+            ],
+            "expected": "[null,false,false,false,true,false]"
+          },
+          {
+            "name": "wildcard-positions",
+            "args": [],
+            "calls": [
+              {
+                "method": "addWord",
+                "args": [
+                  "\"bad\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"b.d\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\".ad\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"ba.\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\".a.\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"...\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"b.x\""
+                ]
+              }
+            ],
+            "expected": "[null,true,true,true,true,true,false]"
+          },
+          {
+            "name": "later-wildcard-branch-matches",
+            "args": [],
+            "calls": [
+              {
+                "method": "addWord",
+                "args": [
+                  "\"bad\""
+                ]
+              },
+              {
+                "method": "addWord",
+                "args": [
+                  "\"map\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\".ap\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\".ax\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"m..\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\".ad\""
+                ]
+              }
+            ],
+            "expected": "[null,null,true,false,true,true]"
+          },
+          {
+            "name": "prefix-words",
+            "args": [],
+            "calls": [
+              {
+                "method": "addWord",
+                "args": [
+                  "\"a\""
+                ]
+              },
+              {
+                "method": "addWord",
+                "args": [
+                  "\"ab\""
+                ]
+              },
+              {
+                "method": "addWord",
+                "args": [
+                  "\"abc\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\".\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"..\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"...\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"....\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"a..\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"ab\""
+                ]
+              }
+            ],
+            "expected": "[null,null,null,true,true,true,false,true,true]"
+          },
+          {
+            "name": "duplicate-additions-and-misses",
+            "args": [],
+            "calls": [
+              {
+                "method": "search",
+                "args": [
+                  "\"cat\""
+                ]
+              },
+              {
+                "method": "addWord",
+                "args": [
+                  "\"cat\""
+                ]
+              },
+              {
+                "method": "addWord",
+                "args": [
+                  "\"cat\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"cat\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"c.t\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"ca\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"dog\""
+                ]
+              }
+            ],
+            "expected": "[false,null,null,true,true,false,false]"
+          },
+          {
+            "name": "empty-word",
+            "args": [],
+            "calls": [
+              {
+                "method": "addWord",
+                "args": [
+                  "\"\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\".\""
+                ]
+              },
+              {
+                "method": "addWord",
+                "args": [
+                  "\"a\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\".\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"..\""
+                ]
+              }
+            ],
+            "expected": "[null,true,false,null,true,false]"
+          },
+          {
+            "name": "unicode-wildcards-count-scalars",
+            "args": [],
+            "calls": [
+              {
+                "method": "addWord",
+                "args": [
+                  "\"猫🙂\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"..\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\".\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"猫.\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\".🙂\""
+                ]
+              },
+              {
+                "method": "addWord",
+                "args": [
+                  "\"é\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"e.\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"é\""
+                ]
+              }
+            ],
+            "expected": "[null,true,false,true,true,null,true,false]"
+          }
+        ]
+      }
     },
     {
       "title": "Design Twitter",
@@ -1584,7 +2140,442 @@
         "category": "Tries"
       },
       "blind75": true,
-      "slug": "implement-trie-prefix-tree"
+      "description": "Store words in a trie and answer exact-word and prefix queries.",
+      "note": "Share traversal between search and startsWith, while keeping insertion separate from non-inserting lookup.",
+      "notes": [
+        "TrieNode is defined by the solution; LeetCode does not supply it. Birdie's type declaration supports both data-only nodes and records with methods. Each Trie() gets a fresh root, and each TrieNode() gets a fresh child map.",
+        "Methods omit a receiver parameter and access their instance through self. Only fields contribute to the generated constructor. insert is a procedure, while search, startsWith, and findNode have explicit result types.",
+        "map(TrieNode) installs a zero-argument factory. Insertion obtains or creates each child through chars[char]. The constructor is called lazily for missing keys, so creating a node does not recursively create children upfront. Python uses defaultdict(TrieNode) for the same traversal.",
+        "get(char) is non-inserting, including on maps with defaults. findNode uses postfix ? to return none at the first missing child. Python spells out that early return. A failed query must not create paths that later prefix queries could observe.",
+        "search requires both a complete path and its terminal marker. startsWith only requires the path. The short-circuit and protects node.isEnd when findNode returns none. Prefix words, repeated insertion, and empty strings follow the same rules without extra cases.",
+        "The shared fixtures construct Trie once per case, then execute its calls in order on that same instance. Procedure results are represented as JSON null in the test protocol; this does not make Birdie procedures return none.",
+        "Insertion and either query take expected O(L) work for L Unicode scalar values, under constant-cost character hashing. Insertion allocates at most L new nodes; iterative queries use O(1) auxiliary space. Stored trie space is proportional to distinct prefixes."
+      ],
+      "slug": "implement-trie-prefix-tree",
+      "birdie": "type TrieNode:\n    chars: map[char, TrieNode] = map(TrieNode)\n    isEnd: bool = false\n\n\ntype Trie:\n    root: TrieNode = TrieNode()\n\n    fn insert(word: str):\n        node = self.root\n        for char in word:\n            node = node.chars[char]\n        node.isEnd = true\n\n    fn search(word: str) bool:\n        node = self.findNode(word)\n        return node != none and node.isEnd\n\n    fn startsWith(prefix: str) bool:\n        return self.findNode(prefix) != none\n\n    fn findNode(word: str) TrieNode?:\n        node = self.root\n        for char in word:\n            node = node.chars.get(char)?\n        return node",
+      "python": "from collections import defaultdict\n\n\nclass TrieNode:\n    def __init__(self):\n        self.chars = defaultdict(TrieNode)\n        self.isEnd = False\n\n\nclass Trie:\n    def __init__(self):\n        self.root = TrieNode()\n\n    def insert(self, word: str) -> None:\n        node = self.root\n        for char in word:\n            node = node.chars[char]\n        node.isEnd = True\n\n    def search(self, word: str) -> bool:\n        node = self.findNode(word)\n        return node is not None and node.isEnd\n\n    def startsWith(self, prefix: str) -> bool:\n        return self.findNode(prefix) is not None\n\n    def findNode(self, word: str) -> TrieNode | None:\n        node = self.root\n        for char in word:\n            node = node.chars.get(char)\n            if node is None:\n                return None\n        return node",
+      "fixture": {
+        "entry": "Trie",
+        "cases": [
+          {
+            "name": "constructor-only",
+            "args": [],
+            "calls": [],
+            "expected": "[]"
+          },
+          {
+            "name": "empty-trie",
+            "args": [],
+            "calls": [
+              {
+                "method": "search",
+                "args": [
+                  "\"a\""
+                ]
+              },
+              {
+                "method": "startsWith",
+                "args": [
+                  "\"a\""
+                ]
+              },
+              {
+                "method": "startsWith",
+                "args": [
+                  "\"\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"\""
+                ]
+              }
+            ],
+            "expected": "[false,false,true,false]"
+          },
+          {
+            "name": "standard",
+            "args": [],
+            "calls": [
+              {
+                "method": "insert",
+                "args": [
+                  "\"apple\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"apple\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"app\""
+                ]
+              },
+              {
+                "method": "startsWith",
+                "args": [
+                  "\"app\""
+                ]
+              },
+              {
+                "method": "insert",
+                "args": [
+                  "\"app\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"app\""
+                ]
+              }
+            ],
+            "expected": "[null,true,false,true,null,true]"
+          },
+          {
+            "name": "failed-queries-do-not-create-prefixes",
+            "args": [],
+            "calls": [
+              {
+                "method": "search",
+                "args": [
+                  "\"ghost\""
+                ]
+              },
+              {
+                "method": "startsWith",
+                "args": [
+                  "\"gh\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"g\""
+                ]
+              },
+              {
+                "method": "insert",
+                "args": [
+                  "\"go\""
+                ]
+              },
+              {
+                "method": "startsWith",
+                "args": [
+                  "\"gh\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"go\""
+                ]
+              }
+            ],
+            "expected": "[false,false,false,null,false,true]"
+          },
+          {
+            "name": "shared-prefixes-and-siblings",
+            "args": [],
+            "calls": [
+              {
+                "method": "insert",
+                "args": [
+                  "\"cat\""
+                ]
+              },
+              {
+                "method": "insert",
+                "args": [
+                  "\"car\""
+                ]
+              },
+              {
+                "method": "insert",
+                "args": [
+                  "\"cart\""
+                ]
+              },
+              {
+                "method": "insert",
+                "args": [
+                  "\"dog\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"ca\""
+                ]
+              },
+              {
+                "method": "startsWith",
+                "args": [
+                  "\"ca\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"cart\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"cat\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"car\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"dog\""
+                ]
+              },
+              {
+                "method": "startsWith",
+                "args": [
+                  "\"catr\""
+                ]
+              }
+            ],
+            "expected": "[null,null,null,null,false,true,true,true,true,true,false]"
+          },
+          {
+            "name": "shorter-word-added-after-longer",
+            "args": [],
+            "calls": [
+              {
+                "method": "insert",
+                "args": [
+                  "\"bats\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"bat\""
+                ]
+              },
+              {
+                "method": "startsWith",
+                "args": [
+                  "\"bat\""
+                ]
+              },
+              {
+                "method": "insert",
+                "args": [
+                  "\"bat\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"bat\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"bats\""
+                ]
+              }
+            ],
+            "expected": "[null,false,true,null,true,true]"
+          },
+          {
+            "name": "duplicate-insertion",
+            "args": [],
+            "calls": [
+              {
+                "method": "insert",
+                "args": [
+                  "\"bird\""
+                ]
+              },
+              {
+                "method": "insert",
+                "args": [
+                  "\"bird\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"bird\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"birds\""
+                ]
+              },
+              {
+                "method": "startsWith",
+                "args": [
+                  "\"bir\""
+                ]
+              }
+            ],
+            "expected": "[null,null,true,false,true]"
+          },
+          {
+            "name": "empty-word",
+            "args": [],
+            "calls": [
+              {
+                "method": "insert",
+                "args": [
+                  "\"\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"\""
+                ]
+              },
+              {
+                "method": "startsWith",
+                "args": [
+                  "\"\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"a\""
+                ]
+              },
+              {
+                "method": "insert",
+                "args": [
+                  "\"a\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"a\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"\""
+                ]
+              }
+            ],
+            "expected": "[null,true,true,false,null,true,true]"
+          },
+          {
+            "name": "unicode-scalar-prefixes",
+            "args": [],
+            "calls": [
+              {
+                "method": "insert",
+                "args": [
+                  "\"猫咪\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"猫\""
+                ]
+              },
+              {
+                "method": "startsWith",
+                "args": [
+                  "\"猫\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"猫咪\""
+                ]
+              },
+              {
+                "method": "insert",
+                "args": [
+                  "\"🙂\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"🙂\""
+                ]
+              },
+              {
+                "method": "insert",
+                "args": [
+                  "\"é\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"é\""
+                ]
+              }
+            ],
+            "expected": "[null,false,true,true,null,true,null,false]"
+          },
+          {
+            "name": "fresh-object",
+            "args": [],
+            "calls": [
+              {
+                "method": "search",
+                "args": [
+                  "\"apple\""
+                ]
+              },
+              {
+                "method": "startsWith",
+                "args": [
+                  "\"app\""
+                ]
+              },
+              {
+                "method": "insert",
+                "args": [
+                  "\"z\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"z\""
+                ]
+              },
+              {
+                "method": "search",
+                "args": [
+                  "\"a\""
+                ]
+              }
+            ],
+            "expected": "[false,false,null,true,false]"
+          }
+        ]
+      }
     },
     {
       "title": "Insert Interval",
@@ -3357,7 +4348,82 @@
         "category": "Backtracking"
       },
       "blind75": false,
-      "slug": "subsets"
+      "description": "Return every subset of a list of distinct integers.",
+      "note": "Explore including and excluding each element, saving a copy at every completed choice path.",
+      "notes": [
+        "The input integers are distinct. Each DFS level decides whether to include nums[i]; both branches advance to i + 1, so every subset is produced exactly once. Empty input produces one subset: the empty list.",
+        "The nested dfs is a procedure: it has no result annotation, uses bare return at the base case, and otherwise finishes after visiting both branches. It captures nums, res, and subset. push and pop mutate the captured lists without rebinding their names, so no outer entries are needed.",
+        "subset.copy() creates a fresh list for each saved result. Pushing subset itself would retain a reference to the same list that later calls mutate and eventually empty. Birdie uses the explicit copy method here to make the snapshot visible; subset[:] remains a valid shallow copy too.",
+        "The copy is shallow: nested mutable elements would remain shared references. These elements are immutable integers, so a shallow copy gives the required independent subset contents without recursive cloning. The Python reference uses the same copy operation and statement order.",
+        "After the include branch, pop removes exactly the element pushed at this level. The exclude branch then sees the original subset. This is ordinary backtracking with explicit push, recurse, and undo steps; no additional control-flow feature is needed.",
+        "Fixtures compare results as unordered groups, allowing any subset order or element order while preserving duplicates for comparison. Missing subsets, repeated subsets, or repeated elements remain failures. Cases include empty input, zero, negative and unsorted values, and exact large integers.",
+        "For n elements there are 2^n results containing n * 2^(n - 1) integers when n is positive. Time and output storage are O(n * 2^n), with O(n) auxiliary space for the current subset and recursion stack. Empty input takes constant work and storage. The input list is not modified."
+      ],
+      "slug": "subsets",
+      "birdie": "fn subsets(nums: list[int]) list[list[int]]:\n    res = []\n    subset = []\n\n    fn dfs(i: int):\n        if i >= nums.size:\n            res.push(subset.copy())\n            return\n\n        subset.push(nums[i])\n        dfs(i + 1)\n\n        subset.pop()\n        dfs(i + 1)\n\n    dfs(0)\n    return res",
+      "python": "class Solution:\n    def subsets(self, nums: list[int]) -> list[list[int]]:\n        res = []\n        subset = []\n\n        def dfs(i: int) -> None:\n            if i >= len(nums):\n                res.append(subset.copy())\n                return\n\n            subset.append(nums[i])\n            dfs(i + 1)\n\n            subset.pop()\n            dfs(i + 1)\n\n        dfs(0)\n        return res",
+      "fixture": {
+        "entry": "subsets",
+        "check": "unordered-groups",
+        "cases": [
+          {
+            "name": "standard",
+            "args": [
+              "[1,2,3]"
+            ],
+            "expected": "[[],[1],[2],[3],[1,2],[1,3],[2,3],[1,2,3]]"
+          },
+          {
+            "name": "empty-input",
+            "args": [
+              "[]"
+            ],
+            "expected": "[[]]"
+          },
+          {
+            "name": "single-zero",
+            "args": [
+              "[0]"
+            ],
+            "expected": "[[],[0]]"
+          },
+          {
+            "name": "single-negative",
+            "args": [
+              "[-4]"
+            ],
+            "expected": "[[],[-4]]"
+          },
+          {
+            "name": "two-elements",
+            "args": [
+              "[4,7]"
+            ],
+            "expected": "[[],[4],[7],[4,7]]"
+          },
+          {
+            "name": "unsorted-input",
+            "args": [
+              "[3,1,2]"
+            ],
+            "expected": "[[],[1],[2],[3],[1,2],[1,3],[2,3],[1,2,3]]"
+          },
+          {
+            "name": "negative-zero-positive",
+            "args": [
+              "[-2,0,3]"
+            ],
+            "expected": "[[],[-2],[0],[3],[-2,0],[-2,3],[0,3],[-2,0,3]]"
+          },
+          {
+            "name": "exact-large-integers",
+            "args": [
+              "[9007199254740993,-10000000000000000000000000000000000000001]"
+            ],
+            "expected": "[[],[9007199254740993],[-10000000000000000000000000000000000000001],[9007199254740993,-10000000000000000000000000000000000000001]]"
+          }
+        ]
+      }
     },
     {
       "title": "Subsets II",
@@ -4255,7 +5321,138 @@
         "category": "Tries"
       },
       "blind75": true,
-      "slug": "word-search-ii"
+      "description": "Find dictionary words formed by orthogonally adjacent board cells, without reusing a cell in a word.",
+      "note": "Build a trie, backtrack through matching paths, and prune branches after their remaining words are found.",
+      "notes": [
+        "TrieNode is part of this solution, not a supplied type. Its optional word field stores a complete word at terminal nodes. map(TrieNode) supplies fresh children during dictionary construction; all DFS child reads are guarded by membership checks and do not create paths.",
+        "The board is a nonempty rectangular list of character rows, matching the character representation in Valid Sudoku. Words are nonempty and the visited marker # is excluded from the board and dictionary alphabet. JSON fixtures transport each character as a one-scalar string.",
+        "The nested dfs procedure captures the board, result list, dimensions, and direction list. It mutates collections and record fields without rebinding captured names, so no outer entries are required. The four directions are allocated once, outside recursion, in both languages.",
+        "When a word is found, clearing node.word prevents duplicate output from another path or start cell. The optional field's presence check is explicit; map emptiness still uses not node.chars. The fixtures compare results as an unordered multiset, so duplicate output remains an error.",
+        "Each DFS call marks its cell, explores eligible neighbors, and restores the original character before pruning. A branch is removed only when it has neither child paths nor an unreported terminal word. remove(char) removes the map entry; other references to that node retain ordinary reference semantics. Python uses del for the known-present key.",
+        "Pruning does not remove from a collection being iterated: traversal uses the separate direction list. Finding a shorter prefix word must not remove a branch needed by a longer word. Failed branches must restore cells before another branch or starting position explores them.",
+        "For total dictionary length S, R rows, C columns, and maximum word length L, construction takes expected O(S) work. A loose search upper bound is O(R * C * 4^L); trie rejection and pruning often reduce it substantially. Trie storage is O(S), recursion depth is at most min(L, R * C), and the output list is additional. The input board is restored on normal completion."
+      ],
+      "slug": "word-search-ii",
+      "birdie": "type TrieNode:\n    chars: map[char, TrieNode] = map(TrieNode)\n    word: str? = none\n\n\nfn findWords(board: list[list[char]], words: list[str]) list[str]:\n    root = TrieNode()\n    res = []\n    (m, n) = (board.size, board[0].size)\n    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]\n\n    for word in words:\n        node = root\n        for char in word:\n            node = node.chars[char]\n        node.word = word\n\n    fn dfs(r: int, c: int, parent: TrieNode):\n        char = board[r][c]\n        node = parent.chars[char]\n\n        if node.word != none:\n            res.push(node.word)\n            node.word = none\n\n        board[r][c] = '#'\n\n        for (dr, dc) in directions:\n            (nr, nc) = (r + dr, c + dc)\n\n            if (\n                0 <= nr < m\n                and 0 <= nc < n\n                and board[nr][nc] in node.chars\n            ):\n                dfs(nr, nc, node)\n\n        board[r][c] = char\n\n        if not node.chars and node.word == none:\n            parent.chars.remove(char)\n\n    for r until m:\n        for c until n:\n            if board[r][c] in root.chars:\n                dfs(r, c, root)\n\n    return res",
+      "python": "from collections import defaultdict\n\n\nclass TrieNode:\n    def __init__(self):\n        self.chars = defaultdict(TrieNode)\n        self.word = None\n\n\nclass Solution:\n    def findWords(self, board: list[list[str]], words: list[str]) -> list[str]:\n        root = TrieNode()\n        res = []\n        m, n = len(board), len(board[0])\n        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]\n\n        for word in words:\n            node = root\n            for char in word:\n                node = node.chars[char]\n            node.word = word\n\n        def dfs(r: int, c: int, parent: TrieNode) -> None:\n            char = board[r][c]\n            node = parent.chars[char]\n\n            if node.word is not None:\n                res.append(node.word)\n                node.word = None\n\n            board[r][c] = \"#\"\n\n            for dr, dc in directions:\n                nr, nc = r + dr, c + dc\n\n                if (\n                    0 <= nr < m\n                    and 0 <= nc < n\n                    and board[nr][nc] in node.chars\n                ):\n                    dfs(nr, nc, node)\n\n            board[r][c] = char\n\n            if not node.chars and node.word is None:\n                del parent.chars[char]\n\n        for r in range(m):\n            for c in range(n):\n                if board[r][c] in root.chars:\n                    dfs(r, c, root)\n\n        return res",
+      "fixture": {
+        "entry": "findWords",
+        "check": "unordered",
+        "cases": [
+          {
+            "name": "standard",
+            "args": [
+              "[[\"o\",\"a\",\"a\",\"n\"],[\"e\",\"t\",\"a\",\"e\"],[\"i\",\"h\",\"k\",\"r\"],[\"i\",\"f\",\"l\",\"v\"]]",
+              "[\"oath\",\"pea\",\"eat\",\"rain\"]"
+            ],
+            "expected": "[\"oath\",\"eat\"]"
+          },
+          {
+            "name": "no-match",
+            "args": [
+              "[[\"a\",\"b\"],[\"c\",\"d\"]]",
+              "[\"abcb\"]"
+            ],
+            "expected": "[]"
+          },
+          {
+            "name": "single-cell-found",
+            "args": [
+              "[[\"a\"]]",
+              "[\"a\"]"
+            ],
+            "expected": "[\"a\"]"
+          },
+          {
+            "name": "single-cell-missing-or-too-long",
+            "args": [
+              "[[\"a\"]]",
+              "[\"b\",\"aa\"]"
+            ],
+            "expected": "[]"
+          },
+          {
+            "name": "cells-cannot-be-reused",
+            "args": [
+              "[[\"a\",\"a\"]]",
+              "[\"aa\",\"aaa\"]"
+            ],
+            "expected": "[\"aa\"]"
+          },
+          {
+            "name": "diagonal-is-not-adjacent",
+            "args": [
+              "[[\"a\",\"x\"],[\"x\",\"b\"]]",
+              "[\"ab\"]"
+            ],
+            "expected": "[]"
+          },
+          {
+            "name": "prefix-words-survive-pruning",
+            "args": [
+              "[[\"o\",\"a\",\"t\",\"h\"]]",
+              "[\"o\",\"oa\",\"oat\",\"oath\"]"
+            ],
+            "expected": "[\"o\",\"oa\",\"oat\",\"oath\"]"
+          },
+          {
+            "name": "many-paths-one-result-per-word",
+            "args": [
+              "[[\"a\",\"a\"],[\"a\",\"a\"]]",
+              "[\"a\",\"aa\",\"aaa\",\"aaaa\"]"
+            ],
+            "expected": "[\"a\",\"aa\",\"aaa\",\"aaaa\"]"
+          },
+          {
+            "name": "backtrack-between-branches",
+            "args": [
+              "[[\"a\",\"b\"],[\"c\",\"d\"]]",
+              "[\"abdc\",\"acdb\",\"ab\",\"ac\",\"ad\"]"
+            ],
+            "expected": "[\"abdc\",\"acdb\",\"ab\",\"ac\"]"
+          },
+          {
+            "name": "prune-only-exhausted-siblings",
+            "args": [
+              "[[\"c\",\"a\",\"t\"],[\"r\",\"r\",\"e\"]]",
+              "[\"car\",\"care\",\"cat\",\"cart\"]"
+            ],
+            "expected": "[\"car\",\"care\",\"cat\"]"
+          },
+          {
+            "name": "empty-dictionary",
+            "args": [
+              "[[\"a\"]]",
+              "[]"
+            ],
+            "expected": "[]"
+          },
+          {
+            "name": "single-column-both-directions",
+            "args": [
+              "[[\"a\"],[\"b\"],[\"c\"],[\"d\"]]",
+              "[\"a\",\"ab\",\"abcd\",\"dcba\"]"
+            ],
+            "expected": "[\"a\",\"ab\",\"abcd\",\"dcba\"]"
+          },
+          {
+            "name": "unicode-cells",
+            "args": [
+              "[[\"猫\",\"🙂\"]]",
+              "[\"猫\",\"猫🙂\",\"🙂猫\",\"🙂🙂\"]"
+            ],
+            "expected": "[\"猫\",\"猫🙂\",\"🙂猫\"]"
+          },
+          {
+            "name": "duplicate-dictionary-words",
+            "args": [
+              "[[\"a\",\"b\"]]",
+              "[\"a\",\"ab\",\"ab\",\"b\"]"
+            ],
+            "expected": "[\"a\",\"ab\",\"b\"]"
+          }
+        ]
+      }
     }
   ]
 }
