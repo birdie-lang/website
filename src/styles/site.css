@@ -30,15 +30,6 @@ h1, h2, h3, p { margin-top: 0; }
   overflow: visible;
   margin: var(--bird-width) 0 0;
 }
-.hero-bird {
-  position: absolute;
-  left: 75%;
-  bottom: 100%;
-  width: var(--bird-width);
-  height: auto;
-  /* Align the midpoint between the feet with the sample's top border. */
-  translate: -47.22% 3.2143%;
-}
 .examples-section { scroll-margin-top: 28px; padding-block: 36px 74px; border-top: 1px solid var(--line); }
 .browse-examples { margin-top: 28px; }
 birdie-examples { display: block; }

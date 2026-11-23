@@ -1,9 +1,9 @@
 ---
 import { Code } from 'astro:components';
 import SiteLayout from '../layouts/site-layout.astro';
-import Bird from '../assets/bird.svg';
 import factorial from '../assets/factorial.bd?raw';
 import ExampleBrowser from '../components/example-browser.astro';
+import HeroBird from '../components/hero-bird.astro';
 import { birdieGrammar } from '../lib/birdie-grammar';
 ---
 
@@ -20,7 +20,7 @@ import { birdieGrammar } from '../lib/birdie-grammar';
     </div>
     <figure class="hero-sample code-sheet">
       <figcaption class="code-sheet-header filename">factorial.bd</figcaption>
-      <Bird class="hero-bird" aria-hidden="true" />
+      <HeroBird />
       <div class="code-scroll">
         <Code code={factorial.trimEnd()} lang={birdieGrammar} themes={{ light: 'github-light', dark: 'github-dark' }} defaultColor={false} />
       </div>

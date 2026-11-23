@@ -1,0 +1,368 @@
+---
+import Bird from '../assets/bird.svg';
+
+const remark = 'I was sitting there.';
+---
+
+<birdie-mascot>
+  <div class="perch">
+    <Bird aria-hidden="true" />
+    <span class="speech-text" style={{ '--speech-characters': remark.length }}>
+      <span class="sr-only">{remark}</span>
+      {Array.from(remark, (letter, index) => (
+        <span class="speech-letter" aria-hidden="true" style={{ '--letter-index': index }}>{letter}</span>
+      ))}
+    </span>
+    <button class="hop-trigger" type="button" aria-label="Make Birdie hop" hidden></button>
+  </div>
+</birdie-mascot>
+
+<script>
+  class BirdieMascot extends HTMLElement {
+    connectedCallback() {
+      const perch = this.querySelector<HTMLElement>('.perch');
+      const bird = perch?.querySelector('svg');
+      const speechText = perch?.querySelector('.speech-text');
+      const trigger = perch?.querySelector('button');
+      if (!perch || !bird || !speechText || !trigger) return;
+
+      const motion = window.matchMedia('(prefers-reduced-motion: no-preference)');
+      const page = this.ownerDocument;
+      const canAnimate = () => this.isConnected && motion.matches;
+
+      const crossCard = () => {
+        this.dataset.perch = this.dataset.perch === 'left' ? 'right' : 'left';
+        this.dataset.hopping = '';
+        return this.getAnimations()[0];
+      };
+
+      const flyAway = async () => {
+        try {
+          if (this.dataset.perch === 'left') {
+            this.dataset.flight = 'crossing';
+            await crossCard()?.finished;
+            delete this.dataset.hopping;
+          }
+
+          for (const [phase, element] of [
+            ['looking-back', bird],
+            ['speaking', speechText],
+            ['turning', bird],
+            ['departing', perch],
+            ['returning', perch],
+          ] as const) {
+            if (!canAnimate()) return;
+            if (phase === 'departing') {
+              const { left, width } = perch.getBoundingClientRect();
+              const distance = Math.max(0, page.documentElement.clientWidth - left) + width / 4;
+              perch.style.setProperty('--flight-distance', `${distance}px`);
+            }
+            this.dataset.flight = phase;
+            await element.getAnimations()[0]?.finished;
+          }
+        } catch {
+          // The animation can be canceled by navigation or a motion preference change.
+        } finally {
+          delete this.dataset.hopping;
+          delete this.dataset.flight;
+          perch.style.removeProperty('--flight-distance');
+        }
+      };
+
+      const hop = (pointer?: PointerEvent, escape = 1) => {
+        if (!canAnimate() || this.hasAttribute('data-hopping') || this.hasAttribute('data-flight')) return;
+        if (escape === 5) {
+          void flyAway();
+          return;
+        }
+
+        const animation = crossCard();
+        if (!animation) {
+          delete this.dataset.hopping;
+          return;
+        }
+
+        const tracking = new AbortController();
+        const { signal } = tracking;
+        page.addEventListener('pointermove', (event) => {
+          if (event.pointerType === 'mouse') pointer = event;
+        }, { passive: true, signal });
+        page.documentElement.addEventListener('pointerleave', (event) => {
+          if (event.pointerType === 'mouse') pointer = undefined;
+        }, { signal });
+        window.addEventListener('blur', () => { pointer = undefined; }, { signal });
+
+        const settle = () => {
+          tracking.abort();
+          delete this.dataset.hopping;
+        };
+        void animation.finished.then(() => {
+          settle();
+          if (pointer && page.elementFromPoint(pointer.clientX, pointer.clientY) === trigger) {
+            hop(pointer, escape + 1);
+          }
+        }, settle);
+      };
+
+      trigger.onpointerenter = (event) => {
+        if (event.pointerType === 'mouse') hop(event);
+      };
+      trigger.onclick = () => hop();
+      trigger.hidden = false;
+    }
+  }
+
+  customElements.define('birdie-mascot', BirdieMascot);
+</script>
+
+<style>
+  birdie-mascot {
+    --previous-perch: -50%;
+    --current-perch: 0%;
+    --hop-distance: calc((var(--current-perch) - var(--previous-perch)) / 3);
+    --facing: 1;
+    --hop-duration: 240ms;
+    position: absolute;
+    inset-inline: 0;
+    bottom: 100%;
+    height: 0;
+    pointer-events: none;
+    transform: translateX(var(--current-perch));
+  }
+
+  birdie-mascot[data-perch='left'] {
+    --previous-perch: 0%;
+    --current-perch: -50%;
+    --facing: -1;
+  }
+
+  .perch {
+    position: absolute;
+    left: 75%;
+    bottom: 0;
+    width: var(--bird-width);
+    /* Anchor the flip and squash at the point between the feet. */
+    translate: -47.22% 3.2143%;
+    transform-origin: 47.22% 96.7857%;
+  }
+
+  .perch > :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+    transform-origin: inherit;
+    transform: scaleX(var(--facing));
+  }
+
+  .speech-text {
+    --letter-interval: 45ms;
+    display: none;
+    position: absolute;
+    right: 4px;
+    bottom: calc(100% + 10px);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 450;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  .hop-trigger {
+    display: none;
+    position: absolute;
+    inset: 0;
+    border: 0;
+    border-radius: 4px;
+    padding: 0;
+    background: transparent;
+    pointer-events: auto;
+  }
+
+  birdie-mascot[data-flight] .hop-trigger { visibility: hidden; }
+
+  :global(main:has(birdie-mascot[data-flight='departing'])) { overflow-x: clip; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hop-trigger { display: block; }
+
+    .perch :global(.bird-eye) {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: blink 3.8s step-end infinite;
+    }
+
+    birdie-mascot[data-hopping] {
+      animation: cross-card calc(3 * var(--hop-duration)) ease-in-out both;
+    }
+
+    birdie-mascot[data-hopping] .perch {
+      animation: hop var(--hop-duration) 3 both;
+    }
+
+    birdie-mascot[data-flight] {
+      --glare-pose: skewX(5deg) scale(-1, 0.93);
+      --lowered-lid: polygon(0 0, 100% 60%, 100% 100%, 0 100%) fill-box;
+      --launch-crouch: skewX(-6deg) scale(1.07, 0.82);
+      --raised-wing: rotate(32deg) scaleY(0.6);
+    }
+
+    birdie-mascot[data-flight='looking-back'] .perch > :global(svg) {
+      animation: look-back 420ms ease-in-out 550ms both;
+    }
+
+    birdie-mascot[data-flight='looking-back'] :global(.bird-eye) {
+      animation: side-eye 650ms ease-in-out 275ms both;
+    }
+
+    birdie-mascot:is([data-flight='speaking'], [data-flight='turning'], [data-flight='departing']) :global(.bird-eye) {
+      animation: none;
+      clip-path: var(--lowered-lid);
+    }
+
+    birdie-mascot[data-flight='speaking'] .perch > :global(svg) {
+      transform: var(--glare-pose);
+    }
+
+    birdie-mascot[data-flight='speaking'] .speech-text {
+      display: block;
+      animation: speech-fade 150ms linear calc(var(--speech-characters) * var(--letter-interval) + 1.15s) reverse forwards;
+    }
+
+    .speech-letter {
+      animation: speech-fade 60ms linear calc(300ms + var(--letter-index) * var(--letter-interval)) backwards;
+    }
+
+    birdie-mascot[data-flight='turning'] {
+      --turn-duration: 140ms;
+    }
+
+    birdie-mascot[data-flight='turning'] .perch > :global(svg) {
+      animation: turn-to-launch var(--turn-duration) ease-in-out both;
+    }
+
+    .perch :global(.bird-wing) {
+      transform-box: fill-box;
+      transform-origin: right top;
+    }
+
+    birdie-mascot[data-flight='turning'] :global(.bird-wing) {
+      transform: var(--raised-wing);
+      transition: transform var(--turn-duration) ease-in-out;
+    }
+
+    birdie-mascot[data-flight='departing'] {
+      --wingbeat-duration: 220ms;
+      --flight-duration: calc(5 * var(--wingbeat-duration));
+    }
+
+    birdie-mascot[data-flight='departing'] .perch {
+      animation: fly-away var(--flight-duration) cubic-bezier(0.3, 0.16, 0.65, 0.62) both;
+    }
+
+    birdie-mascot[data-flight='departing'] .perch > :global(svg) {
+      animation: lift-off var(--flight-duration) ease-out both;
+    }
+
+    birdie-mascot[data-flight='departing'] :global(.bird-wing) {
+      animation: flap var(--wingbeat-duration) ease-in-out 5;
+    }
+
+    birdie-mascot[data-flight='returning'] .perch {
+      animation: return-to-perch 520ms ease-out 5s both;
+    }
+  }
+
+  @keyframes blink {
+    0%, 96%, 100% { transform: scaleY(1); }
+    92% { transform: scaleY(0.14); }
+  }
+
+  @keyframes side-eye {
+    0% {
+      translate: 0;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%) fill-box;
+    }
+    16%, 75% { translate: -45% 0; }
+    16%, 100% { clip-path: var(--lowered-lid); }
+    100% { translate: 0; }
+  }
+
+  /* Travel only during the airborne portion (18%–84%) of each hop. */
+  @keyframes cross-card {
+    0%, 6% { transform: translateX(var(--previous-perch)); }
+    28%, 39.333% { transform: translateX(calc(var(--previous-perch) + var(--hop-distance))); }
+    61.333%, 72.667% { transform: translateX(calc(var(--current-perch) - var(--hop-distance))); }
+    94.667%, 100% { transform: translateX(var(--current-perch)); }
+  }
+
+  @keyframes hop {
+    0%, 100% { transform: translateY(0) scale(1); }
+    18% {
+      transform: translateY(0) scale(1.05, 0.92);
+      animation-timing-function: ease-out;
+    }
+    51% {
+      transform: translateY(-18%) scale(0.99, 1.02);
+      animation-timing-function: ease-in;
+    }
+    84% { transform: translateY(0) scale(1.04, 0.94); }
+  }
+
+  /* Lean from the feet and switch profiles at the lowest point of the turn. */
+  @keyframes look-back {
+    0% { transform: skewX(0deg) scale(1); }
+    48% {
+      transform: skewX(-5deg) scale(0.8, 0.9);
+      animation-timing-function: step-end;
+    }
+    52% { transform: skewX(5deg) scale(-0.8, 0.9); }
+    100% { transform: var(--glare-pose); }
+  }
+
+  @keyframes speech-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes turn-to-launch {
+    0% { transform: var(--glare-pose); }
+    42% {
+      transform: skewX(2deg) scale(-0.82, 0.88);
+      animation-timing-function: step-end;
+    }
+    50% { transform: skewX(-2deg) scale(0.82, 0.88); }
+    100% { transform: var(--launch-crouch); }
+  }
+
+  @keyframes fly-away {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(var(--flight-distance)); }
+  }
+
+  @keyframes lift-off {
+    0% { translate: 0 0; transform: var(--launch-crouch); }
+    10% { transform: rotate(-14deg) scale(0.98, 1.05); }
+    100% {
+      translate: 0 max(-200%, calc(-0.38 * var(--flight-distance)));
+      transform: rotate(-4deg) scale(1);
+    }
+  }
+
+  @keyframes flap {
+    0%, 100% { transform: var(--raised-wing); }
+    50% { transform: rotate(0deg) scaleY(1); }
+  }
+
+  @keyframes return-to-perch {
+    0% {
+      opacity: 0;
+      transform: translate(-95%, -110%) rotate(8deg);
+      animation-timing-function: cubic-bezier(0.2, 0.45, 0.65, 0.85);
+    }
+    24% { opacity: 1; }
+    64% { transform: none; }
+    77% { transform: scale(1.05, 0.9); }
+    100% { transform: none; }
+  }
+</style>

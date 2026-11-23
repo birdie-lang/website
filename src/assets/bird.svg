@@ -2,6 +2,6 @@
   <path d="M237 46 287 71Q289 72 287 74L247 100Z" fill="#f11f2d"/>
   <path d="M122 240v37m42-44v44" stroke="var(--bird-ink, currentColor)" stroke-width="16"/>
   <path d="M22 202C65 190 81 155 98 112C112 67 132 23 182 23C225 23 247 55 247 106C247 181 193 241 121 241C84 241 49 224 22 202Z" fill="var(--bird-fill, #fafafa)" stroke="var(--bird-ink, currentColor)" stroke-width="17" stroke-linejoin="round"/>
-  <circle cx="201" cy="75" r="13" fill="var(--bird-ink, currentColor)"/>
-  <path d="M24 116H159C160 158 134 192 93 192C54 192 24 160 24 116Z" fill="#f11f2d"/>
+  <circle class="bird-eye" cx="201" cy="75" r="13" fill="var(--bird-ink, currentColor)"/>
+  <path class="bird-wing" d="M24 116H159C160 158 134 192 93 192C54 192 24 160 24 116Z" fill="#f11f2d"/>
 </svg>
