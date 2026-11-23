@@ -99,7 +99,7 @@ const previewTokens = highlightBirdie(starter);
     #editor?: EditorView;
     #runtime = new BirdieRuntime();
 
-    connectedCallback() {
+    initialize() {
       if (this.#editor) return;
       const editorHost = this.querySelector<HTMLElement>('[data-editor]');
       const preview = this.querySelector<HTMLElement>('[data-editor-preview]');
@@ -110,6 +110,9 @@ const previewTokens = highlightBirdie(starter);
       const value = this.querySelector<HTMLPreElement>('[data-value]');
       const diagnosticList = this.querySelector('[data-diagnostics]');
       if (!editorHost || !preview || starter === undefined || !examples || !runButton || !status || !value || !diagnosticList) return;
+
+      const exampleId = new URLSearchParams(window.location.search).get('example');
+      const initialExample = Array.from(examples.options).find((option) => option.value === exampleId);
 
       this.#runtime.warmUp();
       let running = false;
@@ -197,7 +200,7 @@ const previewTokens = highlightBirdie(starter);
 
       const editor = new EditorView({
         parent: editorHost,
-        doc: starter,
+        doc: initialExample?.dataset.source ?? starter,
         extensions: [
           birdieEditorLanguage,
           lineNumbers(),
@@ -257,6 +260,14 @@ const previewTokens = highlightBirdie(starter);
   }
 
   customElements.define('birdie-playground', BirdiePlayground);
+
+  const initializePlayground = () => {
+    document.querySelector<BirdiePlayground>('birdie-playground')?.initialize();
+  };
+
+  // ClientRouter swaps the document before updating window.location.
+  document.addEventListener('astro:page-load', initializePlayground);
+  initializePlayground();
 </script>
 
 <style>

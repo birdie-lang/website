@@ -19,7 +19,10 @@ import { birdieGrammar } from '../lib/birdie-grammar';
       </div>
     </div>
     <figure class="hero-sample code-sheet">
-      <figcaption class="code-sheet-header filename">factorial.bd</figcaption>
+      <figcaption class="code-sheet-header">
+        <span class="filename">factorial.bd</span>
+        <a class="text-link" href="/playground?example=factorial">Try in playground <span aria-hidden="true">↗</span></a>
+      </figcaption>
       <HeroBird />
       <div class="code-scroll">
         <Code code={factorial.trimEnd()} lang={birdieGrammar} themes={{ light: 'github-light', dark: 'github-dark' }} defaultColor={false} />
