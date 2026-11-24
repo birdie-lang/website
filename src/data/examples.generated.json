@@ -834,7 +834,131 @@
         "category": "Backtracking"
       },
       "blind75": false,
-      "slug": "combination-sum-ii"
+      "description": "Find unique combinations that reach the target, using each candidate position at most once.",
+      "note": "Sort first, skip equal choices at the same recursion depth, and advance past each selected position.",
+      "notes": [
+        "Candidates are positive integers and may contain repeated values. Sorting places equal values together and makes every later candidate at least as large as the current one. The example sorts the caller's list in place in both languages; candidates = candidates.sorted() is the Birdie alternative when input order must be preserved.",
+        "The nested dfs is a procedure and captures candidates, target, res, and subset. Mutating a captured collection does not rebind its name, so no outer entries are required. Each recursive call has its own total and start parameters.",
+        "Passing i + 1 prevents reusing the same input position. Equal values at different positions can still be used together. The i > start guard skips only duplicate choices at the current depth, rather than excluding repeated values from a combination.",
+        "When total + num exceeds target, return ends the current helper call. This is valid because the list is sorted: all remaining choices at this depth are at least as large. The unsorted Combination Sum example uses continue instead.",
+        "After saving subset.copy(), return immediately. Positive candidates cannot extend a matching combination into another match. Both references keep this early return and the same statement order. The shallow copy preserves independent lists of immutable integers.",
+        "Only subset needs an undo step: push the choice, recurse with total + num, then pop. The sum is passed directly instead of being updated and restored. The result list accumulates completed combinations.",
+        "Shared fixtures compare combinations as unordered groups, preserving duplicate elements and duplicate groups for comparison. They cover repeated values at different depths, one-use limits, unsorted input, pruning, multiple answers, and exact large integers. Additional empty-input and zero-target cases return no answers and one empty combination respectively.",
+        "For n candidate positions, sorting takes O(n log n) comparisons. The search is exponential in the worst case; O(n * 2^n) is a loose upper bound including scanning and copying. Recursion and the current subset use O(n) auxiliary space, plus the sorting algorithm's workspace and result storage."
+      ],
+      "slug": "combination-sum-ii",
+      "birdie": "fn combinationSum2(candidates: list[int], target: int) list[list[int]]:\n    candidates.sort()\n    res = []\n    subset = []\n\n    fn dfs(total: int, start: int):\n        if total == target:\n            res.push(subset.copy())\n            return\n\n        for i in start until candidates.size:\n            num = candidates[i]\n            if total + num > target:\n                return\n            if i > start and num == candidates[i - 1]:\n                continue\n\n            subset.push(num)\n            dfs(total + num, i + 1)\n            subset.pop()\n\n    dfs(0, 0)\n    return res",
+      "python": "class Solution:\n    def combinationSum2(self, candidates: list[int], target: int) -> list[list[int]]:\n        candidates.sort()\n        res = []\n        subset = []\n\n        def dfs(total: int, start: int) -> None:\n            if total == target:\n                res.append(subset.copy())\n                return\n\n            for i in range(start, len(candidates)):\n                num = candidates[i]\n                if total + num > target:\n                    return\n                if i > start and num == candidates[i - 1]:\n                    continue\n\n                subset.append(num)\n                dfs(total + num, i + 1)\n                subset.pop()\n\n        dfs(0, 0)\n        return res",
+      "fixture": {
+        "entry": "combinationSum2",
+        "check": "unordered-groups",
+        "cases": [
+          {
+            "name": "standard",
+            "args": [
+              "[10,1,2,7,6,1,5]",
+              "8"
+            ],
+            "expected": "[[1,1,6],[1,2,5],[1,7],[2,6]]"
+          },
+          {
+            "name": "duplicate-choices",
+            "args": [
+              "[2,5,2,1,2]",
+              "5"
+            ],
+            "expected": "[[1,2,2],[5]]"
+          },
+          {
+            "name": "equal-values-at-different-depths",
+            "args": [
+              "[1,1,1,1]",
+              "2"
+            ],
+            "expected": "[[1,1]]"
+          },
+          {
+            "name": "one-position-cannot-be-reused",
+            "args": [
+              "[2]",
+              "4"
+            ],
+            "expected": "[]"
+          },
+          {
+            "name": "two-equal-positions-can-be-used",
+            "args": [
+              "[2,2]",
+              "4"
+            ],
+            "expected": "[[2,2]]"
+          },
+          {
+            "name": "all-candidates-too-large",
+            "args": [
+              "[8,7,3]",
+              "2"
+            ],
+            "expected": "[]"
+          },
+          {
+            "name": "unsorted-later-values-fit",
+            "args": [
+              "[9,4,1,2]",
+              "3"
+            ],
+            "expected": "[[1,2]]"
+          },
+          {
+            "name": "different-length-combinations",
+            "args": [
+              "[1,1,2,2,3]",
+              "4"
+            ],
+            "expected": "[[1,1,2],[1,3],[2,2]]"
+          },
+          {
+            "name": "exact-single-candidate",
+            "args": [
+              "[7]",
+              "7"
+            ],
+            "expected": "[[7]]"
+          },
+          {
+            "name": "empty-candidates",
+            "args": [
+              "[]",
+              "7"
+            ],
+            "expected": "[]"
+          },
+          {
+            "name": "zero-target",
+            "args": [
+              "[2,2,3]",
+              "0"
+            ],
+            "expected": "[[]]"
+          },
+          {
+            "name": "unsorted-duplicate-branches",
+            "args": [
+              "[3,1,3,1,2]",
+              "5"
+            ],
+            "expected": "[[1,1,3],[2,3]]"
+          },
+          {
+            "name": "exact-large-integer-sum",
+            "args": [
+              "[9007199254740993,9007199254740992,9007199254740993]",
+              "18014398509481985"
+            ],
+            "expected": "[[9007199254740992,9007199254740993]]"
+          }
+        ]
+      }
     },
     {
       "title": "Construct Binary Tree From Preorder And Inorder Traversal",
@@ -3726,7 +3850,82 @@
         "category": "Backtracking"
       },
       "blind75": false,
-      "slug": "permutations"
+      "description": "Return every ordering of a list of distinct integers.",
+      "note": "Track used input positions while extending and undoing one shared working permutation.",
+      "notes": [
+        "The input values are distinct. Each recursive level chooses one unused position, so every input position appears exactly once in a completed permutation and every permutation is generated once. Empty input produces one empty permutation.",
+        "list(nums.size, false) creates a boolean flag for each input position. false is an immutable fill value, so it fits the existing filled-list construction rules. for i, num in nums supplies the position and value directly; Python uses enumerate.",
+        "The nested dfs is a zero-argument procedure. It captures nums, res, perm, and used. Updating a flag or pushing and popping from a list mutates captured collections without rebinding their names, so no outer entries are required.",
+        "Mark the position used, push its value, recurse, then pop and clear that same flag. Both undo steps are required before another choice at the current depth can be explored. The Python reference keeps the same statement order.",
+        "perm.copy() creates an independent result list before backtracking changes the working permutation. The copy is shallow, which is sufficient for immutable integer elements. Storing perm itself would make results share that changing list.",
+        "Fixtures ignore only the outer result order. Element order inside a permutation is significant, and the comparison preserves duplicates so a missing or repeated permutation remains a failure. Cases cover empty input, zero, negatives, unsorted values, and exact large integers.",
+        "For a positive input length n, there are n! results with n elements each. Time and output storage are O(n * n!), while flags, the working permutation, and recursion use O(n) auxiliary space. Empty input takes constant work and storage. The input list is not modified."
+      ],
+      "slug": "permutations",
+      "birdie": "fn permute(nums: list[int]) list[list[int]]:\n    res = []\n    perm = []\n    used = list(nums.size, false)\n\n    fn dfs():\n        if perm.size == nums.size:\n            res.push(perm.copy())\n            return\n\n        for i, num in nums:\n            if used[i]:\n                continue\n\n            used[i] = true\n            perm.push(num)\n            dfs()\n            perm.pop()\n            used[i] = false\n\n    dfs()\n    return res",
+      "python": "class Solution:\n    def permute(self, nums: list[int]) -> list[list[int]]:\n        res = []\n        perm = []\n        used = [False] * len(nums)\n\n        def dfs() -> None:\n            if len(perm) == len(nums):\n                res.append(perm.copy())\n                return\n\n            for i, num in enumerate(nums):\n                if used[i]:\n                    continue\n\n                used[i] = True\n                perm.append(num)\n                dfs()\n                perm.pop()\n                used[i] = False\n\n        dfs()\n        return res",
+      "fixture": {
+        "entry": "permute",
+        "check": "unordered",
+        "cases": [
+          {
+            "name": "standard",
+            "args": [
+              "[1,2,3]"
+            ],
+            "expected": "[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]"
+          },
+          {
+            "name": "empty-input",
+            "args": [
+              "[]"
+            ],
+            "expected": "[[]]"
+          },
+          {
+            "name": "single-zero",
+            "args": [
+              "[0]"
+            ],
+            "expected": "[[0]]"
+          },
+          {
+            "name": "single-negative",
+            "args": [
+              "[-4]"
+            ],
+            "expected": "[[-4]]"
+          },
+          {
+            "name": "two-elements",
+            "args": [
+              "[4,7]"
+            ],
+            "expected": "[[4,7],[7,4]]"
+          },
+          {
+            "name": "unsorted-input",
+            "args": [
+              "[3,1,2]"
+            ],
+            "expected": "[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]"
+          },
+          {
+            "name": "negative-zero-positive",
+            "args": [
+              "[-2,0,3]"
+            ],
+            "expected": "[[-2,0,3],[-2,3,0],[0,-2,3],[0,3,-2],[3,-2,0],[3,0,-2]]"
+          },
+          {
+            "name": "exact-large-integers",
+            "args": [
+              "[9007199254740993,-10000000000000000000000000000000000000001]"
+            ],
+            "expected": "[[9007199254740993,-10000000000000000000000000000000000000001],[-10000000000000000000000000000000000000001,9007199254740993]]"
+          }
+        ]
+      }
     },
     {
       "title": "Plus One",

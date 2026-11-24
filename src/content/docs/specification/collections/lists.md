@@ -58,6 +58,7 @@ For `items: list[T]`, `value` must have type `T` and `i` must have type `int`.
 | `items[i] = value` | No value | Yes | Replace an element at a valid index. |
 | `items.last` | `T` | No | Read the last element. |
 | `items.size` | `int` | No | Read the number of elements. |
+| `items.sort()` | No value | Yes | Sort the existing list in ascending order. |
 | `items.sorted()` | `list[T]` | No | Allocate a new list in ascending order. |
 | `items.index(value)` | `int?` | No | Find the first matching index, or return `none`. |
 | `items.iter()` | `iterator[T]` | No | Create an independent forward cursor without copying the list. |
@@ -67,7 +68,28 @@ For `items: list[T]`, `value` must have type `T` and `i` must have type `int`.
 | `items[start:]` | `list[T]` | No | Allocate a shallow copy from `start` to the end. |
 | `items[:]` | `list[T]` | No | Allocate a shallow copy of the whole list. |
 
-Use `push` to add an element; there is no `append` alias. `pop()` and `.last` cause a runtime error on an empty list. `sorted()` requires an element type with a defined ordering and leaves the original list unchanged.
+Use `push` to add an element; there is no `append` alias. `pop()` and `.last` cause a runtime error on an empty list. Both sorting methods require an element type with a defined ordering.
+
+## Sorting
+
+`items.sort()` rearranges the existing list in ascending order and produces no result. `items.sorted()` creates a fresh sorted list and leaves the source unchanged:
+
+```birdie
+nums = [3, 1, 2]
+alias = nums
+ordered = nums.sorted() # ordered is [1, 2, 3]; nums is still [3, 1, 2]
+nums.sort()             # nums and alias both observe [1, 2, 3]
+```
+
+- Both methods take no arguments and evaluate their receiver once, following the ordinary checked optional-use rules. Use the element type's existing ordering; these operations do not introduce an ordering for records, nested lists, or `none`. An incompatible element type or wrong argument count is a compile-time error.
+- Preserve the element count and every element, including duplicates. Empty and single-element lists are valid. Stored references retain ordinary assignment semantics; sorting does not clone nested objects.
+- `sort()` mutates the same list object, so aliases observe the resulting order. Its call is a statement with no value: `ordered = nums.sort()` and chaining from its result are compile-time errors.
+- `sorted()` always returns a separate outer list, including for empty input. Replacing or adding entries in the result does not change the source. It is a sorted shallow copy, not a deep copy.
+- The intended sorting cost is O(n log n) comparisons, plus the element comparison costs and constant overhead for small lists. `sorted()` also allocates O(n) result storage. In-place sorting creates no separate result list, but may use algorithm-specific auxiliary storage; it does not promise O(1) extra space.
+
+Stability guarantees, comparator/key arguments, descending-order options, and the concrete sorting algorithm remain open. Strings are immutable and retain their existing nonmutating `sorted()` operation.
+
+See [Combination Sum II](/examples/combination-sum-ii) for sorting before duplicate skipping and early termination. Use `candidates = candidates.sorted()` instead when the caller's list should retain its order.
 
 ## Copying
 

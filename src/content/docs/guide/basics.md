@@ -58,7 +58,7 @@ size = nums.size
 ordered = nums.sorted()
 ```
 
-Indices start at zero. Negative indices are errors. `push` adds an item at the end; `sorted()` produces a new list and leaves `nums` unchanged.
+Indices start at zero. Negative indices are errors. `push` adds an item at the end; `sorted()` produces a new list and leaves `nums` unchanged. Use `nums.sort()` to sort the existing list instead; aliases see the changed order, and the call produces no result. See the [sorting rules](/docs/specification/collections/lists#sorting) and [Combination Sum II](/examples/combination-sum-ii).
 
 Slices include the start and exclude the end. Omit the start for zero, or the end for `.size`:
 
