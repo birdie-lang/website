@@ -165,7 +165,7 @@ swap!(nums[i], nums[j])
 - Swapping a location with itself leaves its value unchanged.
 - Reading an invalid index or a missing map entry follows the normal collection rules. A map with a configured default can insert that default when the entry is read.
 
-Tuple assignment remains available; `swap!` provides a concise form for an exchange. See [tuple unpacking](#tuples) for the more general assignment form.
+See [parallel assignment](#tuples) for an exchange using `=`.
 
 ### Minimum and maximum updates
 
@@ -191,16 +191,22 @@ See [Longest Consecutive Sequence](/examples/longest-consecutive-sequence) for a
 
 ## Tuples
 
-- `(A, B)` is a fixed pair with a type for each position.
-- `list[(int, int)]` is a list of integer pairs.
-- Tuple unpacking requires parentheses: `(x, y) = point`.
-- Targets can be variables, writable fields, or collection entries. Each incoming value must fit its destination type.
-- Evaluate the entire right-hand side before assigning any target, so an exchange preserves both original values:
+A tuple is a fixed pair with a type for each position. `(A, B)` is the type of a pair, and `list[(int, int)]` is a list of integer pairs. Use parentheses to create a tuple value. Multiple assignment targets can be written as a comma-separated list.
 
 ```birdie
-(root.left, root.right) = (root.right, root.left)
+point = (3, 4)
+x, y = point
+x, y = x + 1, y - 1
 ```
 
-- Assign unpacked values to targets from left to right, evaluating each target location once when it is assigned. Repeated targets receive the last assigned value.
-- Unpacking requires the tuple and target shapes to match; mismatches are type errors.
-- [Loop bindings](/docs/specification#loops) use the same parenthesized unpacking form.
+- A single tuple expression can be unpacked into multiple targets whose shape matches the tuple. A comma-separated list of expressions on the right assigns one value per target. An arity or shape mismatch is a compile-time error. For example, `point = x, y` has two values and one target.
+- Targets can be variables, writable fields, or collection entries. Each incoming value must fit its destination type.
+- Evaluate the right-hand side from left to right before writing any target. Then write the targets from left to right, evaluating each target location once when it is assigned. Repeated targets receive the last assigned value.
+
+An exchange uses both original values.
+
+```birdie
+root.left, root.right = root.right, root.left
+```
+
+[Loop bindings](/docs/specification#loops) use parentheses to unpack a tuple within a single binding position.

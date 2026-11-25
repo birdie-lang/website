@@ -158,7 +158,7 @@ For lists and strings:
 | `for (x, y) in points:` | Unpacked tuple |
 | `for i, (x, y) in points:` | Index and unpacked tuple |
 
-String iteration yields `char` values. Parentheses distinguish tuple unpacking from an index-and-value loop.
+String iteration yields `char` values. Two top-level bindings receive the index and element even when the element is a tuple. Parentheses unpack a single element within its binding position.
 
 Ordinary `for` bindings and assignments inside loop bodies belong to the enclosing function or file, following [scope and initialization](/docs/specification/types#scope-and-initialization). They remain visible after the loop. A loop that runs zero times does not assign its bindings or clear any earlier values. Comprehension and generator bindings have their own expression-local scopes.
 
@@ -168,7 +168,7 @@ For counters, `for key, count in counts:` binds each stored key and its integer 
 
 For an [explicit iterator](/docs/specification/collections/iterators#explicit-iterators), `for value in cursor:` consumes its remaining elements from the current position. Reusing the iterator continues from that position rather than restarting it. Exhaustion ends the loop normally; other errors propagate. A single binding or parenthesized tuple unpacking is supported; indexed and reverse forms remain open.
 
-For maps, `for key, value in counts:` is a proposal. Single-binding and indexed forms, along with map iteration order, remain open.
+For a `map[K, V]`, `for key, value in m:` binds each entry's key of type `K` and value of type `V`. For a map of points, `for id, (x, y) in pointsById:` binds the key and unpacks the stored pair. Single-binding and indexed forms, along with map iteration order, remain open.
 
 Lists and strings can be traversed together using [`zip`](/docs/specification/collections/iterators#parallel-iteration):
 

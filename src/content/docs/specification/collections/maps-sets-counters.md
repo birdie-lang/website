@@ -90,7 +90,7 @@ Callable arguments always mean factories. To use a function as a stored default 
 
 `m.values()` copies only the outer container. Later changes to map entries do not update the returned list. Nested mutable collections remain shared with the map.
 
-Map iteration order and single-binding map iteration remain undecided, so no particular ordering of `values()` is specified yet.
+Direct [map traversal](/docs/specification#loops) uses `for key, value in m:`. Map iteration order remains open and also determines the order of `values()`.
 
 See [Group Anagrams](/examples#group-anagrams) for a map with a list factory and a values snapshot.
 

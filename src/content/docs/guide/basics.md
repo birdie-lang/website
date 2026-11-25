@@ -19,6 +19,8 @@ count = count + 1
 
 Birdie infers `count` as `int`. Reassignments must match that type. You can write an annotation when it helps: `count: int = 0`.
 
+Use `x, y = 3, 4` to assign two values. Use `point = (x, y)` to store a pair and `x, y = point` to unpack it. See [tuples and parallel assignment](/docs/specification/types#tuples) for the assignment rules.
+
 Static types describe the data and catch incompatible operations. Some assumptions are checked at runtime: indices must be in bounds, and an optional value used where a present value is required must actually be present. The algorithm does not need extra assertion or unwrapping syntax solely to establish those facts.
 
 Variables first assigned inside a branch or loop belong to the enclosing function and can be used after the block. Their types are still checked statically. If execution reaches a read before that variable has received a value, Birdie raises a runtime error. This is lexical function scope; a function does not look up variables in its caller. See [scope and initialization](/docs/specification/types#scope-and-initialization) for the exact rules.
@@ -161,7 +163,7 @@ fn preferFirst(first: int?, fallback: int) int:
 
 ## Loops
 
-A loop can request values alone or both indices and values:
+A list or string loop can request values alone or both indices and values.
 
 ```birdie
 total = 0
@@ -173,7 +175,9 @@ for i, num in nums:
     positions[num] = i
 ```
 
-Use parentheses to unpack a tuple: `for (x, y) in points:`. Add an index with `for i, (x, y) in points:`.
+Use `for (x, y) in points:` to unpack each point in a list. Add an index with `for i, (x, y) in points:`.
+
+A map loop uses `for key, value in m:`. If each value is a point, `for id, (x, y) in pointsById:` gives you the key and both coordinates.
 
 Integer ranges use `until` for an exclusive end and `through` for an inclusive end. A positive `step` skips values. The following loop headers show the values they visit:
 
