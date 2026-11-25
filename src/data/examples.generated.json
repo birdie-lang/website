@@ -4636,7 +4636,65 @@
         "category": "Backtracking"
       },
       "blind75": false,
-      "slug": "subsets-ii"
+      "description": "Return all distinct subsets of a list that can contain repeated integers.",
+      "note": "Sort the input, then skip the rest of an equal-value run when excluding an element.",
+      "notes": [
+        "Both solutions sort the input in place so equal values are adjacent. The include branch advances one position, allowing a subset to use multiple copies of the same value.",
+        "After undoing the include choice, the exclude branch advances past the remaining copies of that value. Each possible count of an equal value is explored once.",
+        "At the end of each path, subset.copy() saves an independent result before later calls change the working list.",
+        "For n inputs, the worst case is O(n * 2^n) time and output space. The current subset and call stack use O(n) space, plus any workspace used by sorting."
+      ],
+      "slug": "subsets-ii",
+      "birdie": "fn subsetsWithDup(nums: list[int]) list[list[int]]:\n    nums.sort()\n    res = []\n    subset = []\n\n    fn dfs(i: int):\n        if i >= nums.size:\n            res.push(subset.copy())\n            return\n\n        subset.push(nums[i])\n        dfs(i + 1)\n        subset.pop()\n\n        while i + 1 < nums.size and nums[i] == nums[i + 1]:\n            i++\n        dfs(i + 1)\n\n    dfs(0)\n    return res",
+      "python": "class Solution:\n    def subsetsWithDup(self, nums: list[int]) -> list[list[int]]:\n        nums.sort()\n        res = []\n        subset = []\n\n        def dfs(i: int) -> None:\n            if i >= len(nums):\n                res.append(subset.copy())\n                return\n\n            subset.append(nums[i])\n            dfs(i + 1)\n            subset.pop()\n\n            while i + 1 < len(nums) and nums[i] == nums[i + 1]:\n                i += 1\n            dfs(i + 1)\n\n        dfs(0)\n        return res",
+      "fixture": {
+        "entry": "subsetsWithDup",
+        "check": "unordered-groups",
+        "cases": [
+          {
+            "name": "standard",
+            "args": [
+              "[1,2,2]"
+            ],
+            "expected": "[[],[1],[2],[1,2],[2,2],[1,2,2]]"
+          },
+          {
+            "name": "single-zero",
+            "args": [
+              "[0]"
+            ],
+            "expected": "[[],[0]]"
+          },
+          {
+            "name": "all-equal",
+            "args": [
+              "[4,4,4]"
+            ],
+            "expected": "[[],[4],[4,4],[4,4,4]]"
+          },
+          {
+            "name": "unsorted-duplicate-runs",
+            "args": [
+              "[2,-1,2,-1]"
+            ],
+            "expected": "[[],[-1],[2],[-1,-1],[-1,2],[2,2],[-1,-1,2],[-1,2,2],[-1,-1,2,2]]"
+          },
+          {
+            "name": "distinct-values",
+            "args": [
+              "[3,1,2]"
+            ],
+            "expected": "[[],[1],[2],[3],[1,2],[1,3],[2,3],[1,2,3]]"
+          },
+          {
+            "name": "empty-input",
+            "args": [
+              "[]"
+            ],
+            "expected": "[[]]"
+          }
+        ]
+      }
     },
     {
       "title": "Subtree of Another Tree",
